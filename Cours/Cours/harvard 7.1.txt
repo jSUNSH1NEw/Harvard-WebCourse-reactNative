@@ -1,0 +1,1721 @@
+[MUSIC PLAYING]
+
+JORDAN HAYASHI: Hello, and welcome for lecture eight.
+Today we're joined by Charlie Cheever.
+Charlie did his undergrad at Harvard.
+He actually took CS50 back in the day and went on to join Facebook,
+later founded a website called Quora, and has now founded
+and leading the team over at Expo.
+So I will hand it over to him, and he will do a lecture on Expo components.
+So welcome Charlie.
+CHARLIE CHEEVER: Cool.
+Thanks, Jordan.
+And thanks for having me here.
+Cool.
+So I'm Charlie.
+And I'm gonna talk to you about Expo today.
+I think most people in this class are already
+using it to build a lot of their projects and assignments
+for this class.
+So I'll talk a little bit more about what it is,
+and then go into some detail about different parts of it
+that you can use that you might not have encountered yet.
+So what is Expo?
+Expo's basically two things.
+One is it's like a project and an effort that is basically
+trying to take the spirit of the web and the ideas
+of the web and the accessibility and the distribution power and things like that
+and fuse it with the sort of functionality
+and gestures and animations and capabilities
+and look and feel that you get with native mobile apps
+that people like using on their phones.
+Because people used to use the web.
+And there are lots of people that can develop for the web.
+And that's probably the most popular development platform in the world.
+But it's really hard to develop for mobile
+even though everyone in the world is carrying around their phones
+all the time now.
+And so then as part of that, what Expo is secondly
+is basically like a standard library of components
+that let you access basically everything on your phone device
+through JavaScript without having to worry about Xcode or Android
+Studio or libraries like that.
+And so when I say access everything on your phone through JavaScript,
+I mean basically all the hardware peripherals
+like accelerometer, gyroscope, GPS location,
+pushing notification, things like that, along with stuff on the screen,
+like native maps, native video player, sound, those kind of things,
+camera, and then some common libraries that people
+need to use a lot of the time, like Facebook login, Google login, ads,
+things like that.
+So there's actually a ton of these things.
+You can see a whole list if you go to docs.expo.io.
+I'm going to go there, like, every 45 seconds, probably, during this lecture.
+So just familiar with these.
+And if you just scroll down on the left side right here,
+you can see a full list where accelerometer, AdMob, amplitude,
+uploading-- all of these things are available.
+I'm only going to have time to show you some of them.
+But they all work pretty well, and they're all tested.
+And so basically, everything here is a combination
+of things that we've made at Expo as part of the project,
+along with editorially selecting some of the best open-source things
+out in the community, like vector icons, which is the most popular way
+to do icons in React Native, and React Native Maps, which originally
+was made at Airbnb, I think by this guy Leland Richardson,
+which is kind of universally the way that everyone does maps
+with React Native.
+So we've pulled in a few of those open-source projects
+that are best of breed and that are kept up to date
+and maintained, and then built the things that there
+wasn't a great solution already.
+And so we're going to be using the Expo client on our phones.
+And we're going to use Snack a lot, which is at snack.expo.io.
+And also, we're going to use XDE, the sort of desktop development tool.
+And I tend to use VS Code for my editor.
+So the first thing we're going to dive into is maps and location.
+I'm just gonna build a really simple demo of using maps, and then throwing
+a couple of pins on it and showing where we are and stuff like that.
+So to do this, I'm gonna go into Snack, which you can get to at snack.expo.io.
+And this is just basically the default project.
+I made a few changes here.
+I'll just start from scratch so people can follow along more easily.
+I'm going to reload this.
+And I'm going to change this constants thing here to just import Expo.
+I'm going to delete this import asset example and import
+card because we don't need those.
+And then I'm just going to delete all this stuff in here,
+and then change this to expo.constants.
+So now I just have the plain view.
+So I'm not even going to use that plain view.
+I'm actually just going to do expo.mapview.
+And then I'm going to do run device so I can
+take a look at this thing on my phone.
+
+So I'm opening this up.
+I'm using an iPhone so I can mirror it here.
+And so here's what this looks like now.
+It just looks like a white screen.
+
+So I will try, actually--
+I'm going to get rid of files, and I'm gonna shrink this a little bit
+and try to move this over here.
+Maybe we'll be able to see it then.
+OK, there we go.
+Now we can see both at the same time.
+So part of why this map view isn't showing up is that it's too small,
+and it's sort of just not showing up because it's not big enough.
+So we'll say flex one under style.
+And then now, bam, a map view appears.
+And it's taking up the whole screen.
+That's kind of what we want.
+So one sidenote here is this is an Apple map because I'm using an iPhone.
+On an Android phone, this would be a Google map.
+But Google Maps is also available for iPhone.
+And so you can switch the provider if you want.
+So I can say provider equals expo.mapview.provider_google,
+and now this is using a Google map.
+And you can see it says Google in the corner.
+And Google Maps default to, I think, somewhere in the UK, like,
+probably Greenwich meridian or something like that.
+Whereas at Apple Maps defaults to the United States.
+We'll use Apple Maps for the rest of this demo,
+but you can switch between them pretty easily.
+So I'm gonna take a look at the maps documentation
+here, just so we have a good reference point to start.
+And if you look here, you can see the first thing
+it shows is a simple example.
+And I have a way to set initial region, which
+should be pretty useful because looking at a giant map of the United States
+isn't that interesting in a lot of cases.
+So I'm just going to copy this and bring it over here and paste it in here.
+And now you can see this makes this initial region in San Francisco.
+Some of you might be in San Francisco if you're watching on stream.
+But we're actually in Cambridge right now.
+So it'd be great if we could center the map there or wherever we actually are.
+And so what I'm gonna do is actually use the location
+API to figure out where we are, and then center the map on that.
+And so what we're gonna do is slip over to the documentation
+and take a look at location.
+
+You can see the first thing it says here is
+that you need to use the permissions API to get permission to ask for location.
+If you're used to using an app on your phone that asks for a location,
+you probably have seen these dialogs pop up that say,
+like, Facebook Messenger would like to use your location.
+OK or cancel.
+And you kind of only get one shot as an app to ask for that permission.
+So a lot of apps will, like, pre-ask you and ask for permission
+to ask permission for your location.
+And then if you don't say OK, they won't ask you
+because they don't want to use their one chance.
+In the Expo client app here, I've actually
+already asked for location permission.
+It's been granted.
+So we won't see the dialog pop up.
+But if it was the first time, or if you're
+in, like, a standalone app or something like that,
+we do want to ask for permission.
+So we'll cover that here.
+And asking for permission, again, using the Expo
+permissions API is fine because it'll just say,
+oh, you already have permission, and it's granted.
+So I'm gonna write a little method here that's called
+askForLocationPermissionAsync.
+
+Or I'm gonna just call this, like, getLocationAsync.
+So I'm gonna ask for permission first.
+So the first thing I'm gonna do is say let status equals await.
+expo.permissions.ask async expo.permissions.location.
+I can see a list of all the permissions I
+can ask for if I go to the permissions page on the Expo docs.
+You can see here's this Expo permissions get async.
+And then type is the argument it takes.
+It's just a string.
+And you can see a complete list if you scroll down here.
+So location, camera, audio recording, contacts, et cetera, et cetera,
+et cetera.
+The one we're interested in here is expo.permissions.location
+because we're going to ask for location.
+So that's right.
+But one thing I made as a mistake is that this actually
+needs to be an async function because we want to await stuff.
+So I'm gonna say equals async, and then make it an arrow function.
+This is a good way to make async functions as class methods,
+or as instance methods in your classes.
+So now we need to check the status.
+The typical pattern with Expo permissions
+API is basically to ask for permission, and then
+say if status doesn't equal granted, then sort of log an error or show
+an error.
+
+And here we'll just return.
+But in a more fully-featured application,
+you might want to show an error message or force
+the user to another flow or whatever.
+Here we'll just jump out and not do anything.
+And then the next thing we'll do is we'll say,
+OK, we're going to ask for the location.
+So I can go back to the location page in the docs.
+And I can see that the way we do this is we
+use location get current position async.
+And this takes bracket bracket as an argument.
+So let's figure out what that means.
+This is an options array.
+And it can take enable high accuracy or maximum age.
+We don't really need to do anything special
+because we're just trying to get generally what location we're in.
+And so we're just not going to give any options.
+But I think that it requires giving the options thing as an empty object.
+Enable high accuracy is nice because it gives you higher accuracy.
+But it also uses more battery on phones.
+So unless you actually need that accuracy,
+you generally shouldn't use it.
+So what we'll say here is say let location equals await expo.location get
+current position async, I think it was.
+And then so now, if this happens, we should get a location.
+So I'm going log it as soon as I get it.
+That way, we can sort of inspect what we get.
+So for that to happen, I need to call this.
+So what I'm going to do is I'm going to say on component did mount,
+which is a React lifecycle method that you're probably familiar with,
+I'm going to say this.getLocationAsync.
+So this will call this method as soon as the component mounts.
+Oh, since I changed this and the Snack reloaded, it's already done this.
+So now I can see this object here has a time stamp,
+and then it also has coords.
+And inside coords is a latitude, an altitude, a longitude, a heading,
+an accuracy, an altitude accuracy estimate, and a speed estimate.
+Since we're not moving at all, it doesn't have any concept of our speed.
+So it says speed negative 1.
+And since we're not moving at all, heading is also negative 1,
+which is sort of an error value.
+
+And so what we're going to do is use those coords from that object to, like,
+populate the initial place of our map.
+But the thing is in our render method, right now we're rendering the map view,
+and we're sticking in the initial region right away.
+But we don't get the location until shortly afterwards when
+we're able to have component did mount fire,
+and then we check the permissions, which is asynchronous.
+And then we ask the GPS for the location.
+And then we pull this information out.
+So we aren't quite ready right off the bat
+when the application starts to show the map with an initial location
+where we are.
+So we're going to have to do something using state to make that work.
+So we're going to say state location null to start.
+I'm just adding this as an original initial way to set state.
+And then here, instead of logging the location, what I'll do is I'll say,
+this.setState location.
+If you're not familiar with this syntax here,
+this is just a shorthand for saying location, colon, location.
+I'll use that a couple of times because it's a pretty convenient shorthand.
+This little brackets button that says prettier in the lower right-hand corner
+that I keep hitting, it just reformats the code so it's easier to read.
+And when I make indenting mistakes and stuff like that,
+it takes care of those.
+So now, when this component mounts, it should call get location async.
+And that should set a state once it's ready to be an actual location.
+So now I don't want to show the map.
+I'm just gonna show a blank screen until we have the location ready.
+So what I'm gonna do here in the render method is say if this.state.isReady--
+
+actually, I'm not gonna use isReady.
+I'm gonna say location--
+if no location, then return an empty view.
+Otherwise, we'll have a location that we can populate.
+So that means if the code makes it down to this part, this.state.location,
+has a value in it that will have coords.
+So I'll say this.state.location.coords.latitude.
+
+And then now you can see this already updated.
+Now that I've changed the latitude but not the longitude,
+I'm on some highway in the middle of America somewhere.
+Let's zoom out and see exactly where that is.
+
+Looks like Oregon.
+So the north-south is now correct, but I need
+to change the longitude to move it over to Cambridge, where we are.
+So I'll just change that to this.state.location.coords.longitude.
+
+And now you can see the map now centered on Cambridge, which is pretty
+cool, because that's where we are.
+And if you're following along and you did this in Bulgaria or something,
+the map should be centered on Bulgaria for you,
+as long as your GPS is working.
+So it's normal if you see something different
+if you're not in the same place.
+Cool.
+So this is cool that this map is centered on us.
+But I think a lot of times when you really
+want to get your bearings on a map, you want to have a pin that says,
+hey, you're here.
+So let's add a marker to this map that shows where we are.
+Clear these logs.
+Shrink this down a little bit.
+So if I go look at the maps documentation,
+you can see this is built by Airbnb.
+And so the documentation basically says, for full documentation
+go check out Airbnb React native maps.
+So let's go over there.
+And then under component API, you can see
+it has map view, which we already are using,
+marker, callout, polygon, polyline, circle, and overlay.
+Some of these are pretty fancy and would take a long time to go into detail on.
+But marker's really simple.
+So let's just start putting a marker on the map.
+
+You can see this isn't too complicated.
+It basically just has a whole bunch of props you can add,
+and then some things you can call on it.
+We'll just use the most simple props in general,
+which are sort of title, description, pin color, and coordinate.
+Coordinate is how we'll set where the marker is,
+and then pin color is self-explanatory.
+And then title and description, I'll show you how they show up.
+So it's pretty easy to put a marker on the map.
+You just make-- instead of the map view being sort of a singleton component,
+you just make it a component that has things inside of it.
+And then we'll say expo.Mapview.Marker.
+
+Now we need to give a coordinate for the marker so it shows up.
+So we'll say coordinate equals this.state.location.coords.
+
+Coordinate just requires latitude and longitude, but this object has those.
+So it's OK that has other things, as well.
+So now you can see over here we have a dot right
+in the center of the map where we are.
+That's pretty cool.
+If I zoom in, it's right there.
+And you can sort of see we're actually at Radcliffe College, which is actually
+where we are.
+Pretty cool.
+So now we might want to say what that means.
+So we'll sort of say title equals you are here.
+OK, cool.
+So now, after that reloads, when I tap on that marker,
+it now says, you are here, which is pretty useful.
+This is somewhat useful to know.
+But we might also want to have some other things on the map.
+So when I went to school here, I lived in a dorm called Eliot House.
+And so it would be kind of cool to be able to put that on this map.
+And so there probably is a way to do that.
+So I know that the address of Eliot house is, like, 101 Dunster Street.
+But I don't really know how to put a map view at 101 Dunster
+Street because if you look at the map marker API,
+it takes a coordinate, which is latitude and longitude.
+And so we need some way to go from an address to the latitude and longitude.
+And what we can use for that is this Expo API under location
+called geocoding.
+So if you go to location in the docs and you scroll down a little bit,
+after the stuff about getting position, there's
+something called geocode async, which takes an address as a string
+and then will return some guesses at the lat-long based on where you are
+and how popular different places are and things like that.
+So we can try just putting in 101 Dunster Street
+and seeing if that works.
+So I'll do that here.
+So while we're getting location, once we do
+that, I'm going to actually ask here for the place information, as well.
+So I'm going to say let Eliot House equal away
+expo.location.geocodeAsync 101 Dunster Street.
+
+Now I'm just gonna log this, just so we can see what we get back.
+Let me see if I have other log statements that are getting in the way.
+
+No.
+Looks like I don't.
+So I can see what I get back.
+Here is an array.
+And the first element has a latitude and a longitude and accuracy.
+So that is-- oh, that's actually something else.
+Let me clear these.
+
+So now if I do that--
+am I doing this wrong?
+
+No, it's not.
+So the latitude and longitude of this Eliot House is 42.3707463.
+And the longitude is negative 71.1209627.
+So now we have to pull this out of being the first element of the array
+and somehow put it in a marker on the map.
+So I'm going to do this--
+use parentheses here, and then take the zero index.
+So now when I scroll down, now there's no array wrapping this,
+and it's just a raw object that has a latitude and a longitude.
+And I'll add some other places, too.
+So I'll say The Crimson, which is the student newspaper,
+is at 14 Plympton Street, I think.
+And then [? Kitty ?] is at 2 Holyoke Place.
+
+So then I'm gonna set places in state also.
+So I'll just say Eliot House, The Crimson, and Kitty.
+So now if I do prettier here, that should work.
+And so now I should be able to put additional markers here
+for those places.
+Map view, marker, coordinate equals this.state.places.EliotHouse.
+Title equals Eliot House.
+Description equals Domus.
+
+So now I can see here's where we are.
+You are here.
+And then I can also see Elliott House.
+There is Domus.
+So to make this map look a little clearer,
+I'm gonna actually make this pin blue.
+
+And so now, Eliot House is more clearly marked.
+And then I'll mark the other spots on the map, as well.
+Since this is pretty much the same thing,
+I'm just going to copy paste this and change the appropriate stuff.
+So this is going to be The Crimson, pin color crimson.
+I wonder if that works.
+And I'll make the coordinate of where we are be yellow just so that stands out.
+OK.
+Wow, that's hard to see.
+We'll use green instead for where we are.
+Cool.
+
+So now as long as I change these--
+crimson, student newspaper.
+
+Now I have a couple different places here.
+
+And if I zoom in, it'll show me the description of all of them
+as I tap them.
+And I can also see where I am.
+Since when I changed this code and it zooms back
+to the original zoom distance, all these things
+are kind of clustered in the center, and I'm zoomed out too far,
+I actually want to make the map zoomed in a little more by default.
+So I'm going to change this latitude delta and longitude delta a little bit.
+These values that I copied from the example are pretty reasonable.
+But they're just a little bit too big.
+So you want to zoom in about, like, maybe double.
+So I'm gonna do divided by 2 for both of these and see what happens.
+So now it's zoomed in a bit more.
+Let me see what happens if I do 3, if that looks better or worse.
+That looks a little better, but now these buildings
+are so close to the edge that we might want to not be quite that much.
+Let's just do 2.5.
+OK, that looks pretty good to me.
+That way I don't have to keep zooming in every time I make this.
+
+So then the last thing I'll do is we might
+want to know where we are instead of just saying we're here or whatever.
+So I can actually use an API called reverse geocoding to take coordinates
+and turn them into an address or something like that.
+So what I'll do is I'll say let where equal
+await expo.location.reverseGeocode async location.coords.
+So this is going to find the coordinates of where we are and then do
+a reverse geocode lookup on them.
+And then I'll log this just to see what's going on.
+Clear this.
+And then I can see it's giving an array.
+And then it has a bunch of metadata.
+
+And I'll just use the name from that.
+So I'll also take the zero index of this,
+just like I did with those other things that came in an array.
+And then here, where I don't have a description,
+I'll just say description equals this.state.where.name.
+
+So now when I tap on the green pin here, it
+should say you are here, Radcliffe College.
+Or if you're in some other location, it'll
+probably say where you are based on the reverse geocode lookup.
+So now we have the beginnings of a map-based application based
+on using the maps and geolocation APIs.
+So that was pretty fun and cool.
+So now I'm gonna move on to the next thing.
+This is text or delete, which is something my sister sometimes
+does with me.
+She's a millennial.
+And so she plays this game where you have
+to go to the contacts app on your phone and spin through it until you find--
+and then close your eyes, and then stop on a random contact.
+And then you have to decide whether you're
+going to text that person right then or you're just
+going to delete them from your phone.
+
+And so I thought would be interesting to make an app that would
+go through your contacts and do this.
+
+It's not actually that fun of a game in real life.
+It's mostly stressful.
+But we can make a way to do it.
+So I'm starting again with a fresh snack.
+I'll make the change again to just import Expo here instead
+of that constants thing.
+I'll delete this stuff, and then delete this stuff, as well.
+And then I have to change this to Expo.constants
+because I got rid of that.
+So the first thing I need to do is do something kind
+of similar where I'm just going to make a button that
+will pick a random contact.
+That'll be the first thing I do.
+So import-- oops, it looks like I deleted the import react
+native line by accident.
+
+So I'm going to Import button so that I can use that.
+And now I'm just going to say a button title equals pick a random contact.
+
+On press equals press.
+All
+Right So I'm just gonna make a button that when you press it,
+it says pressed.
+
+So now I'm going to open this.
+
+OK.
+So now we have this button here.
+When I tap this, it says pressed.
+OK.
+So we have a button that works.
+Cool.
+
+So now when we hit the button, we want to open your contacts
+and get a random contact.
+So what I'm gonna do is get random contact async equals async.
+So now I've got to go back to the docs and look up contacts.
+
+This needs permissions, actually, for your contacts.
+And so if you look at the example here, it awaits in basically the same way
+that we did before.
+So I'm just going to type that really quickly.
+Let status equals await expo.permissions.ask async expo
+permissions.contacts.
+If status doesn't equal granted console.error.
+
+We'll just bail.
+Otherwise, we're going to then call--
+now that we have permissions, we can call into the contacts API.
+If we look at this, there's a method called getContactsAsync.
+And it takes some options.
+The most naive implementation of this would just get all your contacts
+and return them in, like, a series of nested data
+structures like lists and objects.
+But some people have thousands of contacts on their phone.
+And so especially for older Android phones and things like that,
+it can take a really long time to read those off the place
+where they're stored, and then serialize them and put them into memory
+and copy them over.
+And so you don't really want to have these clunky applications where
+maybe they aren't even sure you need all the contacts, but the app gets really
+slowed down because it's loading all this stuff in.
+And so there's other ways to load in stuff, like, either paginated or by ID.
+So you can see in the object options here,
+there's this page size and page offset.
+And so let's just see what happens if we do a default request,
+like if we don't give any options.
+So let contacts equals await expo.contacts dot--
+what is it?
+GetContactsAsync.
+And we just won't give any options.
+But we'll log what the answer is.
+And we'll stop saying pressed, and we'll just say this.getRandomContactAsync.
+So now when I push this button, I was hoping something would happen,
+but it didn't.
+
+So now I'm just going to make sure I'm getting to here
+and not having permissions not granted.
+OK.
+So it's not getting my contacts.
+So why not?
+
+Hmm.
+Maybe I need to actually fill out the options.
+So fields, page size, and page offset.
+So page size, let's just try one, and offset zero, and fields, we will say,
+phone numbers.
+
+Ah, OK.
+So now we've got some data.
+So my first contact is Jack Freece on my phone.
+Has next page, has previous page.
+And it says I have 1,816 total contacts.
+So what I'm actually going to do is use the fact that it's giving me the total,
+and then use that to pick a random one.
+Because I'll just pick a random number between 1 and 816,
+or however many contacts I have on the phone.
+So what I'll do here is I'll await that.
+And then I'll say, let total equal contacts to pull that out from it.
+Then I'll say-- we'll let n equal a random number between 0
+and total minus 1.
+And then we'll log that number.
+So now I should see a log every time I push this button
+of a number between 0 and 815.
+So that seems like it's working.
+So now I just have to fetch that random person.
+So I'll say let random contact equal await getContactsAsync, page size
+one, offset n, fields phone numbers.
+
+And now I'll log this random contact and see if I get a random contact.
+So when I clear this, I can see what's going on.
+So it looks like I got something.
+I got Jack Freece, which seems weird because that
+was the random thing I got last time.
+So I might be doing something wrong.
+
+So hmm, maybe the offset isn't working.
+Or maybe I need to do page size n, offset zero.
+And then we'll get a whole bunch of contacts,
+and we'll be able to look at the last one.
+
+So now I got 797.
+But I think it's loading almost all of my contacts into memory
+and trying to put them all into a data structure.
+So that might take too long.
+So that might not work.
+
+And what if we don't ask for any phone numbers or anything?
+
+OK.
+So now I've got 10 things.
+I think it's going to make me ask for each page of them.
+Now I'll just choose 100.
+So it looks like I'm going to have to get all the pages of stuff
+to make this work.
+
+And so just in the interest of time, I'm not gonna write this loop.
+But I'm just gonna pick a random one between 1 and 100 and pick that out.
+And we'll just pretend I only have 100 contacts.
+And so from here, I think, under--
+
+let data equals random contacts.
+
+Let's see.
+Equals data n.
+
+So now I picked a random contact from the first 100 people on my phone.
+And it actually picked David Malan's sister, Lauren Malan.
+That's kind of funny.
+And so it's basically working.
+So now I just need to get phone numbers.
+So now I'm going to put phone numbers back in the fields here.
+And now I'll try again.
+And is it giving me his phone number?
+Maybe I don't have it.
+Well, I guess I'll just make do without having phone numbers.
+Or I'll check the documentation to make sure that was right.
+Phone numbers.
+
+Ah.
+This is actually not a string.
+It's supposed to be expo.contacts.PHONE_NUMBERS.
+
+OK.
+So now I'll do this again.
+
+And someone named Steven.
+And I guess I don't have a phone number for him, actually.
+Oh, I did this wrong because I took this here.
+
+OK.
+So now it has phone numbers.
+But I'm not going to show you people's phone numbers here.
+But now I'm getting the phone numbers.
+And so then I'm going to do a set state here now that I have a contact.
+
+And then here, I'll just show their name if I have one.
+So I'll just say this.state.randomContact and text
+this.state.randomContact.name.
+
+Or null.
+
+Null is not an object.
+
+Random contact.
+
+So now I just have to set an initial value for random contact in state.
+So then when I do set state here, it's already populated,
+and now it can actually be checked here.
+So now when I pick a random contact, it shows me someone named Tom Cook.
+If I hit it again, now it says Jonas Looster, Elizabeth Windram.
+These are just random people from my phone.
+And so I think with future work, you could find a way
+to make that a link that would then send a text message
+or, like, put you in the texting app or take you to the contacts app,
+depending on what you choose.
+But I'm going to move on to other things.
+Cool.
+
+Window.
+
+So now I'm gonna show you making a quick compass.
+I'm gonna make a new Snack.
+
+And I'm again just gonna delete this junk and just say Expo here.
+
+Say Expo.constants there, and then get rid of this stuff,
+and then run on device, Android.
+
+Open this up.
+
+So now one of the cool things that a phone has that computers don't normally
+have or whatever is a compass in them.
+It's called a magnetometer formally.
+And so we're going to look at the API here for it.
+And it's really, really simple to use.
+You can say, basically, Expo Magnetometer at listener.
+And we'll just do that.
+But what I'm going to do is I'm actually going
+to upload some files really quickly that should make our life easier.
+So I'm going to upload this compass face.
+And I'm going to include this compass needle.
+
+So now I'm just going to say image and image
+background we're going to import here.
+And I'm just going to draw a simple compass on the screen
+here that we can actually turn into a real compass.
+So I'm going to say image background source equals require compass face
+that I just uploaded to this project.
+And that is, I think, height 320, width 320.
+And then I'm going to have a compass needle here inside of it.
+
+OK.
+So now this looks almost right.
+But the needle isn't really centered on the compass.
+So I'm going to say align items, center, justify contents, center.
+Then I'm going to make this needle a little bit transparent.
+I'm going to say opacity 0.65.
+Bam.
+Now we have a compass that's looking pretty good
+except that I can move my phone around in different directions,
+and nothing happens.
+So now I'm going to use the magnetometer to make
+it actually function like a compass.
+So this is pretty easy.
+So I'm gonna state is ready.
+False.
+And it just won't be ready until then.
+And then I'm going to say component did mount, this.setupMagnetometerAsync.
+
+setupMagnetometerAsync equals an async function.
+And then looking at the magnetometer docs, all you need to do
+is add a listener here.
+So I'm gonna add a listener.
+And this just takes a function.
+Oops.
+And we'll just say this is like a vector.
+So we'll just have that say this set state V for that vector.
+
+OK, cool.
+And so now there's a little bit of math you
+need to do to turn that into something.
+So we'll just see what the vector thing is.
+Text this.state.V. Text.
+
+[INAUDIBLE]
+So now I'm showing what v is on the screen here.
+And you can see it's got, like, X, Y, and Z components here to it.
+And so we somehow need to turn that into a directional heading.
+And you can actually Google around and find how to do that.
+Making a compass--
+I think I can remember it off the top of my head, though.
+I think it's something like let data equals 0 radians.
+If this.state.V theta equals math.atan negative V X.
+Well, let's say, let x, y, z--
+we'll pull x, y, and z out of the vector.
+And then we'll do this.
+If negative is greater than zero and y is greater than zero, then nothing.
+Else if y is greater than zero, theta plus equals math.pi.
+
+Else theta plus equals math.pi times 2.
+
+And then so now instead of showing the vector,
+I'm going to try showing the angle in radians.
+And you can see as I move it, that changes.
+
+So what I'm going to do is now I'm going to try to rotate the needle so
+that it like turns that many degrees.
+What we can do for that is we can just use this transform thing, which
+takes a property like rotate, I think, or rotation.
+Let me look that up.
+
+Under Transforms in the React Native docs, you can see it does rotation.
+
+And so I'm just gonna say rotation theta.
+
+Maybe it's rotate.
+Oh, yeah.
+OK.
+So now you can see-- it's maybe hard to tell on the screen at the same time,
+but now as I move--
+I think I made a mistake somewhere because the thing flips around
+sometimes.
+But in general, you basically have a working compass now.
+So that's pretty cool.
+Another thing is there's actually a whole bunch of sensors on the phone.
+There's not just the magnetometer, but there's
+an accelerometer, a gyroscope, a pedometer, GPS, and a camera
+and things like that.
+And so you can actually combine all these things
+and get more information because some of them collect overlapping information.
+Or you can combine it together, and you can be pretty smart about it.
+And so that whole study of that is called sensor fusion.
+And there's sort of a standardized output
+from that that's called device motion that has been exposed in iOS APIs
+and also in Android APIs.
+And so if you use device motion, you can actually get information
+about the orientation of a phone that's from the combination of all
+these different sensors.
+And that's actually exposed in Expo, as well.
+So we can do kind of a cool demo if we do something where
+we could even just take this and--
+well, I'll just take out this stuff.
+And instead of this, I'll just put in an image.
+
+I'm gonna upload-- show the files here.
+And I'll upload these balloons.
+
+Get rid of the files.
+So I just uploaded some balloons.
+And I'm gonna just show them.
+And I'm gonna say source equals require uphouse.jpeg.
+
+Style equals-- how big is that thing?
+
+1440 by 1280.
+And then let's multiply it by, like, 0.7 just so that it's
+vaguely fitting on the screen.
+Cool.
+
+So now we have this house.
+But now instead of using compass stuff, let's use device motion instead.
+So instead of setting up the magnetometer,
+let's set up device motion.
+
+And then we do that.
+We can take a look at this and say--
+
+we just add a listener, and we'll get something else.
+
+But it's pretty similar.
+Device motion add listener.
+Device motion-- we'll just call what the output of device motion listener
+DM for device motion.
+So we'll set that state.
+And then instead of doing all this junk to get data,
+we'll just say let angle equals zero if this.state.dm
+and this.state.dm.rotation.gamma.
+
+We'll say angle equals this.state.dm.rotation.gamme.
+
+OK.
+And then we'll do a rotation transform on this, just like we did before.
+
+And let's see.
+
+Ah, we need to set up the device motion.
+Now, if we do this then--
+let me log what we're getting here.
+
+Huh.
+All right.
+We're not getting anything listened from the device motion.
+Why is that not the case?
+Oh, device motion is actually under danger zone,
+which is called danger zone because the API might change,
+and it's sort of in beta.
+It's safe to use, but if you want to keep using it,
+you might have to learn new stuff when new things come out.
+I forgot that, and I forgot to put in the danger zone thing,
+and that's why it's not working right now.
+But all I need to do to fix that is say danger zone here.
+And then I probably don't need this log.
+But now you can see as I rotate this, the balloons
+are kind of spinning around like crazy.
+What I'm trying to do is actually make them always point up.
+So you can see what I'm doing is when I tilt it,
+it actually rotates even further.
+So what I want to do instead is compensate and actually
+have it be the opposite of that.
+So I'm going to rotate it by the negative of the rotation of the device.
+
+So if I do that, then now if you-- see this?
+No matter how I rotate my phone, the balloons
+are always kind of going up in the air.
+It's a little choppy.
+And so what we can actually do is we can tell the device motion
+sensor to detect every frame.
+So we can say Expo.dangerZone.Devicemotion
+set update interval to 16.
+
+That's the other method you can see here, set update interval.
+The reason we do 16 is that iPhones and Android phones
+tend to render stuff at, like, 60 frames per second, which is
+pretty good for viewing the human eye.
+There's one model of new iPad that renders
+at, like, 120 frames per second.
+But almost all sort of modern phones do 60 frames per second now when they can.
+When they drop frames, it's like a miss, and that's
+when you see jerkiness in the UI and stuff.
+So if you divide 1,000 milliseconds by 60 frames,
+you end up with 16 milliseconds.
+And so that's why we use 16 here, because that
+means we'll get an update from the device motion API every frame.
+So when we do this, now, if you can tell,
+this is really smooth because it's updating every single frame.
+And even though it looks not like it on the screen, on my phone
+the balloons are always pointing up.
+Cool.
+So we'll take a little break for a while,
+and then I'll come back and do some more stuff.
+Thanks.
+Hey.
+Welcome back.
+There was one sidenote.
+Somebody asked about this.
+Yeah, I kind of glossed over it, but when you add those listeners
+for device motion or for magnetometer, you should actually remove them
+when your component unmounts.
+Otherwise, you can accumulate lots of these listeners that
+aren't doing anything that are wasting resources or keeping the device running
+and wasting battery.
+So just calling this remove all listeners or storing
+the value of [? AdListener, ?] and then calling remove on that
+is how you do that.
+But in a basic demo application or something like that,
+it's not the end of the world.
+It's sort of like just not cleaning up after yourself.
+So the next thing we're going to do is do some multimedia stuff.
+This is something that people always like doing,
+is stuff with video, images, audio, stuff like that.
+So I'm gonna make a basic what I call multimedia board.
+Basically, the idea is one of the soundboards like people made--
+Arnold Schwarzenegger soundboards or "The Office" soundboards or Snoop Dogg
+soundboards.
+I'm gonna do the same thing, but with videos instead.
+So what I've got--
+I'll just start by showing a quick CAD video.
+What I'm gonna use here is just a text editor.
+I'm using VS Code.
+But you can use whatever one.
+And I'm gonna use the Expo XDE instead of Snack
+because the way Snack does reloading, when you use videos, especially,
+and audio stuff, having all the multimedia objects
+plus that kind of reloading tends to just overload the phone.
+And it just kind of breaks.
+So it's gonna work better to do this this way.
+So I've got it opened up here.
+
+Here's the app, and then here's my editor.
+I'm gonna close these and move this over.
+Minimize this and this so we can see the phone as we type.
+OK.
+And now I'm just gonna say--
+
+just as a test, I'm gonna delete this and just say cat sounds.
+Save it, and then this should reload.
+Takes a little longer because we're not using Snack
+because it's downloading this whole bundle.
+All right.
+But it worked.
+Cool.
+So now the first thing we're going to do is we're going to stick in a cat video.
+So we're going to say video Expo.video.
+
+Let's look up the docs for this just so we have somewhere to start.
+
+And you can see there's a bunch of options that it takes.
+But they're pretty basic.
+And so we can just start by just saying source require dot slash--
+I think-- let me look at this directory.
+So I have an assets folder.
+And inside it, I have a font and nine little short videos of cats,
+plus some weird sound effects.
+So here's one of them.
+So I'm gonna try to play that one.
+So I'm gonna say require assets1.mp4.
+
+And then I'm going to give this a style.
+So I'm going to say, just so we can see it, width 400, height 400.
+OK.
+And we'll just close that like that.
+And now if I save this, I think we should-- oops, made a mistake.
+Oops, I forgot this.
+
+Closing bracket.
+
+Cool.
+So now I have a cat video here, but it's not playing, and it's just right there.
+So now I'm going to switch this to say shouldPlay equals true.
+I think that's right, looking at this.
+Yeah, OK.
+Save this.
+So now-- now the video plays.
+OK, cool.
+There's a couple of things that aren't great about this.
+One is I can't hear any sound.
+So part of this is that my phone's on silent right now, actually.
+So one thing I can do is I can turn my phone off silent, which I just did.
+And I'm going to save this again so that it loads up again.
+And now I think we should hear the sound.
+
+[MUSIC PLAYING]
+
+Yep.
+OK.
+So the sound played, but I don't want to have to always turn on my phone
+to not silent just to hear this stuff.
+Because if I'm going into this app, half the point is to hear the sounds.
+So we can actually switch the audio mode so that it'll
+play while the phone is on silent.
+And the way we do that is if we look at the docs under audio, set--
+
+we can actually set it up.
+So I'll just write a method here that's like--
+
+And I'll say Expo audio--
+
+oops.
+Import Expo from Expo.
+OK.
+
+Set audio mode async.
+And then this is going to take some parameters.
+So one thing it's going to take is play in silent mode on iOS.
+So we're going to set this to True.
+
+And we'll await this.
+
+So now we're going to say component will mount this.setAudioModeAsync.
+OK.
+So now I think if I save this, this should play,
+even though my phone is back in silent mode.
+Huh.
+Audio mode attempted without the required keys.
+Oh, so I need to fill in more keys.
+So allows recording iOS, false, because we're not going to record anything.
+
+If you want to watch the basketball championship game, it's on right now.
+And you can come watch this on video later.
+[INAUDIBLE] Android true.
+
+Interruption mode Android Expo audio.
+Interruption mode, Android, duck others.
+Interruption mode, iOS, Expo audio.
+Interruption iOS, mix with others.
+Don't worry too much about what all these things are because you
+can just kind of copy these.
+And then when you want to start doing very particular things with audio,
+you can kind of learn what they are.
+They're basically about if there's another sound playing
+in the background-- like if you had Spotify playing music--
+then how should your app interact with that?
+Should it stop the music temporarily, and then do stuff?
+Or should it just play over it?
+Et cetera, et cetera.
+And you can look through the docs to find out what these are.
+But hopefully, this is enough that by saving this, this will now work.
+OK.
+
+[MUSIC PLAYING]
+There we go.
+So now the sound played.
+Cool.
+So now the other thing is I kind of want all these videos
+to be sort of square buttons.
+And so I said height 400, width 400.
+But you can see that it's kind of a rectangly type thing.
+So what I can do here is I can say resize mode equals--
+and I can say cover.
+And that will cause this to make the video fill
+the space that I give it in the style.
+And so now I should see a square video now.
+And I do.
+Cool.
+
+And so now I want to make it so that when this video gets to the end,
+it's not a black square, which is boring and doesn't look right,
+but it actually goes back to the first frame of the video.
+And so the way I do that is I actually have to listen for when the--
+it's actually fairly complicated to do this.
+But I have to basically listen for when the video ends, get a callback,
+and then reset the frame position of it.
+And so to even start doing that, I need to use refs and stuff.
+So I'm actually going to break this out into its own component.
+So I'm going to make a new one called cat video button extends
+React component.
+And this has a render method, which is just going to be this.
+
+And I'm gonna say this.props.width or this.props.size or 400,
+this.props.height or this.props.size or 400.
+OK.
+And I'm gonna say this.props.source for this
+so that I can parameterize this and use it for all the different cat
+video buttons.
+So I'm just gonna throw cat video button source equals require assets 1.mp4.
+And we'll say it's just 100 now.
+
+So if this works, I should see a smaller cat button.
+There we go.
+Perfect.
+
+So now I'm gonna try to make this so that it goes back to the first thing.
+So I'm gonna have to make a ref here, which is--
+I think you probably covered this.
+But basically, this takes a function that's passed to the component itself.
+And then you can do something so that you can, like,
+in this component set a variable that's a reference to this component.
+So inside the cat video button, I'm going
+to have an instance variable that points to the Expo
+video that is the actual cat video.
+And so this.video equals c.
+C is for component here.
+OK.
+So then there's this callback called onPlaybackStatusUpdate.
+And that's going to get playbackStatusUpdate.
+And if it has this did just finish property, it mean it just finished.
+So I'm only interested in that.
+So I'm only going to write this if status
+did just finish part of the code.
+And I'm just gonna have this function do nothing otherwise.
+What we want to do here is we want to kind of reset the video.
+So reset async equals async function that says if this video--
+we're going to say await this.video.
+Stop async.
+If I look at the video API, I can see that I can call stop async on it,
+which does what you think it does.
+It just stops the video.
+And then I'm going to say set position async to zero,
+which is the beginning of the video.
+Because set position async takes one parameter
+that's a number of milliseconds into the video to play from.
+So zero is the very beginning.
+The reason I have to call stop async is that if I just call
+set position async at the end of the video playing,
+on either Android or iOS--
+I forget which one--
+the video is actually not fully stopped playing when didJustFinish fires.
+And so it'll reset the position.
+And it'll think, oh, I still have a bunch to play.
+And it'll continue playing in a loop.
+So I'm gonna call stop just to make sure that doesn't happen and be safe.
+
+So now if I call this here, then if I just say this reset async
+and save that, then now the video should play,
+and then it should go back to the first frame, where
+you sort of see that smiley cat.
+
+And there we go.
+You can't see his face, but the cat's back.
+So now what I want to do is make it so when I touch this, it plays that again.
+So now I'm going to have to put some sort of touchable area on it.
+So I'm gonna add touchable highlight here of the things that I import.
+And I'm gonna say this is a view that's wrapping this.
+And then I'm gonna say view here.
+
+And then I'm gonna use a touchable highlight here.
+
+The reason for this inner view is that touchable highlights and things
+like that need, like, a React Native view and not an Expo video
+view because they get confused about refs and things like that.
+So that's just a general thing, is if weird things are breaking around
+touchable highlight or very native components like video players
+and things like that, then just try adding in intermediate views.
+And that might fix your problems in some cases.
+So now I'm just going to capture the presses here
+on this touchable highlight area, and then just say--
+I'm gonna log that press the cat.
+So I can just test this.
+OK.
+So now it's downloading.
+
+And I can see as I press it, the highlight shows up.
+But let me just make sure that that--
+yep.
+The log that says press the cat shows up every time I press it.
+And so now I just have to make it play again.
+So now I'm just gonna add another method called playAsync.
+And it's gonna say await this.video.replayAsync, which is
+documented in the AV function, I guess.
+
+But basically, this will replay the item from position zero.
+So that's a pretty good thing to use.
+So now we'll just say when you press this, instead of logging
+that, I'm going to say this.playAsync.
+Cool.
+So now if I go look at this, once this loads, now when I press it,
+it should replay again.
+So I can just keep doing this over and over and over again.
+
+And if I press in the middle of it playing, it'll go back to the beginning
+and play it then.
+Cool.
+So now I just have to put together a whole bunch of these.
+But before I do that, I kind of want to make this look a little better.
+So what I'm actually going to do is say--
+let's make the background of this green.
+So I'm gonna change this background color from FFF to green.
+And I'm gonna change this text color here to yellow.
+And I'm gonna make it kind of big.
+And let's see how that looks.
+
+OK.
+That looks a little bit interesting.
+But I kind of want a different font because I don't like the way
+that font looks with this color scheme.
+So the way I can use different fonts is I can actually
+use, like, files like TTF files or OTF files as custom fonts
+that I can just load into the app on the fly.
+So let's do that now.
+So I sort of showed you that I put in some mp4 files.
+I also put in this Cooper Black Regular font.
+You can just take a look at what that looks like in this preview.
+It looks like this.
+That's pretty nice-looking.
+So to use that, what we have to do is we have to load in the font to begin with.
+So we're going to make a method that loads in these fonts.
+And that's pretty easy.
+You just do Expo.font.loadAsyn.
+And then it takes a map.
+And you can just say Cooper Black Regular require
+assets CooperBlackRegular.TTF And then this
+will load that font into the font sort of dictionary
+under Cooper Black Regular.
+But to have it render properly, we have to have the font loaded
+before we show this text.
+So we're going to use a technique where we use state
+to keep track of whether it's loaded or not.
+So we're going to say IsReady false here in state.
+And then in this render method of this whole thing,
+I'm going to say if not this.state is ready, return Expo.AppLoading.
+This app loading thing is just like sort of a splash screen that
+will show until your app is loaded.
+And so this is just a convenience way to show something that looks like your app
+while it's getting ready.
+Like, if I switch into something like Facebook,
+you can see for a split second, it shows the scaffolding of Facebook.
+Same thing if I go into, like, Yelp will probably do that.
+Yelp just shows the Yelp logo and a red screen.
+So the app-loading container is basically just
+a way to show something like that, which you can configure in your app.json
+and things like that.
+But we're just going to show that until the font is ready.
+So that'll execute when the state is not ready.
+But the rest of the time, we'll render the video board.
+So now we have multiple things to do before everything works.
+So we're going to say await promise.all.
+this.set.AudioModeAsync.
+this.loadFontsAsync.
+
+And then once those are done, now I'm going to--
+
+I have to put this into an async method.
+
+Whoops.
+
+Then I can say this.setState is ready, true.
+So it's going to set up the audio mode and load the fonts,
+and then it should be ready.
+So then-- OK.
+Let's see if this works.
+
+Everything seems in order.
+But now I have to actually use the font that I set up
+instead of just loading it.
+So I'm going to say fontFamily Cooper Black Regular.
+And let's see if that works.
+Now this should not display until the font is actually
+loaded into the program's memory.
+
+Bam.
+So now this looks basically right.
+But you can also see that the cat sounds thing showed up,
+but then it took a little while for the video to show up.
+And so we can actually preload the videos, as well,
+and make sure that they're loaded in, as well.
+So we can say, like, load videos async.
+
+We'll say and await Expo.asset.loadAsync.
+
+And then basically, you can just pass in a bunch of require things in here,
+and it'll work.
+
+And this will load these, and then return
+when they're all loaded or basically downloaded from the internet or ready.
+
+The way that Expo works is that everything is loaded over the air
+so that you can load things like--
+you can make changes to your app without resubmitting
+a binary, et cetera, et cetera.
+And so all assets work either when they're already on the device
+or when they're not.
+And so this load async thing will make sure all of these things
+are downloaded from the internet before it fires.
+So I'm gonna say seven, eight, nine.
+And so then in setup, I'm gonna say I want to load assets, as well.
+
+So now we'll do all these steps before it says it's ready.
+And so there's still another step, even after the video's downloaded,
+of getting it prepared to show on the screen and stuff like that.
+So it won't be totally instant, but it should
+be a little bit snappier and a little bit less janky when I do this now.
+
+OK.
+Now I'm just gonna add, like, nine of these.
+
+flexDirection row.
+Put three of these in a row.
+
+And I'm gonna make this two and three.
+And then I'm actually going to add a margin here, I think.
+
+Come on.
+
+So now I have three videos all going at once.
+But they're all squinched together, so that's why I'm adding this margin.
+So now that basically seems like it's working.
+So I'm gonna just format this.
+And I'm gonna copy this three times so I can just add the other videos.
+
+Now I should have a fully-functioning video board, if I'm not mistaken.
+
+So now whenever I tap any of these things, they should work.
+And--
+[MUSIC PLAYING]
+
+I can make all kinds of funny noises and things like that.
+Cool.
+Well, I think if you run this on older Androids, or actually a lot different
+Androids, sometimes having nine different videos on the screen at once
+will overwhelm it.
+I think that the video library can probably
+be improved to make that not blow things up.
+But in the short term, you probably need to make this only a three-entry video
+board or something to have it work on Android, unfortunately.
+Cool.
+
+You can also do stuff with sounds instead of just videos.
+I won't show that here.
+But the methods and everything for dealing with sounds and videos
+are very similar in Expo.
+The same person made both of those things,
+and tried to make the APIs as similar as possible.
+So things like replayAsync and stopAsync and those kind of methods all work.
+
+The main difference is that you end up, like--
+there isn't, like, a visual manifestation of the sound component.
+You just have an abstract object in JavaScript memory
+that you control, sort of similar to the [? this.underscoreVideo ?] reference
+that we ended up making by doing the ref thing here.
+But sound is basically just as easy.
+So what I'm gonna show next is I'm gonna try to do a little bit of stuff
+with photos.
+
+So I'm go back into doing a Snack for that.
+
+And minimize this.
+
+[? This next one. ?]
+And then there's a couple different ways you can do photos.
+I'm gonna do the same thing here, where I import from Expo.
+Get rid of this stuff.
+
+And then get rid of that.
+OK.
+So now I can do something where I use the camera roll on the camera.
+So the first thing I'm gonna do is just show an image,
+just because that's a good starting point.
+So I'm going to just--
+let's see.
+I'm gonna take these dogs.
+And I'm gonna do view style equals flexDirection row.
+
+Image source equals require.
+
+Enable.
+
+OK.
+
+Unexpected token.
+
+Hmm.
+OK.
+So now I have two pictures of dogs here that I'm just gonna put in place just
+to start playing around with photos.
+
+And now I'm gonna launch the camera roll.
+I'm going to make a method called launchCameraRollAsync.
+
+And I'm gonna look up in the docs how to do that.
+I'm gonna use something called image picker.
+To deal with images and the camera and those kind of things in Expo,
+there's kind of two layers of stuff.
+There's one thing called image picker, which
+gives you a really simple kind of full-featured way
+to access the camera roll or the camera.
+But it's full-featured, but not customizable at all.
+So I'm gonna show you how to use-- or that's not 100% true.
+But only in very limited ways is it customizable.
+So if you're trying to build something really, really
+quickly or just prototype something, or you just have very basic needs,
+this can be really useful and easy and quick.
+But if you wanted to make something where
+the camera is a big focus of the app, or you want to customize the way that it
+works or things like that, you'll need to use the camera component
+or write your own camera roll component.
+And so I'm just gonna show this image picker thing first, which
+a lot of people might find useful.
+And then I'll go into a little bit on the camera stuff.
+So there's two main things that image picker
+has-- launch image library async, and then launch camera async.
+I'll do both of them, but we'll start with the launch image library async.
+We need to ask for permission first.
+So same thing as we've done a bunch of times before.
+We'll say await expo permissions.
+Ask async Expo.permissions.cameraRoll.
+
+And let status equal await that.
+If status isn't granted, then we'll just bail.
+But otherwise, we'll say Expo ImagePicker launch--
+what was the name of that?
+Launch image library async.
+
+And so right now, we'll just launch the image picker.
+We won't even do anything with the result. Maybe I'll await it.
+
+And then I'll just log it.
+
+So now let's make a button that launches this.
+So we'll say stick a button here.
+Launch camera roll.
+On press equals-- and we need an import button.
+So we'll go back down here.
+And here I'm just going to say this.launchCameraRollAsync.
+Cool.
+And hit the prettier button.
+
+So now when I tap this--
+whoa.
+What'd I do?
+
+OK.
+When I tap this, I should get something logged.
+
+Cool.
+So now I can look at all these different things and choose one of them.
+
+But now how can I show that?
+
+I'm gonna change this to await this because it's an async thing,
+and this is just what a promise looks like when you log it.
+So now I'm gonna do this again.
+I'm gonna pick a moment.
+And now I can see I get this object back that has a bunch of metadata.
+It has a URI, which is a local file, and then has
+a type image, canceled false, and then a width and a height.
+So that's pretty easy.
+So I'm just gonna say-- let's add a state thing here.
+Equals chosen image.
+We'll say it's null to begin with.
+And then after this camera roll thing, I'll say this.state.chosenImage,
+if it's true-ish, then we'll say-- let's put an image here.
+And we'll say the source is this.state.chosenImage.uri.
+
+And the style will be--
+
+well, we could use the height and width of it.
+Or we could just make it something reasonable.
+So we'll just say height 200, width 200 so it doesn't get too, too big
+or take it over, or null.
+OK.
+So now if I launch the camera roll and choose this picture of me and Nicky,
+then-- oh, I forgot to set state.
+Instead of logging this, I'm gonna say this set state chosen image is image.
+
+OK.
+So now if I launch camera roll and choose Nicky, now that shows up here.
+Cool.
+And so then what I can do is now I can use the launch camera async
+if I want to.
+
+So let's make another-- let's shrink this down so I can actually see stuff.
+Let's put another button in here that's like button title equals launch camera.
+So when you press this, it's gonna call this.launchCameraAsync.
+
+So now I have to write this method.
+So launchCameraAsync.
+
+Do the permissions thing again.
+I'll just copy and paste from here.
+We actually need different permissions because it's not the camera roll,
+but we actually need the camera.
+So I'll just change this.
+But otherwise, this code is the same.
+And then instead of the image being from image picker launch image
+library async, it's going to be from image picker, launchCameraAsync.
+So I'm gonna call that.
+And take an image.
+
+OK.
+So now if I hit launch camera, now I have a camera.
+So I can see the handful of you who are here in the audience,
+or I can flip the camera around and see myself.
+Cool.
+So I take a photo.
+And it'll give me a chance to retake or use the photo.
+And I can say use photo.
+Now we just did set state, but we don't do anything with that image yet.
+So one thing you can control here is there's actually
+a couple of options that are sort of interesting here.
+One of them is allows editing.
+If I turn on allows editing, I can actually modify this.
+So I can, like, zoom and crop and stuff in different ways.
+So that's sometimes useful.
+
+But now I'm going to basically copy this code here and put the same thing in,
+except I'm going to choose taken image instead of chosen image.
+
+Oops.
+
+So now when I launch this, and I'm gonna take a picture of me.
+
+Do that.
+Now that shows up here.
+So now I've gotten an image from the camera and stored it here.
+One thing that you might notice is to me,
+this probably looks like a normal selfie.
+But it actually looks really weird to me because I look like I'm--
+like when I watch closely, you'll see that when the camera's open,
+it sort of looks like a mirror to me.
+But then when it actually returns the photo,
+it sort of flipped, which is disorienting
+if you're taking the photo.
+So I kind of like--
+
+I'll unbutton my sweatshirt, and you can see
+that "I took CS50" is backwards in the view that I'm seeing.
+But here when I take this picture, now it looks readable.
+And so we actually want it to be the other way around,
+I think, for a lot of applications.
+Sometimes you might not want to, but sometimes you do want to.
+But let's just practice flipping it around because it's sort of a thing
+that you commonly want to do, especially when you're using the selfie camera.
+And the way we can do that is something called image manipulation.
+There's an Expo module called image manipulator.
+And so it takes an array of actions--
+resize, rotate, flip, crop, et cetera.
+What we're going to want to do is the flip horizontal.
+And so I can take this thing after this.
+We'll just assume we want to do this.
+And we'll say let flippedImage equals await Expo.ImageManipulator.
+
+And then manipulate.
+And then the first argument is the URI.
+And so it's just going to be image.uri.
+And then the actions, it's an array.
+And the first thing we want it to do is flip.
+
+And it takes vertical and horizontal properties.
+And we want vertical to be false and horizontal to be true.
+And so then save options is the last argument here.
+And we can probably just leave this as the default.
+So now we'll say whatever the result of that
+is, we'll pass that to take an image.
+So now when I go here, when I launch the camera,
+I'll turn it around to do the selfie thing.
+And then you can see that this is backwards here, not really readable.
+I'll take this photo.
+
+And now-- oh, there's something where it's now been flipped vertically
+for some reason.
+So let's just play around with these options
+and try to figure out why that is.
+
+Sometimes there's quirky things with cameras on certain devices.
+Hmm.
+I'm super confused about why this is not flipping this the right way.
+I think it should.
+Well, I don't know.
+Sometimes you end up with upside-down images.
+And this is the real world of dealing with actual devices and things
+like that.
+But that is how you flip an image.
+Cool.
+So just because we don't have that much time left,
+I'm going to jump right into using the actual camera component that's
+much more customizable.
+And so we basically need to do the same thing where we
+get permissions for the camera again.
+So we'll just copy this code.
+And we'll make another thing that's like launchCustomCameraAsync.
+
+And then what we'll just say here is instead of doing anything here,
+we'll just say customCameraReady true.
+And then what we're going to do is we're just going to stick--
+why is this [? going there? ?] Oh.
+Forgot to say async here.
+We're going to actually just stick the camera right after these buttons.
+We're just going to say this.state.customCameraReady.
+And we're just going to actually stick in the camera component.
+
+And it's just called Expo.camera.
+So we're going to say Expo.camera.
+
+Style equals width 400, height 400.
+And type is sort of the camera constant.
+There's back and front.
+So let's pick one of those to start.
+And we'll just say type equals Expo.camera.constants.
+
+We'll start with front, and we'll maybe do back later.
+Well, I'll start with back because that's gonna be more normal.
+So that will just be that.
+And so then-- unexpected token.
+Oops.
+I forgot this.
+OK.
+
+[INAUDIBLE]
+
+OK.
+So now what I'm gonna do is I'm gonna launch the custom
+camera just if component did mount.
+Did I already define that anywhere?
+No.
+OK.
+But I'm gonna say customCameraReady false.
+Component did mount.
+
+this.launchCustomCameraAsync.
+
+OK.
+So now actually, there's now a camera component
+that's just embedded right in the middle of the app.
+And so I can do whatever I want with it.
+It doesn't do anything right now because it doesn't take pictures.
+None of the UI is built out because it's basically fully customizable.
+And so you're responsible for putting together all the building blocks of it.
+So one thing we can do is we can make it flip back and forth between modes just
+by having you tap on it.
+So we can say camera type.
+And we'll start it off by saying Expo.Camera.Constants back.
+
+And then here, let's say this.state.cameraType.
+
+So now it's the back camera.
+But then what we can do is we can make this a highlight.
+Why not?
+
+So now I'm using this touchable highlight thing
+that we used in the video board so that you can touch the camera now.
+I'm just gonna make sure that works by adding a log statement here.
+
+So now when I do this, if I tap the camera,
+I can see tap camera showing up here in the logs.
+So what I'm gonna do here is now instead of that,
+I'm gonna say if this.state.cameraType equals Expo camera constants back,
+this.setState camera type Expo camera constants front.
+Else we'll do the opposite of that and set it to be back.
+So now tapping this should switch between the front-facing and
+back-facing camera.
+Or not.
+
+Huh.
+
+Oh.
+
+I'll move this out into a method.
+That might solve the problem.
+
+Hmm.
+
+I'm super confused at why this doesn't work.
+
+OK, so that's getting called.
+
+Camera type starts off as something.
+But now it's somehow undefined.
+Huh.
+
+OK.
+Well, this is just some sort of weird React thing that I'm confused about.
+But it actually can happen.
+And I've done this before when I was practicing for this.
+So it does work.
+I'm not sure why it's not working right now.
+
+Cool.
+So just to show that the other way camera does actually work,
+I'll just change this default so that it says front.
+And then now, the default here will be instead of the back-facing camera,
+it should be front.
+
+Ah.
+Type front.
+
+That was the problem.
+
+I forgot this type thing.
+OK.
+So now if I tap it, it flips back and forth.
+Cool.
+
+I don't know what the lesson is there except read the documentation closely.
+And when it says constants.type.back, don't miss the type part.
+Cool.
+So there's actually a ton of other APIs that Expo has.
+So these include push notifications, calendar, gyroscope, accelerometer,
+pedometer, OpenGL view, which lets you do things like Instagram-like filters
+and 3D-gaming type stuff with things like Phaser and Pixi,
+Facebook login and Google login, ads like AdMob, Facebook, fingerprint
+scanner like Touch ID or on iPhone Xs, Face ID, the Secure Store, SQLite,
+and then analytics and [? sack traces, ?]
+and then a few other things, as well.
+It's all on the docs.expo.io thing, that site
+that I've been going to every time I needed to look something up.
+And so this Expo docs is a pretty good augmentation to the normal React
+Native docs that I'm sure you spend a lot of time looking
+at whenever you're doing development.
+And I'm going to put all the code that I was just showing in this repo--
+github.com/cchever/harvardguestlecture.
+And hopefully, I'll put that up in the next hour or so.
+And so you can refer to if you want to.
+And thanks so much for coming and listening.
+And I hope this helps you build cool stuff that you
+want to build on your mobile phones.
+Thanks.

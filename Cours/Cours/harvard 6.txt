@@ -1,0 +1,1604 @@
+[MUSIC PLAYING]
+
+SPEAKER 1: Hello and welcome for Lecture 5.
+This week we'll be talking about user input, which we discussed
+a bit last week, and debugging.
+So in the previous lecture, we discussed a few different concepts.
+We talked about scrolling views, which are the views where you can scroll.
+The caveat to that being that all of its children render before the whole view
+renders.
+We talked about a couple virtualized lists, flat list and section list.
+Those are the couple lists where they're much more performant because they'll
+only render what's in view.
+The difference being that section lists allows
+you to separate your data into different separate sections
+and have a section header to go along with those.
+We then started to talk about user input.
+We talked about the difference between controlled and uncontrolled components.
+Controlled components being those components
+that track state and the source of truth for the input's values
+are on the component state itself.
+Whereas uncontrolled components are those where the Dom, or in the case
+of the browser, the browser itself keeps track of those input's values.
+We then talked about text input for a little bit,
+which was the component used to accept user input.
+And first, we'll talk about user input today.
+And so we talked briefly about controlled
+versus uncontrolled components.
+And how for React native, you need to use controlled components.
+React recommends always using controlled components
+even when using React web as well.
+And so we looked at how user inputs take a couple of different props.
+One value which dictates what the value, or what displays inside the text box,
+is.
+And then unchanged text, which is the callback that is invoked
+every time you change that value.
+And so the docs are linked in the lecture slides.
+And so let's take a look at the example that we were looking at last week.
+So last week we were writing this application
+where we have a section list here.
+And then we are starting to add a screen where we can add contacts to that list.
+And so, where we left off last week, we could type into the name here.
+We could type into the phone here.
+But nothing actually happens with those values.
+And when we click submit, nothing happens.
+Let's build out the rest of that app this week.
+
+So in add contact form, when we left off last week, we had a few things written.
+So we kept track of the name and the phone number and state.
+Let's actually to get rid of that line here.
+
+So we kept track of name and phone and state
+since we're using controlled components.
+The component itself has to track the value of those texts.
+We wrote two separate handlers.
+One called handle name change, which takes a name.
+Which is fired when you change the text and put down here.
+And then it just sets the state so that the name, the key name,
+is equal to whatever value is passed in.
+And so that, when passed a string, will just update a state value for name.
+We have the same function down here but for phone.
+And so when you pass in a new phone number down here,
+it will just set the state such that the new phone is equal to whatever string
+you pass in.
+And then the render function, we just define those two text inputs.
+So one has a value of this dot state dot name.
+And so every time we change the this dot state dot name,
+the value's then reflected in this text input.
+We set its unchanged text prop to equal that handle name change
+function that we defined above.
+And then just as a placeholder, we wrote name.
+So that when the field is blank, the user
+just knows what they're supposed to type in there.
+And then we have the same text input down here for phone.
+With the one difference being the keyboard type.
+And so we don't really want the users to be able to type letters
+into the text input.
+And so we said what kind of keyboard should pop up.
+Only that numeric one.
+And so, as we see in our app, when we click on the text input here,
+we only see the numbers.
+
+And so now we have a page that is actually handling multiple inputs.
+And so the way we handle that in web is we have a form component.
+And so that form component in HTML takes the on submit handler
+and when you submit the form, that gets invoked.
+Unfortunately that does not exist in React native.
+But since we're using controlled components,
+we actually maintain an object with all of the form data.
+So, again, this form component does not exist.
+But the analogy is that, for whatever component that we're writing,
+all of the information that we need is tracked in the state.
+And so we're actually maintaining an object with all of that,
+all those input's values.
+And so what we can actually do is we can define a function that
+handles the data to submit.
+And so that would be the analogy to the onsubmit handler in web.
+And so let's go ahead and do that in our example.
+And so here when we click submit, nothing actually happens.
+But what do we want to happen here?
+Well, when you click submit, ideally this form gets submitted
+and we add a contact.
+And so here, we already have a button called submit,
+but we haven't said what it should do when we press it.
+And so let's define an on press.
+
+And so on press is going to invoke this function called handle submit,
+which we have not yet defined.
+And let's go ahead and define it up here.
+
+So, as you recall, when you press a button the on press handler
+gets invoked with no arguments.
+And so we're going to actually have to decide
+what to do here with no arguments.
+And so we should go ahead and do this dot props because since this
+is just generic add contact form, we're not defining the logic
+on adding the contact here.
+We're just going to define the form here.
+And so we're going to assume that a prop called,
+let's just call it on submit exists.
+And we're going to pass in an object with the state
+fields that are necessary.
+And so we could do something like name is this dot state dot name.
+And phone is this dot state dot phone.
+
+Or the shorthand for here, since we're using every single key value
+pair of this dot state, we can actually just do
+this dot dot dot, this dot state.
+Which means, take all of the key value pairs of this dot state,
+and create a new object with those key value pairs.
+Or simply, we could just pass this dot state.
+And so we're going to invoke this dot props to on submit with this dot state.
+And so now we have to define, what are we actually doing on submit.
+
+So let's take a look at AppJS.
+So here is a lot of stuff that we wrote last week.
+But we have not actually written the way to add a contact.
+And so let's go ahead and implement that here.
+
+So this should take an argument.
+So we need to know exactly what conduct we want to add.
+
+So it takes a new contact, and what are we going to do?
+Well, we should take the previous contacts and append to that.
+
+And since we rely on the value in the previous state,
+we should define a function that takes the previous state
+and returns a new state, where the new contacts are the old contacts.
+
+And then the new contact.
+
+And so, again, that dot dot dot notation with arrays
+means take all of those array values and stick them in this new array.
+And then last, add new contact.
+So now this function should take a new contact
+and set the state such that the contacts are
+equal to the old contacts with a new contact appended at the end.
+
+Lastly, we need to pass that handler down to the add contact form here.
+So we call it on submit.
+And what should it do on submit?
+Well it should invoke this dot add contact.
+
+Which will invoke that function that we defined up there.
+So let's go ahead and test that.
+
+So now we can go ahead.
+Actually let's first just have only one to begin with so it's easy to see.
+Let's go ahead and add a contact.
+Let's call him my name.
+
+And let's put some random phone number in.
+
+So what happened?
+I click submit, but nothing actually happened.
+Does anybody see what the bug is here?
+
+So first, how are we determining whether or not
+we should display that add contact form?
+
+Well here it says, if the state says, is telling me to show the form,
+then I should show the form.
+Where do we change that?
+Well we have a function that says show the form,
+but there's nowhere in any logic do we say, oh now it's time to hide the form.
+So where might we want to do that?
+Anyone?
+In the add contacts?
+Yeah, In the add contact function.
+So when we add a new contact, we no longer
+really need to show that form, right?
+And so we can say, update the contacts to the new contacts.
+And also say, we don't need to show the form anymore.
+
+And so now when we add a contact, the form hides.
+And that contact gets added to our application.
+
+Cool.
+Any questions about that?
+We can ignore that error for now.
+
+Cool, so is that a real phone number, one two three four?
+It's not.
+So we should add some way to check whether the input is valid or not.
+And so next we'll talk about validating input.
+So one way to go ahead and validate input
+is to conditionally set the state based on input value.
+And so one bug that we actually have here,
+is even though for the phone number only numbers are showing up,
+one, I can type dots.
+That's probably not ideal.
+
+And then, things break if I don't define a name.
+
+So that is not ideal.
+And furthermore, if somebody plugs in a physical keyboard,
+they can also type things that are not numbers.
+And that is also probably not ideal.
+And so let's figure out some sort of way to say, hey,
+if this phone number is not a real phone number, we should not accept it.
+And so one way to do that is to conditionally set
+the state based on the input value.
+So let's go back into that form and do that.
+And so where might we want to check the value of that phone number
+before we update the state?
+So on line 33 here, we define the handle phone change,
+which is the function that gets invoked every single time that input changes.
+In what we're doing is we're immediately taking that string
+and setting the phone in the state to be whatever
+arbitrary string is passed to us.
+But we don't have to do that.
+We can actually add some logic here that says, hey,
+we should only allow people to set phone numbers to something
+that resembles a phone number.
+And so let's go ahead and do that.
+
+So we can say if phone, and then maybe do something there, then set the state.
+Otherwise, just don't do anything.
+And so what might we want to check on the phone?
+
+We should check if it's a number.
+And so how do we check if a string is a number?
+There are actually many different ways and I'll show you one possible way.
+So this plus notation, if you do plus some string,
+it will try to cast that to a number.
+And so let's, I can show you real quick.
+
+So say we have a string that's one, two, three.
+If I just do +str, we get one, two, three as a number.
+But what if I do plus one, two, three, a.
+Not a number.
+Plus empty string is the case where it will return zero.
+
+But anything else that's not a number, will return not a number.
+And so we can use this new operator to check
+if our phone number is indeed a number.
+
+Let's go ahead and say if the phone number is indeed
+a number, so is greater than or equal to zero,
+then we can go ahead and set the state.
+
+And so now here, if we start to type, I'm pressing letters
+and nothing's happening.
+That's because any single time that I type a letter,
+it's going to invoke this function.
+It's going to do if plus some letter, or not a number,
+is greater than or equal to zero.
+Not a number is never going to be greater than or equal to 0.
+And so that's never actually going to invoke down here.
+
+There's still a bug where if I do one, actually there is no bug.
+
+Right.
+So I was thinking that if we typed empty string here, this would be 0.
+But that still evaluates to true.
+And so even though phone is an empty string, plus empty string equals 0
+is indeed equal to 0.
+And so it will indeed set the phone number to empty string.
+So that's one way to validate the phone number.
+And so now we are ensuring that the phone is some sort of number.
+We can go a little bit further, because there's nothing
+stopping me from inputting a lot of numbers as my phone number.
+So let's just assume that all phone numbers should
+be 10 digits long, until we can stop the user from putting a number that's
+greater than 10 digits long.
+How might we do that?
+Well, we can just do if phone, dot length.
+And since it's a string, we can just check the length of it.
+As long as it's less than or equal to 10, we can go ahead and update it.
+
+And so now if we do one, two, three, four, five, six, seven, eight, nine,
+ten, if I try to press additional numbers, it doesn't update.
+Why?
+Because when I try to set phone to a string of length larger than 10,
+this does not evaluate to true.
+And so the state does not get updated.
+
+So there's still problem here.
+What happens if I just click submit?
+Well, it errors because there's no name.
+And so we should probably also check that the name exists.
+
+And so we should also go ahead and validate the entire form
+before submitting.
+And so what else should we do here?
+Well, when we submit we should make sure that both fields exist.
+And so we can say if the phone number is valid,
+and so let's just copy and paste this.
+
+So now phone dot length should be equal to 10.
+And it should be number.
+
+Additionally, we want that name to exist.
+And so let's just arbitrarily call this dot state dot name.
+Should have a length greater than or equal to 3.
+
+And so now are saying if this dot state dot phone is greater than 0,
+when you cast two number, if the length is exactly equal to 10,
+and you have a name of length at least 10, then go ahead and submit the form.
+Otherwise don't do anything.
+
+And so now when we try to add a contact with invalid fields, nothing happens.
+
+But that's not great UI, right?
+I should be able to know that I shouldn't be able to submit this form.
+And so let's go a step further, and actually every single time we
+change the name or the phone number here,
+we can change this button to appear like it
+should be clickable or not clickable.
+And so there's an additional thing that you
+can do with button, an additional prop that you can pass.
+We can pass a prop called disabled.
+
+And if we pass disabled true, then the button just looks unclickable.
+And it is unclickable.
+And so how might we use this to make the user experience of our form better?
+Well, we can actually continuously check, hey, if the form's valid,
+show the clickable button.
+And if the form is invalid, then say, hey, you can't click this button.
+And so where might we want to do that logic?
+Well, we can actually validate the form after we change any inputs value.
+
+There's a couple of places we can do that.
+One in this dot set state.
+And so we've been using this dot set state,
+and we've been passing it one of two things.
+We pass it an object, if we want to just merge that object to the current state.
+Or we've passed it some sort of update or function, which
+is a function that takes the previous state and modifies or returns an object
+modifying that previous state.
+Well it turns out, you can actually also pass a second argument
+to this dot set state.
+And that second argument gets invoked as a callback.
+So after the state is done updating, it then invokes this callback.
+And so let's go ahead and use that to validate our form.
+So one, rather than just hard coding disabled true here,
+what might we want to do?
+
+Well, we can store in our state whether or not this form is valid.
+So let's just call this is valid form, or is form valid.
+And we know that when the form is first created, that it's not.
+And so we can just initialize this value to be false.
+And so down here in the button, we can say whether or not
+it's disabled depends on the value of this dot state dot is form valid.
+
+So this will always start as an invalid form and so we can see, oops.
+
+It should be disabled when the form is not valid.
+
+And so we can see that when the form is first created, since is form valid
+is false, we can't submit the form.
+That button is disabled.
+And now we can add some logic to say, hey,
+every single time we check the input, the form may now be valid.
+How might we want to do that?
+
+We're currently checking whether or not the form is valid right
+before we submit the form.
+But there's nothing stopping us from just abstracting that out
+to a new function.
+So let's call this validate form.
+
+And it doesn't need any arguments.
+Just because we're going to call it, and it will check the current state.
+
+And so here we can say, well, if these things are true,
+then maybe return true.
+
+Else return false.
+Because it's not a valid form.
+
+And so although this isn't perfect, we can still
+have dots in our phone number.
+It's close enough.
+And so now, when we invoke validate form, it's going to check.
+Hey, is the phone as a number greater than zero?
+And is it of length 10?
+So we'll just call that a phone number, even though it's not 100% rigid.
+And then, did they put something as their name?
+It has to be at least three characters.
+And if that's true, then it will say, hey, it's a valid form.
+Otherwise, no it's not a valid form.
+And so where should we invoke this function?
+Well, after a value changes.
+And so right now the only two places that the values are updated,
+are in this handle name change function and this handle phone change function.
+And so we can pass now as a second argument to this dot set state,
+this dot validate form.
+
+And as a second argument to handle phone change, the set state here,
+we can also pass this dot validate form.
+
+And now this validate form function is going
+to get called after either of those functions are fired.
+
+As we've currently written it, validate form does not actually do anything.
+It just returns true or false.
+And so what should we do instead?
+Well, this should tell us whether the form is valid.
+And so if the form is valid, let's actually set state here too.
+
+Now in validate form, rather than just returning true or false,
+it will actually update the state such that the is form valid field
+gets updated to true or false.
+So now let's see how our application functions.
+So when we first start this form, the submit button does not work.
+And let's add a name of two letters.
+And a phone number of 10.
+And the validation still works.
+If we try to type more here, it doesn't let us.
+And now, let's type a third letter.
+And all of a sudden that submit button works.
+Why?
+Well, because when we pass another argument to set state here,
+that gets invoked after the state is set.
+And so after it updates the name value, now the name value in state
+is whatever it was when we typed in the input.
+And then it fires off this function.
+And this function says, hey, if the phone number is valid
+and the name is at least three characters, go ahead
+and say the form is valid.
+And what it's listening to that is form valid part of the state,
+well it's the button down here.
+And so when that is updated, the button then
+flips from disabled to not disabled.
+And when we delete this and when it becomes invalid again,
+that submit button reflects the in-validness of the form.
+
+Any questions so far?
+
+So how are other ways that we can do this?
+Well, we learned a few weeks ago about the component lifecycle.
+And how there are certain functions that are called every single time
+a React component does something.
+And in this case, we can actually use that,
+the hook that's invoked every single time the form or the component updates
+to go ahead and fire this as well.
+And so if we wanted to, rather than invoking this dot validate form
+and handle phone change and handle name change,
+we could also do that in the component did update.
+
+And component did update takes a couple of different arguments.
+One is prevProps and one is prevState.
+
+And what can we do here?
+Well, we can just call this dot validate form.
+
+And so something interesting is going to happen here.
+
+Hm.
+We got a big error screen.
+Maximum update depth exceeded.
+This can happen when the component repeatedly
+calls set state inside one of these component lifecycle hooks.
+And so React is saying, hey, rather than just infinitely looping,
+we just threw an error.
+And so what is happening here?
+
+Let's take a look.
+
+So when we go ahead and type into type and input here,
+text input, something happens.
+One of these two functions is going to be invoked.
+What happens when it's invoked?
+Well, the whole component updates.
+
+And when the component updates, it calls this dot validate form.
+What does this dot validate form do?
+Well, it checks some things and then calls set state.
+And then when set state happens, the component updates.
+And what happens when the component updates?
+Well, it validates the form.
+And then what happens when you validate form?
+Well, the component updates.
+And so we entered a cycle where it just infinite loops.
+So how can we fix that?
+
+Well component did update knows about the previous props
+and the previous states.
+It also knows about the current props and the current state.
+And so we can go ahead and check those values.
+And say, if this dot state dot name is different than what
+the previous state dot name was, or this dot
+state dot phone is different than it used to be, then validate the form.
+Otherwise don't do anything.
+
+And so now when we do stuff like this, it works.
+And when we type a tentative phone number, then the form becomes valid.
+What happens when it's invalid?
+Well, it works as expected.
+And then when it becomes valid again, then all of a sudden
+that submit button appears again.
+And then everything else works as expected.
+
+And so the other place that we can validate
+a form is just in that component did update lifecycle hook.
+And so what's the difference?
+Well, not much.
+One difference is that when we add new functions,
+we also need to remember that in the set state,
+we need to pass that validate form field.
+But on the flip side, every time we add a new input,
+we also need to make sure that we're listening
+at the correct times in component did update.
+And so the performance of the two is equal.
+And so, whether you choose one or the other is more personal preference.
+The way I would write it is I would prefer to put it in the component
+did update, but it's really up to you.
+This is almost complete personal preference.
+
+Any questions this far?
+Yeah?
+SPEAKER 2: So when you put the is for valid function
+directly in the disable attribute, does it know
+to-- does it not know to update that?
+SPEAKER 1: So the question was, when you put the is form valid value here,
+does it know to update that?
+And so, yes.
+So this is not the is form valid function.
+It's just the state key called is form valid.
+And the is form valid key is updated when the validate form is called.
+And so React knows every single time the state is updated
+that the render might change.
+So it's outputted by render might change.
+And so every single time we call this dot set state,
+the component is then re-rendered.
+And the correct value of is form valid will be placed as this disabled prop
+to the button.
+SPEAKER 2: Do you always have to use the state
+to determine whether disable is true or not?
+Can you use a function instead?
+SPEAKER 1: So the question was, do we always
+have to use the state field to determine whether or not
+this form is disabled or not?
+Could we just use an inline function instead?
+So the answer is no.
+So we could definitely-- we can use a function here instead.
+And so say we actually validate form.
+
+Say we implemented it how we did at first.
+So let's call this validate form two, where
+rather than setting state to update that is form valid field,
+we just return true or return false.
+
+And then we can--
+and so now down here we can just invoke that function.
+
+This should work.
+So now if we oops- This dot is form valid two.
+Validate form two.
+So if we call this validate form two, so this should, in theory, work.
+
+I forgot to flip the Boolean, but you see that the Boolean does change.
+And so what is that what is the difference between these two?
+The difference here is that this function is actually being
+computed as the render is happening.
+And so say it took a lot of work in order to validate this form.
+Say it took a whole second.
+What's happening to the user in that second?
+Well nothing's showing up because React doesn't yet know what to render.
+And so the render here will take a full second.
+And so the user won't see anything until a second later.
+And so that's considered bad user experience.
+Whereas, when we do the validate form in the update cycle,
+it's already rendered this.
+So the user's already seeing this.
+And then when the component's updating, that's when it does the computing.
+And so the user sees what the user needs to see.
+And then the expensive computation is done after the user has already
+seen the form.
+And so there is, on the user side, he gets
+to see the form rendered before this is calculated.
+And so if you do it inline here, it's actually going to slow down the render.
+Whereas if you do it in like component did update,
+it actually happens after the render.
+And so the user gets to see the form before this computation happening.
+And so it would be better to just store that value in state.
+That way you can recompute it at a convenient time,
+rather than having to do a potentially expensive computation
+during the render.
+Does that make sense?
+
+Cool.
+So let's revert this to this dot state dot is valid form.
+And we're back to where we were.
+
+Great, so this works really well for short forms.
+But what happens if, say we wanted to center the form.
+
+So now, in my opinion, the form looks slightly better.
+But when we're bringing up the keyboard, it's
+starting to get dangerously close to the input here.
+And so what happens if this form were slightly longer?
+
+Say now we had six things to fill out.
+Now when we click phone, uh oh we have something that's considered probably
+some bad user experience.
+That is, the input's getting covered up by the keyboard itself.
+And so you may start to run into problems like these
+when you're working on your projects.
+And so how might we go about in fixing that?
+
+So it turns out, there's this thing called
+a keyboard avoiding view, which is a native component
+to handle avoiding that virtual keyboard.
+It's good for simple or short forms, but it doesn't really
+work well for very complex things.
+And what happens here, and the reason that's not good,
+is because the view moves independent of any of its child text inputs.
+Let's take a look at usage of this component.
+So right now we have a view that surrounds these inputs.
+And let's actually import this thing called a keyboard avoiding view
+instead.
+
+So now, rather than just using a view, we can use that keyboard avoiding view.
+And same up here.
+
+So now the keyboard avoiding view that actually doesn't look like it's
+doing much.
+That's because we need to tell it what to do when the keyboard arrives.
+And so we can pass this prop called behavior.
+
+Which is saying, hey, what should I adjust when that keyboard appears?
+It can be one of three things.
+It can be padding, which means when the keyboard appears,
+go ahead and add some padding to the bottom of the view
+so all of the content moves up.
+It can be height, so that rather than being a full height view,
+it will actually change the height of that view.
+Or third, it could be position where it actually repositions the view.
+
+Which one is best depends a lot on your use case.
+And so, the docs say, hey, just try whichever one is best in it.
+You'll see.
+And so here, let's go ahead and use padding.
+
+And so now we specified some behavior for that keyboard avoiding view.
+And so when we click, it goes ahead and moves that view out
+of the way of the keyboard.
+And when we're done, it goes ahead and moves it back.
+And how does this happen?
+Well, this view just gets some added padding.
+
+So this is a relatively new component and it is still getting better.
+And so hopefully, this will be able to handle larger forms in the future.
+But for now, it works perfectly well for small forms that
+will fit in the space outside the view.
+So any questions on user input at all?
+Cool.
+Let's go ahead and take a short break.
+And then after the break, we'll go ahead and look get some debugging techniques.
+Hello and welcome back.
+So before the break, we were talking about a few different forms
+and how we handle user input in the forms.
+And there was a question in Slack asking a great question.
+And so in this form right here, we have two different inputs.
+We have the name in the phone.
+And we also have two different handlers.
+We have the handle name change and handle phone change.
+This doesn't scale super well.
+Imagine you have a form with 100 different inputs.
+It would not really be a great component if it
+were filled with a hundreds different handlers for all those inputs.
+And so let's go ahead and take a look at a pattern for how we can go ahead
+and update all of those handlers, but not
+have to write separate handlers for each of the separate fields.
+
+So if you notice, both of these handles look very similar.
+We have some string that gets passed in, and then we set the state such
+that the key is equal to that string.
+And the phone does some validation before,
+but it basically does the same thing.
+It takes a string and sets a particular key equal to that string.
+And so we can go ahead and abstract that out
+into a more generic updating function.
+So let's just call it handle update.
+
+And that's going to take a couple different arguments.
+Let's actually have it take a key and return a function.
+It's going to return a function that says, take some sort of value,
+and then call this dot set state.
+
+And then the object here, we're going to do something
+with the key and something with the value.
+And so we're going to take that original key
+and call it here and update the state to be that value.
+
+And so for those of you haven't seen this notation before,
+this basically means evaluate this expression.
+And whatever it evaluates to, cast it to a string
+and that's going to be the key of that object.
+And so in this handle update function, we pass it a key first.
+And so imagine we want to do the handle name change rather than doing this,
+we can actually do handle name change is equal to this dot handle update.
+
+And we're passing it a key called name.
+
+Well what does that return?
+We can go ahead and evaluate in our head.
+So handle update is going to be invoked with name.
+And so you're basically passing in name here, as the key,
+and replacing it down here.
+And so this will actually return a function that is a value.
+
+And what does that value do?
+Well it calls this dot set state.
+
+What does key evaluate to?
+Well it's just name.
+And it sets it equal to that bell.
+And as you noticed, this, is logically the same as this.
+So here all we're doing is having a generic updating function that
+takes some sort of key.
+And when we invoke it, it returns a handler that takes a value
+and sets the key, whatever we pass it, to be that value.
+And so certainly here we could start to do now
+handle phone change is this dot handle update.
+Let's actually name handle update to get handler.
+
+So slightly more informative.
+We're getting some sort of handler.
+
+Phone.
+
+And so this is slightly better but, again, for 100 different inputs,
+we're still going to have 100 different handlers here.
+
+And so why do we have to do it here?
+We don't, really.
+We can actually, down here, we can say for this text input called name,
+rather than doing this dot handle name change,
+we can actually just do this dot get handler down here and pass it the key
+that we want to update.
+And that's going to return a handler that takes a value
+and updates this key to be that value.
+And so for phone here, we can also do get handler and just pass it a phone.
+
+And that will go ahead and create a handler for the phone.
+And so rather than having a bunch of different methods or properties,
+that handle, each of the different keys for the inputs,
+we can actually just define one generic one up here and then
+go ahead and do it.
+Actually, there's a small bug actually where
+they should be returning that function.
+But rather than doing that, we can just use the shorthand notation like this.
+So rather than having a single line return, we can just use the shorthand.
+Because arrow notation, it just implicitly returns
+whatever is after the arrow.
+So this is saying, this takes a key, and it
+returns a function that takes a value and calls dot set state.
+And so if you ever see something that looks very weird,
+like a bunch of arrows pointing.
+It just means this, when invoked, returns a function.
+Which may, in turn, return a function.
+However many arrows are just the functions that are returned.
+But here this is just saying, hey, to get a handler pass me a key,
+and I'll return you a handler.
+A function that takes a value and invokes this dot set state.
+
+So hopefully that answers the question in Slack.
+And so what's the difference?
+Which is better?
+Well it depends.
+In this example with the get handler, when we render down here,
+it's actually going to have to invoke that get handler function n
+times for n inputs.
+And so that means, if we have 1,000 inputs,
+it's going to have to evaluate that function 1000 times
+in order to get the handlers.
+And so if we instead define those as class properties,
+rather than invoking get handler 1,000 times for every render,
+it does it once when it creates the function.
+And then every render, it already has those class properties.
+It can just pass those straight through.
+And so even though using this get handler generic function,
+it's syntactically nicer, it's not necessarily more efficient.
+In fact, it's less efficient than defining all those handlers
+as class properties.
+And so whether you use a bunch of different class properties,
+or you use get handler here, depends on what you care more about.
+Do you care more about efficiency for reading and how nice it looks to read?
+Or do you care more about straight up efficiency and performance?
+
+Of course, there are ways to do both.
+And if you're curious, go ahead and post your question in Slack,
+and I will answer it after the lecture.
+But let's go ahead and move onto the next topic for now.
+
+So debugging.
+So there are a few different ways to debug.
+React and React native.
+Those are the React errors and warnings, Chrome developer tools.
+Or you may see some online documents referring to those as the "Devtools."
+This thing called a React native inspector.
+And this library called React dev tools.
+And so I'm curious to know how you guys have been debugging thus far.
+Go ahead and post in Slack your various workflows for debugging.
+I personally like to leave a bunch of console dot logs all over my files.
+And then go ahead and just look, oh, that's what the value of that variable
+was at that time.
+But that's probably not the best way for debugging.
+There are actually a bunch of tools that can do that and more.
+And one is React errors and warnings.
+And so you have this thing called console dot log,
+but it turns out that console object has other functions too.
+And so if you call this thing called console dot error, what happens
+is you get that full page alert.
+And so you've seen this a few times in lecture if we have an error,
+or if we trigger something In React that causes it to error out.
+And so you saw earlier when we had the infinite loop in component did update.
+And so we can go ahead and just trigger that manually by doing something like,
+in render we can just say, console dot air.
+This is a full page alert.
+
+And so now when we go ahead and render that page,
+we see a whole red alert with our error at top.
+And it also nicely gives us a dump of the whole stack.
+So what were the functions that were called in order to get
+to that console dot alert function.
+
+So another way to trigger this is also to just have an error,
+to throw an error.
+And so we can just do throw new error.
+
+And when we throw that error, it's actually get caught by React
+and shown as this function, as this big red alert box.
+And, again, you see the stack trace where
+it was called in the add conduct forum.
+
+So this is probably a very, very aggressive way to debug.
+And probably not the best way if you're playing with your application
+to just be greeted by a big, red alert.
+So there are also less aggressive ways by using these warnings.
+So a lot of libraries actually use either these full page alerts
+or these warnings to warn you or to alert you if something has gone wrong.
+And so where have we before seen yellow banners pop up?
+
+Well it happens in prop type.
+So if we define some prop types for our function.
+And if we don't get the prop that we're expecting,
+that prop type's library written by [? Facebook ?]
+will give us a little warning.
+It says, hey, by the way, we were expecting a different type
+for the props and we got this.
+And so that shouldn't really be a big error,
+but they're just warning you, hey, by the way, this is happening.
+And how do they do that?
+Well, they call this cancel dot warn function.
+
+And so, say, we want to just do console dot warn.
+This is a less aggressive warning.
+
+And so when that gets called, we just get a small yellow box
+at the bottom that's letting us know that a warning appeared.
+
+Again, maybe not things that you would use in your application.
+But if you're writing a library to be used by somebody else,
+you might want to warn them if they're using your library wrong.
+Or throw an error if an error does occur.
+
+The caveat with these warnings is that they don't appear in production mode.
+And so if you have warnings, and you go ahead and deploy your app
+to the app store running in production mode, those warnings will not appear.
+
+So this is not necessarily super useful.
+So what's a better way to debug rather than leaving console dot logs
+or leaving console dot errors or console dot warns.
+Well maybe we should use the Chrome Devtools.
+And so for those of you who have ever written web applications before,
+you might be familiar with these tools.
+So Google Chrome has amazing developer tools.
+Namely the debugger.
+And we'll take a look at that in a second.
+But if we're running a React native application, how the heck do
+we get Chrome Devtools to work?
+Isn't Chrome a web browser and aren't we trying to write mobile apps?
+Well if you remember back to early earlier on,
+we know that we can just run JavaScript in any Chrome tab.
+We know that we can also run JavaScript maybe in our terminal using Node.js.
+But how do we run React native JavaScript in Chrome?
+Well, if you remember back, there are actually two separate threads,
+one for native and one for JavaScript.
+And how do they talk to each other?
+Well they just communicate asynchronously through a bridge.
+Just sending messages back and forth like, hey, I need a button.
+And then the native will give you that button.
+And when it's clicked, it'll say, hey, JavaScript, my button was clicked.
+But does that mean they need to be running on the same device?
+Not necessarily.
+Since the way that they're communicating is
+just through this asynchronous message sending,
+that means we can run the native thread on that native device.
+And you can run the JavaScript anywhere.
+We can run it on the device.
+We can run it in a Chrome tab.
+We can even run it on somebody else's computer.
+And so we can actually go ahead and do that built
+into the React native application here.
+So I can go ahead and say, shake my device.
+So I can go to hardware shake, shake gesture, which is control command z.
+And it goes ahead and brings up this menu.
+And I can say, hey, I want to debug my JavaScript remotely.
+So if I click that, I get a new Chrome tab open.
+Then we just move this to a separate window.
+
+So I now have a separate window.
+And if you look at the title here, it's saying React native debugger.
+And so the React native JavaScript code is running
+as a web worker inside this tab.
+Or in other words, the JavaScript is executing inside this Chrome tab.
+And I can go ahead and open the developer tools.
+
+And I can see this.
+So if I go into debugger worker, local host
+1901, which is where this is running, I can go ahead and see all of this code.
+And if you look at something like add contact form,
+you see exactly what we have been working on recently.
+And so you see that get handler.
+Let me make the text bigger.
+
+You see things that we've written very recently,
+like that get a handler function.
+That takes a key and returns a handler, a value, in that set state.
+And we can go ahead and use the power of Chrome's debugging tools to go ahead
+and debug our app.
+And so let's go ahead and throw a bug in our app and try to find.
+
+So let's go ahead and rather than using this dot state dot name dot length
+to check name, let's try to enforce that the user have
+both a first name and a last name.
+And so let's use that in order to decide whether the form is valid or not.
+And so how might we do that?
+How do we check to see if the user has given us
+both a first name and a last name?
+
+We can just count how many words are there, right?
+So let's go ahead and do something like content names
+are this dot state dot name dot split.
+And then split that every space.
+So for those of you who've never seen this dot split,
+it basically says with a string, given a string,
+every time you see whatever argument I pass in, go ahead and return
+to me an array that's tokenized by that character or string.
+And so in other words, every single time I see a string,
+give me the tokens around those strings.
+So in hello space world, give me an array containing hello and world.
+And so here, let's just assume that the user gives us a first name space
+last name.
+And now names will be an array of two names.
+The first name and the last name.
+And so now let's check if names dot length is greater than or equal to two.
+Then let's call that a valid name.
+Now down here let's get rid of all of those extraneous text inputs.
+
+So delete here.
+
+And now we're back to just those two things.
+And now we're using that get handler method.
+
+So let's go ahead and try to add our name.
+
+And make sure that the validation is running.
+So disable this dot state is valid form.
+The opposite of that.
+
+So now hopefully we're in the state that we were before.
+Where the form starts invalid, and if I give it a valid phone number
+and a valid name, is it getting called?
+It must not be.
+
+Component did update.
+This dot validate form.
+
+So let's see if it's actually getting called.
+And how might we do that?
+So time to debug.
+So for those of you who've never used the debugger, what it allows us to do
+is set breakpoints.
+And what our breakpoints?
+Well, it's a point where, if this code path gets
+hit, meaning if this code is about to get evaluated, stop and give me
+a chance to look at some things.
+And so we can go ahead and in that Devtools window,
+we can say, hey, right before this gets called, let me stop in
+and inspect some things.
+Let me take a look around.
+And so by clicking on these numbers around here, some things get called.
+You see these blue highlights appear.
+And that is me adding a breakpoint.
+And so now, right before this line gets executed, it's actually going to pause
+and let me look at some things.
+
+So now let's make sure that gets triggered.
+OK, so as soon as I change my name here, it triggered this.
+And it says pause on breakpoint.
+Now I can see the call stack, meaning what
+are all of the functions called in order to get me to where I am now.
+And so you see a lot of this is React internals.
+But you see something that looks like this dot validate
+form, which is from that add contact form that we were writing.
+And so it makes sense that those were the most recent functions called.
+And we also see scope.
+We see all of the variables within our scope.
+And so, if you remember back to earlier lectures, we talked about scope.
+And scope being all of the variables that I
+have access to at any given time.
+And we see that names is currently undefined, which makes sense.
+We haven't evaluated this line yet.
+And we see some closures, which as you remember back a few lectures ago,
+are functions that still have access to all of its parent--
+the variables in scope of its parent.
+And so we see this add contact form, which
+is this form that we're inside of.
+And so we see all of the global variables
+as well, which there are a ton.
+But let's look at what we really care about.
+We really care about names right now which is undefined.
+And so we can say, hey, rather than-- we can click this button
+to resume the execution.
+So it'll just keep going.
+Or we can just step over this next function call.
+Or in other words, go to the next line.
+We can also choose to go into the function.
+If we want to, if we think, oh, it's not my code that's breaking,
+it's actually this dot split code that's breaking,
+I can choose to see how dot split is implemented.
+But I think it's a safe assumption that the bug here is mine and not
+the JavaScript's.
+So I can say, OK, let's go to the next line.
+And so now we see what's highlighted.
+We know that line 57 has just gotten executed.
+And we're about to execute line 58.
+And so now what is in scope?
+Well names get updated.
+Now names is Jordan space hayash, which is what we were writing in the input.
+And so now we can go ahead and step through our code line
+by line to see where the bug is.
+
+And so now we can go ahead and say, OK, we're checking phone,
+we're checking phone's length, and we're checking names dot length.
+
+And so this worked.
+And so now we're on line 59.
+And it's about to say, is form valid true.
+Cool.
+Click next and then what is happening now?
+So now, it updated everything.
+And now we're in the next cycle.
+So it was validating the form again.
+And so we can just keep clicking through.
+
+And now the component did update is done.
+And so this dot validate form is finished.
+And now it's going to finish updating.
+And we can just hit play.
+It looks like we're stuck in a loop.
+What's happening over here?
+
+OK.
+
+So we saw that the problem was not in this validate form.
+Names was getting set to be what we thought it was being set to.
+And we saw that this dot set state is form
+valid is getting updated to be true.
+And so the bug lies somewhere else.
+So is form valid is getting updated as expected.
+And so down here, we see why isn't disabled getting updated?
+Well this dot state is valid form does not exist.
+What are we calling it?
+Well we're calling it this dot state dot is formed valid.
+
+So we see up in the state, we're declaring is form valid.
+We're updating here.
+And that is what we should be looking at, rather than is valid form.
+Cool so we caught the bug.
+And now we can ensure that it works.
+
+Great, now it worked.
+But let's say, oh, I made a typo.
+Let me go back.
+Hey, wait a second, is there a first name and a last name?
+No, but it's saying that the form is still valid.
+And so now we have another bug.
+And so let's now go use Chrome Devtools again
+to figure out what the bug is here.
+So let's again set a breakpoint here.
+And go ahead and find that case.
+
+OK.
+
+And now when we hit a space, now we're back to where we were.
+On the case that has been tripping us up.
+And so now, we're about to execute line 57.
+We see names is undefined.
+And so let's go ahead and execute that line.
+And now we see names of length 2.
+And what is that array?
+
+Well the first name is Jordan and that second string does not exist.
+And so names dot split is doing what we're telling it to.
+We're saying split at every space.
+And right now, this dot state dot name, we could dig for it in here.
+So this dot state dot name is Jordan space, which
+isn't a first and last name pair.
+But the way that we're defining whether or not a name is of length two
+is getting fired.
+So, again, this dot state dot name is Jordan space.
+And we see that name dot split at the space is giving us two entries.
+Jordan and empty stream.
+Because it is splitting at the space.
+And what's after the space?
+Well, an empty string.
+And so we see that here, this is returning true when it should not be.
+And so now we can go ahead and fix that bug.
+So rather than saying names dot length is greater than or equal to 2,
+what do we have to do instead?
+
+We should also check that names--
+
+the last name exists.
+And so we can just do, hey, remember back to what are all the falsy values.
+Well empty string is a falsy value.
+And so if names bracket one, meaning the last name, if that's an empty string
+that shouldn't be an accepted value.
+And so now let's go ahead and remove that breakpoint.
+
+So we are in the file called add contact form.
+Let's go ahead and remove that breakpoint.
+And now we see that if I do Jordan space.
+Well this isn't a valid phone number.
+Jordan space, it's still erroring.
+Did we remember to save?
+
+We did not.
+So, again, phone number, Jordan space.
+And it is not a valid form.
+
+And so we can use Chrome's debugger tools
+to go ahead and step through our code line by line
+and see all of the variables that are in scope.
+And so we can catch bugs like this, where what we think
+is the case that we're looking for, might not be.
+And actually it's still slightly buggy.
+Can anybody see the bug?
+
+So if we have a leading space, we're only checking the last name.
+We're not making sure the first name is existing.
+And so we can fix that real quick.
+We can say, oh names zero also needs to exist.
+And we'll call that good enough.
+So now with a valid phone number, space [? Hayashi ?] doesn't work.
+Space space doesn't work.
+And it only works as soon as we start to add that second value.
+
+And so another great thing about Chrome developer tools is the console.
+And so I said earlier how I love console dot log.
+And let's actually look at a case where console dot log works in the browser.
+But it might not work in other environments.
+So let's go ahead and stop remote debugging.
+And so now we're running the JavaScript not in the browser.
+And so let's go ahead and every time we want to validate the form,
+let's just console dot log the form.
+Or this dot state.
+
+So now when we're changing the state, we see things are updating over here.
+And so the logging of the JavaScript is getting piped over
+to the [? expo XTE. ?] And we see down here,
+when we console log this dot state, we see
+an object that has all of the keys and values of state.
+Where is form valid is false, name is Jay, and phone is empty string.
+But what happens if that object is pretty complicated?
+
+What happens if that object has a cycle?
+
+So now we're sticking inside of state this is equal to this.
+And so this here, is going to have this dot state in it.
+And so this dot state dot this, is going to be this.
+Do you see how this is going to start becoming circular?
+And so this is called circular JSON.
+Or JavaScript object that self-references itself.
+And so now if we start to type anything here, things just aren't going to work.
+
+So this is now a valid form.
+But it's not showing as a valid form.
+Why?
+Because this initial console dot log is still trying to happen.
+And so you notice that nothing here is getting logged.
+It's because it's still trying to figure out what to log.
+It's going through that infinite cycle.
+
+But, it turns out if we try to actually do this in the browser instead,
+so now we're back here.
+Say we type something over here.
+
+It works.
+And so Chrome's logging abilities are actually phenomenal.
+And you can see that it gets printed four times because we
+changed the value four times.
+And what do we see here?
+We see is form valid false, name, test, phone, empty string as expected.
+And then we see this.
+Which has in it, this dot state, which has
+in it this, which has in it this dot state, which has in it this.
+And this can go on forever.
+And so the logging abilities of Chrome are actually pretty incredible.
+As are the debugger.
+And so this is a great way to go ahead and debug.
+You can step through your code line by line.
+You can have these pretty complex console dot logs and it all works.
+
+So what happens if the bug is not logical?
+What happens if the bug is rather in the layout?
+
+So let me introduce a small bug.
+
+So let's actually go ahead and stop running this remotely.
+
+So now we have our form.
+It's at the top like it was at the beginning.
+And say now we want to try to get it to the center.
+Let's try to center this form vertically.
+
+The way you would do that would be justify content into the center.
+And that, in theory, is going to take all
+of the content of the container, which is what we're calling the wrapper,
+and move all of its content to the center of its height.
+
+But as we see, it's not moving down to the center.
+And those of you--
+some people may see instantly, oh exactly what's wrong.
+But it's pretty not obvious.
+We have it supposedly centering.
+But it's not moving to the center of the screen like we're expecting.
+And so this is not really something you can debug using the Devtools
+or console dot log, because it's not a logical bug.
+This one has to do with layout.
+And so it would be really great if we could just inspect all of the layouts.
+Fortunately, we have something called the React native inspector.
+And this is analogous to that Chrome element inspector.
+So those of you with a web background, probably use that element inspector
+where you can see all of the Dom elements,
+and see exactly where they are on the page.
+It also allows you to see data associated with those elements,
+like margin, padding, size, et cetera.
+And so we can actually go ahead--
+we can use that tool to figure out what's going wrong here.
+And so, again, if we shake our device, we
+can see this toggle element inspector button.
+And if you click on it, we see this UI pop up.
+It says tap something to inspect it.
+And so if we go and click this inspect button down here, that will toggle on.
+And so now we can click anywhere, and we can
+start to see all of the styles associated with something.
+So say we click on this input, we see down here
+this text input is in add contact form.js, which
+is exactly where we defined it.
+We see all of it style attributes.
+It has a border width of one.
+It has a border color black, mid width 100, margin top 20, et cetera.
+And we see exactly how it's laid out.
+And so imagine that this was a box.
+We see its margins.
+So it has a margin top of 20.
+Bottom, there's no margin.
+And on either side it's 20.
+We see some padding.
+And we see the dimensions of the element itself.
+And so that's helpful information as we're
+trying to determine how are we trying to lay out our UI elements.
+And so what's the buggy part?
+The buggy part is that form that we say, oh, it should be centering its content
+but it's not.
+And so let's go ahead and find that form.
+The submit button.
+There's that form.
+This is the keyboard avoiding view in the add contact form.
+So it has a background color of white, has a padding top
+of 20, justified content center, padding bottom 0, all these things
+that we defined in the style.
+But the height isn't what we're expecting.
+We're expecting it to be full height, but what's being highlighted
+is only this here.
+And so blue refers to the height of the element itself.
+Green refers to its padding.
+And so it is centering its content.
+If you imagine the height is here, everything is perfectly centered.
+It's just the height is not what we were expecting it to be.
+We thought the height was going to be the full and so center should be here.
+And so we found our bug.
+The bug is that we just need to make the height full height,
+so that when it's entering its content, the content
+is in the center of the device.
+Not the center of this view, which is not as tall as we thought.
+
+And so if you remember back to section when you guys talked about Flexbox,
+we can see the bug.
+So a container should be filling all of its available space.
+We should say flex 1.
+So grow as much as you can.
+
+And now, it's centered again.
+And how can we confirm that?
+Well, we can click on that add contact form
+and now we see it's blue all the way down.
+And we see the height is now what we expected.
+
+And so for testing UI elements and seeing exactly how they're laid out,
+their size, their padding, their margin, the inspector
+is a great tool to be able to do that.
+
+The caveat with this inspector is that doesn't
+allow you to live edit these elements.
+So when I wanted to change the flex to be one,
+I actually had to go do that in the source
+I had to rebundle the JavaScript, have the bundle get sent to the app,
+and have app reload.
+It doesn't allow me to just hop in there and change things at will.
+Since I'm talking about that, you can probably
+guess there is a tool to do that.
+That tool is called React dev tools.
+This allows you to inspect the React component hierarchies,
+so you can see the entire React tree including the components, the props
+and its state, style.
+How do we run this?
+So first we have to install it.
+So if you run this command npm install -g, which stands for globally.
+Install this library called React dev tools.
+And so we can go ahead and do an npm install -g react dev tools.
+So I already have it installed, so it's going to happen fairly quickly.
+But for those of you at home who don't have it installed,
+you can go ahead and install it globally now.
+And this will allow us to go ahead and use this tool called React dev
+tools anywhere.
+And so when we want to run it, all we have to do is type React dev tools,
+and it will open up, it will run the command, and open it up.
+And what that does is it allows us to make live edits to style,
+live edits to props, et cetera.
+And if you want to read more about it, you can go to its Github page.
+It's also maintained by Facebook.
+I mean, it's a brilliant tool.
+So go ahead and give it a shot.
+
+So notice we just run it as React dev tools.
+We don't have to tell it where our app is.
+And it will just go ahead and find our application.
+And so now we see this.
+
+We see app container.
+And if we start to unfold these things, things
+are going to start become pretty recognizable.
+So we're starting to see things that we've named.
+Add contact form, app, text input, text input button.
+And as we hover over them, you can see them highlight over here.
+And how is that working?
+Well it's actually working with the inspector to do that.
+
+And so now let's go ahead and reintroduce that bug.
+
+Let's go ahead and reintroduce that bug into add contact form.
+We can get rid of that flex.
+Let's get rid of justify content center as well.
+And so now we're back to where we started, with that original bug,
+where we want to center this and we're going to have to figure out how.
+And so let's do that in the React developer tools.
+And so you can see that this tree here matches up exactly with the tree
+that we've defined in our code.
+And this is actually the react element tree.
+And so we can find that keyboard avoiding view,
+and we can see the style here.
+We see background colors FFF and padding top is 20.
+And that matches with exactly what we have here where 20 is just
+getting the value of this variable.
+
+And so now we can actually add inline whatever we want.
+We can say, right now if we highlight over this with the inspector on,
+we see that this keyboard avoiding view is only this tall.
+It's only as tall as its content.
+And so let's first get that to fill.
+And so we can go ahead and just say, oh, I wonder what's going wrong.
+Let me add flex one.
+And so now, all of a sudden, keyboard avoiding view
+is filling all the available space.
+Which is exactly what we're telling it to do.
+We're saying, flex grow until you fill all of the available space.
+So now we can go ahead and center all of its content.
+And we can say justify your content to the center.
+
+And you see it jumps immediately.
+
+And so this also allows us to inspect all of our components.
+State, our props, anything that we care about.
+And so right now inside our form so, say we can't find our form.
+Say it's buried deep.
+We can just go ahead and search form and we find or add conduct form.
+And you can see its subtree here.
+Right now its state is saying is form valid false, name, phone.
+And as we change things, you can see things live update over here.
+And so as the state of the app changes, you can see it update in the dev tools
+here.
+And so this is a great tool to make sure what
+you think is happening to the state is exactly what's happening to the state.
+And you can even override this.
+Let's say the phone should be this.
+And it will go ahead and set that state for you.
+So this is all around great tool for inspecting state, setting state, making
+sure things happen when you set state.
+You can go ahead and inspect style and go ahead and quickly prototype,
+so that you don't have to type all of your style into your text editor.
+You can just see exactly how it's going to impact your application.
+And then if you like what you see then go ahead and then
+commit that and save it in your text editor.
+You can also see what props are coming down.
+You can ensure that you're passing the props that you think are passing down.
+I mean, so this is just a great tool to be
+able to see exactly what React knows.
+
+So any questions on React dev tools, the inspector, or Chrome Devtools?
+
+So let's move on to our last topic.
+So external library.
+So how did we get React dev tools onto our computer?
+We use this thing called NPM And React dev tools is actually
+just an external library, external code that we're
+bringing into our own project.
+So libraries are code written outside the context of your project,
+that you can bring into your own project.
+And so these can be written by you, they can be written by other people,
+or they can be written by companies.
+Or anybody really.
+And so stuff like React is a library.
+It's a library written by Facebook that we pull into the project
+that we're writing, just because we want the ability to use
+all the features of React without having to write the code ourselves.
+Imagine every time you want to write a React native application.
+Imagine you have to write all of React native.
+That would not be fun.
+And, in fact, it would not be fast at all.
+Which is the big benefit of writing in React native.
+And so what we can do is we can actually use other people's code
+and bring that into our own projects.
+And so since React native is just doing JavaScript,
+it's writing JavaScript and evaluating JavaScript,
+you can add any JavaScript code to your project.
+And so any library written in pure JavaScript,
+you can just pull in and use that code in your project.
+And so there are plenty of great tools that give you a bunch of functions
+that you can use.
+So like Lodash, Underscore, Ramda.
+These are all just tool belts that give you access to functions
+that you might use very often.
+And you can just go ahead and pull all that JavaScript into your project
+and use it as you see fit.
+The way you that you install these things
+is by using NPM, or Node Package Manager.
+For those of you who are not familiar with package managers,
+is it allows you to just--
+manages the packages for you.
+These packages, synonymous with libraries.
+And so you can say, rather than me having
+to go and find where the source code of React is,
+and download it, and then upload it into my project,
+and then go ahead and import into my project.
+Oh no, versions don't match.
+That's all taken care of for you buy this thing called NPM.
+And so if you say, hey, I want React.
+You can just say, NPM install react.
+It will find where React is located for you.
+It will download it for you.
+It will keep track of the correct version number for you.
+And then you can just go ahead and import that into your project.
+And how does it keep track for you?
+Well, that's what that package.json is.
+So every single project that we've seen before, there's this thing
+called package.json.
+And inside it, there are a few different key value pairs.
+And one important one is called dependencies.
+Dependencies, or in other word, what other code do I need in order
+to make this application work?
+Obviously I'm going to need React.
+Because every single file, the first line is what?
+Import React from React.
+Well, where is React?
+Well, it's right here.
+And so what this package.json does is it says,
+hey, this is the exact version of React that we need.
+NPM go find that for me, go download it for me,
+and keep track of where it is so that I can import it into my project.
+What else do we need to run?
+Well we need Expo and we need React native.
+And if we need other libraries, we need to make sure that they're here.
+So that when other people want to use our project,
+they have those when they want to install.
+And so many of you have probably used this command called NPM install,
+and now you know exactly what it does.
+Is it reads through all your dependencies
+and goes in find them and downloads them for you.
+
+And so now let's say in row, we want to define some prop types.
+So we've seen before, this line, import prop types from prop types.
+
+And then we go how do you use it.
+We can say row dot prop types is this object where we're
+expecting a name, which is a string.
+And we're expecting phone, which is also a string.
+
+So we've gone ahead and imported this thing called prop types
+from this library called prop types.
+But what is prop types?
+Well this is actually going to work, believe it or not.
+And it's a little bit strange why it works.
+The reason that it works is because other the libraries that we're
+importing, also import prop types.
+And so we it just happens to be the case that prop types is already
+installed for us.
+But we're not guaranteed that it's already going to be installed first.
+So what we should do is NPM install prop types.
+Which is saying, hey, in this project, we actually
+need this external library called prop types.
+NPM go install it for me and then make sure to note it.
+And so now, if you see, in our package.json file,
+prop types was automatically added for us.
+And so NPM is this great software that just manages all of our packages
+for us.
+It finds what we need, and installs it, and keeps track of version numbers.
+And it makes sure that whoever is using my project, when they type NPM install,
+they get the dependencies that they need to run my project.
+
+And so if you're using an NPM version before NPM 5,
+and so you can tell what NPM version you're using by doing NPM --version.
+I'm running 5.6.
+Since that is newer than NPM 5, I don't need to use this dash dash save flag.
+Before NPM five, if you just did NPM install,
+it wouldn't add it to your package.json, and now that's the default.
+But if you are using an older version of NPM,
+then you're going to have to use that dash dash save flag.
+Or if you want to install a library globally,
+so like we did with React tools, you're going to have to use that dash G flag.
+And what that does is it gives you access to that library everywhere
+on your computer.
+And so the reason that we could just type
+React dev tools was at the command line is because that package
+is installed globally on our computer.
+
+The reason it wasn't working is because there's another one running
+on this separate window.
+And then, lastly, all we need to do is just import into to our project.
+And so a line that we see all the time is import React from React.
+And what that does is it says, hey, go get that package called React,
+import its export default or its default export into our project, name it React.
+And now I'm free to go ahead and use that.
+And so if I want to use any other library, all I could do
+is NPM install that library, make sure that it's added to our package.json,
+so other people who use our project can go ahead
+and install that for themselves.
+And that's done automatically by NPM.
+And them we can go ahead and import that into our project
+and use it as we please.
+And so in future lectures, we'll see other JavaScript libraries
+that we'll be using.
+So React navigation we'll see very soon.
+And we'll see other libraries like Redux.
+That's just us using other people's code to our benefit.
+We don't have to re-implement other people's projects.
+We don't have to reinvent the wheel.
+We can just go ahead and build upon what other people have
+written on our own app.
+And so a lot of non-replicated effort on our part.
+So next week we'll go ahead and dive into navigation.
+We'll see how, right now we're using the if the state says to show the form,
+go ahead and render a different page.
+Otherwise render original page.
+Next week we'll see exactly how we're going to do that scalably.
+Because right now, if we have 10 different pages,
+we don't really want, if this page is visible, render this page.
+If this page is visible, then render this.
+We're going to see a library that allows us to better navigate our application.
+And it will give us the ability to have things pop on top of each other,
+go back and forth.
+And so we'll dive into that library.
+And so we actually have a guest lecturer.
+The people who wrote the library itself join us next week.
+Next lecture.
+Next week is spring break.
+And so we have that to look forward to in the coming lecture.
+So thanks everyone.

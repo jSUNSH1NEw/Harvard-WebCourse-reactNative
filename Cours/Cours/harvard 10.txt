@@ -1,0 +1,1762 @@
+[MUSIC PLAYING]
+
+JORDAN HAYASHI: Hello, and welcome back for Lecture 11.
+This week we'll be talking about performance.
+So in the previous lecture, we talked about a few different things.
+We forged ahead with our simple Redux.
+In that one, we did an asynchronous action.
+We then saw that it might not be good to change our implementation of reduction
+or to do that.
+And so we found out what Redux Middleware was,
+and by using Redux Middleware, we were able to add asynchronous actions
+to Redux itself.
+Then we talked about another redux add-on
+called Redux Persist, which allows us to store our state into whatever storage
+mechanism we want, and then rehydrate our app based on that information.
+We then talked about what the difference was between container
+and presentational components.
+So if you remember, container components are the ones
+that are hooked up to your redux state.
+And then they pass down props to what are
+considered presentational components.
+And so presentational components only care about the props
+that they need to display themselves.
+We then talked about a couple different tools
+that we can use for writing JavaScript-- those
+being ESLint, which allows us to enforce some style rules,
+and Prettier, which allows us to rewrite or automatically rewrite our files such
+that they abide by these rules.
+So this week we'll be talking about performance.
+And so what exactly is performance?
+Performance is how quickly or how efficiently something works.
+And if we want to make that better, we can do
+what's called performance optimization.
+And by doing that, we can make something work as efficiently as possible.
+Performance optimization is actually a very, very wide field.
+But today, we'll only be talking about optimizing
+the JavaScript side of things.
+I will mostly be talking about high level things
+with a few examples along the way.
+So one thing that's important about performance
+is knowing that there are actually trade-offs involved.
+So by optimizing performance, we usually pay some sort of cost.
+And this cost is usually in your application's complexity.
+So in most cases, it's actually not worth optimizing your code.
+JavaScript now is so fast that by optimizing,
+you add complexity to your app.
+And sometimes that complexity and maintainability
+is really not worth the little to no gains that you'll get from optimizing.
+And so in general, you don't want to over optimize anything
+until you've found a bottleneck.
+And by bottleneck, I mean something that's
+slow enough that one particular thing slows down your entire app.
+And so how do we actually measure for these things called bottlenecks?
+Well, there's a few things actually built in.
+First, we need to remember what environment
+are we running our application in.
+And so there are actually two different environments
+built into node or our bundler.
+One is production.
+And one is nonproduction, or what most people consider development mode.
+And so the way that we actually set this is in the XTE.
+If you click this gear icon here, there's
+a dropdown where you can change host, and you can also toggle
+this thing called development mode.
+And so by checking this and unchecking it,
+I can actually determine whether or not my application is running
+in development or production mode.
+Important to note, if I change this, I should actually
+restart the bundler such that it actually is indeed running in the mode
+that I want it to be.
+React actually has a few optimizations that it
+does when it's in production mode.
+And so things like prop types aren't necessarily checked.
+And warnings and errors are not necessarily displayed.
+
+So there's a few tools built into React Native itself
+that allow us to benchmark our performance.
+And so one is called the React Native Perf Monitor--
+Performance Monitor.
+What this does is it shows you the refresh rate of both
+your UI and your JavaScript threads.
+So if you remember back to our lecture on React Native,
+we talked about how there was one thread for rendering
+the UI on the native side, and one thread that's
+actually executing your JavaScript.
+And so this React Native Perf Monitor allows
+us to see the refresh rate on both these threads.
+And so anything below 60 frames per second
+means we're actually dropping some frames.
+And so there is potentially a bottleneck in whatever we're dealing with.
+And so to show you how that works, I'm running this simple application here.
+What we can do is shake the device, and it brings up this menu.
+And we can click the Show Perf Monitor.
+And that shows this thing here, which is draggable,
+which shows us a few things--
+one is how much RAM we're actually using,
+so how much memory is your application consuming.
+And of that memory, how much is being consumed by the JavaScript
+itself or the JavaScript core.
+We then see how many views are in our application.
+The top number refers to how many are currently in view.
+And the bottom number is how many there are just total.
+And then we see the two things that I mentioned-- the UI and JavaScript
+frames per second meters.
+And so since they're both locked at 60 frames per second,
+it means we're not dropping any frames, or there's no bottleneck
+in what we're currently doing here.
+And so what happens if we actually want to introduce a bottleneck?
+And so if you remember back a few lectures,
+we implemented this application where we just display a bunch of contacts.
+And these contacts are generated by that contacts.js file
+that we talked about a few weeks ago.
+And in this case, I actually reverted back to our scroll view.
+If you remember, scroll view versus flat list or section list, the flat list
+and section lists are virtualized lists, which means they only
+render what's currently in view.
+Whereas the scroll view will actually render everything before displaying.
+And so if we toggle it and then turn it back on,
+we see that our JavaScript thread does indeed
+drop well below 60 frames per second.
+So once again, we can toggle this.
+And then when we toggle it again, it has to render all of these contacts.
+I believe there are 1,000 being shown.
+And we see a dip in the frames per second in our JavaScript thread.
+
+Cool.
+And so by using this Perf Monitor, we can navigate through our app
+and find out exactly what screens are causing any frames dropped.
+If we want more detail, we can use what is called the Chrome Performance
+Profiler--
+and so I alluded to this a little bit last week--
+where we can actually run our JavaScript inside of Google Chrome.
+And so we've done this a few times in the past.
+And what this does is it shows you a flame chart of all of your components.
+And I'll show you what that means in just a second.
+But one thing to note is that this is only available in development mode.
+If you're running your application in production mode,
+this option will not be available for you.
+And so since we are indeed in development mode,
+we can use this debugger.
+And so what I did was shake my device, bring up this remote debugger,
+I clicked on it, and it's now running my JavaScript inside of Google Chrome.
+And so we talked about how the JavaScript is actually
+separate from the UI threads.
+And the way that they communicate is through this bridge.
+And so it doesn't really matter where our JavaScript
+is running, as long as it can communicate with our UI thread.
+And so since it's running currently in Google Chrome,
+I can inspect and see what's going on.
+And so here you can see elements--
+Console, Sources, Network.
+But the tab we're actually looking for right now is Performance.
+And so here we see a bunch of options.
+We can click the record button or press Command E to start a new recording.
+We can click the reload button, which will reload the frame
+and record the page load.
+Unfortunately, this doesn't really work in React Native.
+It's more something that's geared towards web.
+But what we can do is we can press the record button,
+do a few things in our application, and then come back
+and see exactly what has happened in our JavaScript.
+And so let's toggle these so that they're not visible.
+Let's start a new profile recording.
+Go back.
+Toggle them.
+You see that.
+It took a while to render.
+And then we can go ahead and stop this profile.
+And then Chrome will analyze things and show us this chart here.
+And so we see Frames, Interactions, Main, Raster, GPU, User Timing.
+And what we're looking for here is User Timing.
+If we dive into User Timing, we can see a few things.
+We see the React Tree Reconciliation.
+We see a Contact Screen Update, which is our contact screen that we have here.
+We have a Scroll View Contacts, Scroll View mount,
+and then we see a bunch of things.
+And if we zoom in all the way, we can actually
+see that each one here is a row being mounted.
+And so this is what a flame chart looks like.
+A flame chart is a chart that is basically our React Tree
+but graphed out over time.
+And so we can see these numbers up here which correspond to the time line since
+we clicked that record button and what is happening as these milliseconds tick
+by-- so you see 3,600 milliseconds--
+3,650 milliseconds.
+And so in this 50 millisecond time span, what has happened?
+Well, we have been rendering our Scroll View Contacts.
+We've been rendering our Scroll View.
+And within that 50 millisecond thing, we see that all of this happened.
+And what exactly is there?
+Well, we can zoom in and see that we've rendered a few rows.
+And what happens at each row mount?
+Well, there's a View in there.
+There's some Text.
+There's another Text.
+And there's a Text Context.
+So we can see that for every single component that we have in our tree,
+each one takes a little bit of time to render.
+And we can see exactly what's being rendered
+by looking at this flame chart.
+And so if we refer back to our code, we can see that the app, all it's doing--
+I removed a lot of the stuff that we did last week since it's not
+necessary for this particular example--
+I have my ESLint thing popped up.
+
+We can see that this app is only doing one thing.
+It's rendering provider, which, as we remember from last week,
+is what allows us to access our Redux store anywhere in our app that's
+given to us by React Redux.
+We see a view which just has a few different styles.
+Then we have our contacts list screen.
+And so what is being rendered there?
+
+The Contacts List screen is just rendering our contacts a list.
+And what exactly is our Contacts List?
+Well, it's defined here to be the Scroll View Contacts.
+And what is Scroll View Contacts?
+
+We can see that it suggests--
+let me silence these errors real quick.
+
+So I'm running [INAUDIBLE] really quick just to silence those errors.
+And then now I can view without my ESLint integration popping up.
+And so Scroll View Contacts is just a Scroll View.
+And what it's doing is it's taking our contacts, which is an array that's
+passed down, it's mapping over them.
+And for each contact, we're rendering a row.
+And so we can actually see this exact structure of our app
+in that flame chart.
+And so we saw our app.
+We saw that it's rendering something called the Contacts List screen.
+We saw that the Contacts List screen is actually
+rendering the Scroll View Contacts.
+And we see that the Scroll View Contacts is
+a Scroll View with a number of rows that corresponds to the number of contacts.
+And if we again refer to that flame chart,
+we see our app, which is the top level component.
+We see our Contacts List screen.
+We then see that it has a view inside of it.
+And inside that view, we have our component
+called the Scroll View Contacts.
+We see that that is actually rendering a Scroll View.
+And so if we just double check the code, we
+can see that we have indeed a component called
+Scroll View Contacts, which is indeed rendering
+something that is a Scroll View.
+And then inside of that Scroll View, we see a large number of rows.
+And each row is referring to a row that is rendered right here.
+And so this is just timing for us all of the components
+that we have in our tree.
+And so it might be inefficient to render all 1,000 rows
+when we want to just mount that app.
+And so what we want to do instead--
+well, we saw a few weeks ago that we can actually,
+rather than using a Scroll View, we can use a Virtualized List, a list that
+only renders what's in view currently.
+So let's go ahead and do that.
+We have implemented from a few weeks ago that Section List Contacts.
+And in here, we are actually using a Section List,
+which is indeed a Virtualized List.
+So again, let me silence these errors.
+
+So here, disable this next line, and here as well.
+
+All right, so this should shut up those errors.
+And so we see here that we have our Section List, which
+does a little bit of logic in order to separate our array of contacts
+into the data structure that the Section List is looking for.
+And then it goes ahead and renders a Section List.
+And so this is code that we wrote a few lectures ago.
+And we see that we pass it a render item, which
+it will use to render the items as they appear on screen.
+And so it's important to note that only what's currently in view
+is being rendered.
+It's not rendering all 1,000 of these contacts
+before it's showing it on the screen.
+And so let's go ahead and in our Contacts List screen,
+we can go ahead and flip this Boolean here
+so that it's rendering the Flat List Contacts rather than the Scroll View
+Contacts.
+I just did this so it's easy to do this quickly during lecture,
+so I don't have to type.
+
+So we can now see that this now renders almost instantaneously.
+It's just because it's only rendering what's in view.
+And so let's now do this again.
+Make sure it's not in View.
+Start recording a profile.
+Render the View.
+And then stop.
+And now we can go ahead and see this flame chart
+to see if it's rendering as many contacts as the Scroll View did.
+And now we see something very different.
+
+We see over here our app.
+It's added a Virtualized List.
+It turns out the Virtualized List within it has a Scroll View.
+And let's see how many rows are being rendered.
+
+Now we get to peek into the internals of how
+this Section List is being rendered.
+So we see that there's a View with a cell render.
+Inside that cell render is the row being called.
+And inside that is a View.
+So inside the row is exactly what we have inside our row implementation.
+It's a view with a couple pieces of text in it.
+Those text are just the name and the phone number.
+But we see that one, two, three, four, five, six--
+a lot fewer than 1,000 of these are being rendered.
+And the reason is because it's only rendering what's in View.
+And so we can actually see proof of that by one, just toggling the button
+and seeing that it renders almost instantaneously, but two,
+actually just looking at this flame chart
+and seeing that within this Scroll View here,
+there's actually only like 15, maybe 20 rows that are being rendered,
+rather than all 1,000 like the previous one.
+And if we wanted to take a peek at the internals and see how this works,
+we can see that there's a Virtualized List or our Section List
+that we're using is actually calling a Virtualized List under the hood.
+And that Virtualized List is actually using a Scroll View under the hood.
+And so we get a peek at the internals of this component.
+All right, so let's now stop remote debugging, so we can forge ahead.
+
+So now that we've seen how to actually look at the performance of our app,
+let's start to actually optimize some things.
+So what are some common inefficiencies in React Native apps?
+So one is just re-rendering way too often.
+Another one is unnecessarily changing props,
+and lastly, unnecessary logic in mount update.
+And so what does it mean to re-render too often?
+Well, components actually automatically re-render
+whenever they receive new props.
+We've been talking about this since nearly day one.
+But sometimes a prop that isn't necessarily needed is passed.
+And then if that changed, it also requires the entire component
+to re-render.
+And sometimes that's completely unnecessary.
+And so how do we actually go about fixing that?
+Well, if we're using something like Redux,
+we only need to subscribe to the part of the state that we actually care about.
+And so in our maps [INAUDIBLE] to props function,
+no need to subscribe to some props that aren't necessary for the app.
+So that one's a pretty easy optimization.
+Another thing is using keys in arrays or lists.
+And so in a few lectures ago, we talked about why that's necessary.
+And so if you remember back to then, the way
+that React works is that every single time a component is re-rendered,
+it will actually diff something in the virtual React Tree
+with what's actually rendered to the app.
+And so if we have something like a list of maybe names.
+And maybe the first one is Jordan.
+And the second one's David.
+And say we wanted to add a new person.
+If we wanted to add somebody like Yowon and we
+wanted to add it to the third place in the list, it's pretty easy for React
+to do.
+It says, OK, we need to add something to our virtual list
+and say this is what's currently on screen,
+or this is what's currently on screen.
+
+And this is what it's doing in memory.
+So it can say, OK, we're going to add Yowon to the list here.
+And so let's do this in red.
+
+And then it can go ahead and do a diff, which was actually there.
+It says, oh, this remains the same.
+We don't need to change it.
+This remains the same.
+Don't need to change it.
+Oh, Yowon doesn't exist in the actual tree, so let's add him here.
+
+Easy.
+All we had to do is add one person at the bottom.
+But what happens when we don't want to add the person to the bottom?
+So let's retrace our steps a little bit.
+
+Say the goal was actually to add Yowon to the top of the list.
+Then what needs to happen?
+Well, if React was just to do its thing and diff,
+it would say, OK, let's add Yowon here.
+
+And now we have this new list.
+So what's different between the first people on the list?
+Well, they're different, so let's change this.
+
+How about the second person in the list?
+Well, Jordan is different than David, so we need to change that.
+
+And then who's third?
+Well, nobody's there, so let's just--
+oops.
+This should be Jordan.
+
+And then nobody's in the third list here, so let's just add David.
+So what ends up happening in this case is
+we changed all three things when you really only needed to change one.
+And so by adding keys to a list, React can actually
+keep track of what was in the new list that was originally in the list,
+even if the order has changed.
+And so let's just redraw this.
+
+[INAUDIBLE] all this we had Jordan and David here.
+And then we wanted to add Yowon to the beginning.
+
+What happens in this case if we were to mark them and say maybe
+Jordan's ID is just the number 1.
+And maybe David's ID is the number 2.
+And maybe Yowon's ID is the number 3.
+
+And so now we've marked them with what are effectively IDs.
+So what happens now?
+React says, oh, we need to add Yowon to the beginning of the list.
+
+And now let us diff what is in the new list in the memory with what
+we actually have here.
+Oh, Yowon 3 doesn't match Jordan.
+But this here actually has a number 1.
+And we see that the number 1 is here.
+Oh, we also see that David is still here, so we don't actually
+have to change these.
+We know that what used to be part of the--
+the items that used to be in the list are still on the new list.
+They just changed their orders.
+So we can actually just move those components down the list
+and add one new person here.
+So React is smart enough to know, hey, these particular people didn't change.
+They just shifted places in the list.
+And so in the new list, now that we don't have to recreate them,
+we can just shuffle them around, reuse them,
+and add only what's needed to be added.
+And the only way that we can allow React to have the optimization
+is by marking people with these IDs.
+And these IDs must actually be unique.
+Otherwise, it won't know--
+say we had some third person here in the list with an ID of number 1.
+When it sees Jordan 1 here, it won't know which one it should be.
+And so it'll actually throw a warning, oh, Key Error.
+We have multiple of the same keys.
+And so the constraint on this is that we must have unique keys.
+But by assigning keys to each member in a list,
+React can have this optimization.
+
+And lastly, we have shouldComponentUpdate,
+which we talked about in the previous weeks
+when we talked about React lifecycle methods.
+shouldComponentUpdate is a lifecycle method
+that allows us to either return true or return false.
+If we return true, we're answering the question,
+should the component update with yes.
+And it will go ahead and re-render.
+If we return false, then we're answering the question,
+should the component update with no.
+And it will actually not re-render.
+And then we see this new thing called a React PureComponent, which
+we have never talked about so far.
+So we've talked about a React.Component.
+Many times, what is a React.Component?
+Well, it's just the basic building block of React.
+And what does it give us?
+It gives us things like state.
+It gives us those lifecycle methods.
+But it turns out there's another thing called a React PureComponent.
+And what differs here is that a PureComponent
+has a predefined shouldComponentUpdate where it just
+does a shallow diff of props, meaning it looks at the props
+that it used to have.
+It looks at the props and the new props that are coming down.
+And it will compare each one.
+And it does this at a level.
+And I think we talked about a shallow merge back in Lecture 1.
+But it just means it will look at each prop.
+It will say, does this prop triple equal this new prop?
+And so if it's something like an object, it won't actually
+dive into the keys of the objects.
+It'll just see if the object references match.
+And same with something like a function, or a array,
+or any other object type in JavaScript.
+So let's go ahead and do something here.
+So let's add something to our app that will actually
+change the first contact in our list.
+So let's revert back to our Scroll View just so
+that any performance hits are noticeable because it
+is re-rendering 1,000 rows at once.
+So now you can see that it takes a good second in order
+to render this full screen.
+And so let's add something-- like some sort of button
+maybe here where when you click this button,
+it just changes the first person in the app.
+And presumably, we won't need to re-render all 999 other people.
+But we'll see how we can tell React explicitly, hey, don't re-render these.
+And we're going to use something like shouldComponentUpdate.
+
+So let's just do a quick review of what's actually happening here.
+So we have our Contacts screen.
+We can toggle the contacts, which is just
+something in state that decides whether or not we should render this list.
+This list is just a Scroll View which maps over all the contacts
+that we passed it, and renders a row here.
+And what is a row?
+
+Well, a row is just a very basic view with a couple Text things within it.
+And so let's first implement this change.
+And so we're going to need some way to tell our app,
+hey, we're going to do something here.
+And generally, when we're talking about a Redux app, when
+we want to tell our app to do something, and by do something,
+I mean change something in our state, we want
+to do that by dispatching an action.
+So let's first add an action for what we want to do.
+
+So within our actions.js, which is where we
+define all of our action types and our action creators,
+let's add a new action type for changing the first user.
+
+So we just added a action type.
+And now we are going to add a action creator, which is just
+a function that returns an action.
+And if we remember back to a couple lectures ago,
+an action is just an object with a type and maybe payload key.
+So let's export something called Change First Contact.
+It doesn't take any arguments.
+And it just returns an object with a type that is Change First User.
+Let me change this to Contact.
+
+Cool.
+So we now have our action type.
+And so when we dispatch this type, we need some sort of thing
+that is listening and will change our data.
+And so we do that in the reducer.
+
+And if you remember, our reducer right now
+is just built up of two smaller reducers.
+One handles the user part of the app.
+And one handles our contacts.
+And so since we're changing the contacts,
+we should update our contact reducer, which is up at the top here.
+We have a Contact Reducer.
+It's passed some state, which is initialized to our contacts
+in an action.
+And if our action type is Update Contact, we add a contact.
+And now we're going to add something that
+says if our action type is change first contact,
+then we should do something else.
+And let me remember to import that from our actions.
+And so what do we want to do here?
+We want to change our first contact and do that in a way that is immutable.
+Because if you remember back to the lecture on Redux,
+every time we change our state, we want to do that immutably.
+And so we needed to figure out a way to extract
+the first contact in our contacts list, change it somehow, and then add it back
+in.
+So how might we do that?
+Well, let's use some shorthand here.
+So just like there's shorthand to pull keys out of objects--
+so say we wanted to get that action type.
+We could do something like this, which is basically
+declaring a new const called Type, and assigning it
+to the type key of the action object.
+We can also do some pattern matching on arrays.
+So we could do first contact.
+And the rest of the contact is equal to that array called state.
+
+So in other words, if state were something like name Jordan,
+phone some phone and there are no other people
+in this array, what would happen is first contact would
+match to Jordan to this object here.
+And the rest is just an empty array.
+And so we'd be left with First Contact is this object up here.
+And rest would be an empty array.
+And so this allows us to de-structure an array and assign it to a couple values.
+And so now that we have the first contact out, what we can do
+is the new contact is going to be an object because we're
+doing this immutably.
+We're creating a new object here.
+We can take the name.
+Or let's actually take all of the key value pairs of First Contact
+and just clone them.
+So if you remember what this dot, dot, dot notation is doing
+is it's saying take all of the key value pairs in an array in an object called
+First Contact.
+And put them into this new object that we've just created here.
+And so this effectively immutably makes a copy of First Contact.
+And now let's overwrite the name and say the name is just going to be my name.
+
+So now we've immutably updated a new contact
+so that it's a clone of the first contact.
+But we're overwriting the property called name
+and replacing it with my name.
+And now let's return some new state.
+And what is the new state?
+Well, the First Contact is actually going to be the new contact here.
+And then the rest are just going to be whatever was there before.
+And so a quick recap of what's going on here
+is the state comes down as whatever the state used to be.
+We're matching on the type, Change First Contact.
+And then we're using this shorthand in order
+to grab the first contact in our list.
+We're just assigning the rest into this variable just to hold them for now.
+And then we're modifying new contact.
+And we're doing that immutably.
+And so we're creating a new object by using this object literal notation.
+We're copying over all of the key value pairs of the First Contact.
+And then we're going to overwrite one of those.
+And so we're overwriting the name.
+And we're changing it to my name.
+And then lastly, we are returning a new contact with the rest.
+And then we can make this a little bit safer.
+So say there are actually no contacts.
+Maybe if there's no First Contact, just return the state.
+So that just makes it a little bit safer in case there's nobody
+in the first contact.
+
+Cool.
+So now we've added an action which notifies our reducer that we
+want to change our First Contact.
+We've added that logic in the reducer to actually change the first contact.
+And now we need to effectively fire that action off.
+And so how are we going to do that?
+Well, let's go into our screen and open our Contacts List screen.
+And so let's add a button here, which fires that off.
+And so let's import that action.
+We called it Change First Contact from our Redux actions.
+
+Let's create a new button that says Change First Contact.
+And then all we have to do on press is just Change First Contact.
+Right?
+So now we go here.
+And we click Change First Contact.
+But nothing happens.
+So what is going wrong here?
+So let's just sanity check.
+So we import Change First Contact from our Redux actions.
+So let's go see what that does.
+
+So Change First Contact here is a function that takes no arguments.
+And so when we click the button, it's invoking this function
+with no arguments.
+So that's all good.
+And then it returns an object that has a type key that
+is equal to Change First Contact.
+And so what is our bug here?
+Why is nothing happening when I'm clicking Change First Contact?
+Well, all that's actually happening is we're invoking
+a function that returns an object.
+But nowhere is that letting our Redux store
+know that it should be dispatching an action.
+And so how do we bind that function-- that action creator--
+to our dispatch function?
+The answer to that question is by using React Redux.
+And so if we go open up our Contact List screen,
+we see that we've already imported that connect higher order
+component from React Redux.
+We're already using it down here by mapping our state to our props.
+And now we just need to say also bind our action creators to our dispatch.
+And which one do we want to bind?
+Well, it's the one called Change First Contact.
+
+And so that is now binding our action creator called Change First
+Contact to a prop that is passed down called Change First Contact,
+which is a function.
+And so here rather than invoking the action that we imported from
+our actions file, which is really just a function that returns an object,
+we want to invoke this .props.changefirstcontact
+because that's the one that's actually bound to our dispatch function.
+
+And so if we save that and click this, we
+see that it did change the first contact.
+And we can do it again.
+And it has changed the contact again.
+But it doesn't really matter because we're changing the name
+from Jordan Hayashi to Jordan Hayashi.
+And we see that it takes a little bit of time.
+So let's refresh our app real quick.
+It takes a little bit of time to actually do
+that because it's changing this and then re-rendering our entire list.
+We can make that even more obvious if we up the number
+of contacts that are being displayed.
+So let's just open up the contacts file.
+Change 1,000 here to 5,000.
+And now it's rendering as we speak.
+And now it's taking quite a long time.
+And if we click this, we see it takes multiple seconds before it renders.
+And why is that happening?
+Well, when we click Change First Contact, what happens?
+It goes off to our Redux store and updates the first contact
+and then passes it back down here.
+And what happens?
+It renders that first contact with the new name.
+And then it renders the second contact with the exact same information.
+And it renders the third contact with the exact same information
+that hadn't changed from the last time.
+And so it's actually going down and re-rendering 5,000 people
+where really only one of them changed.
+We're extraneously re-rendering 4,999 contacts.
+And so let's try to optimize that.
+
+So we know that we can use this thing called shouldComponentUpdate
+and or React PureComponent.
+And it basically just says, hey, if our props don't change, don't re-render me.
+And so how are we going to do that?
+Well, we want to do it in the row because rows the thing
+that's ultimately receiving the props.
+And right now, row is just a stateless functional component.
+It takes some props and returns an element.
+So let's actually make it stateful.
+And so by making it stateful, it can remember its old props
+and react accordingly.
+So let's actually do class row extends React.PureComponent.
+And so by using a PureComponent here, it's
+the same thing as a component with one thing changed.
+The shouldComponentUpdate lifecycle method is already implemented for us.
+And it's just does a shallow diff of the props.
+And so let's do that.
+Must have a render method that returned this.
+
+And so all we changed is rewrote--
+let's silence ESLint.
+
+We wrote what used to be a pure functional component.
+And we changed it to a class component that extends React PureComponent.
+And if you actually looked at the lint errors,
+there's a error here where props is not actually
+defined because in a stateless component, what is props?
+It's actually this.props.
+And so we can actually create a variable called
+props, which is equal to this.props.
+So I can just do that rather than adding this in front of those other ones.
+And we can actually use the shorthand here and do const props equals this,
+or in other words, this we expect to be an object.
+We expect it to have a key called props.
+And so let's create a new constant, call it props, and assign it
+to the value of the key props.
+And so now, if we save this, now each one of the rows is a PureComponent.
+And again, it's taking a few seconds to render.
+But now for each row here, these are PureComponents.
+And so they're React components that have a shouldComponentUpdate lifecycle
+method defined.
+And what it's doing is it says, all right, when you pass me new props,
+let me see what my current props are and check to see
+if the new props are any different.
+And if they're not, I'm not going to re-render.
+And if they are, I will.
+And so now let's click that Change First Contact button and see what happens.
+
+It was pretty instant.
+Again, let's refresh.
+It's going to take five or so seconds to render the entire list.
+And we see that when we click this button,
+this changes in much less than five seconds.
+And what's happening here?
+Well, one, it's dispatching that action off to a Redux store.
+It's changing the first contact.
+It's then passing those props back down to this component.
+And then it's re-rendering this component.
+And for each row, it's passing down those contacts.
+And for the first one, it sees, hey, my name's different, so let me re-render.
+And then the next one, it says, all right, is my name the same
+as it used to be?
+Yeah, it is.
+Is my phone number the same as it used to be?
+Yes, it is.
+So now I don't need to re-render at all.
+Now I only need to just pass.
+And so it does have to do 5,000 equality checks--
+one for each row.
+But the simple equality check there is much faster
+than re-rendering the component.
+
+But what if we're passing props that we don't intend to pass.
+We're passing maybe much more than name and phone.
+And so we can actually optimize this further
+by saying we know that the only thing that might change
+is the name, really in this case.
+So we can actually optimize this further.
+So rather than doing a PureComponent, let's just do a normal component.
+And let's define our own shouldComponentUpdate.
+
+And shouldComponentUpdate is passed the next props.
+
+And we can check.
+Since I wrote the code, I know that the only thing I could possibly change
+is the name.
+So I can just check if the next props .name is different than the current
+props.name.
+
+I can return true--
+
+else I can return false.
+
+Or in other words, just return the value of this Boolean expression here.
+So instead of saying, if this is true, return true--
+otherwise, return false, I can just say return next props.name is not equal
+to this props-- .props.name.
+
+So if we now run this, it again takes five or so seconds
+in order to render the first time.
+But now when we want to change the first contact, that's actually
+roughly twice as fast as the previous one because instead
+of doing 5,000 checks where each check is checking every single prop,
+it's only checking a single prop.
+It's only checking name.
+And so by defining a shouldComponentUpdate,
+we save our component from re-rendering too often.
+
+So what's next in our common inefficiencies?
+Well, unnecessarily changing props--
+and so what might actually happen here is we accidentally or maybe not
+accidentally-- unknowingly-- change a value that is passed to a child
+and cause a re-render of the entire subtree.
+And so if you remember, the way that a React app is expressed
+is it's just a tree of a bunch of nodes.
+So we have our app.
+And then maybe our app has a couple different components.
+And maybe this one has a few different components.
+And maybe each of these has a few, and so on.
+
+And so every single time we pass down new props,
+the entire subtree is updated, or could be updated
+depending on how it's implemented.
+And say these two things are PureComponents--
+PureComponents-- PureComponent.
+So now what happens?
+If we pass down props that haven't changed,
+then the re-rendering is stopped there.
+So again, if app updates its state but the things
+that these two nodes rely on--
+those props don't change since they're PureComponents-- they say,
+OK, I'm good.
+I don't need to update.
+But say we accidentally change one of those props,
+and we pass a new prop down to this?
+Then the PureComponent says, oh, I was updated, or one of my props at least
+changed.
+So now let me re-render everything below me.
+And so if we accidentally pass a prop that shouldn't have changed,
+but actually changes, then we are at the risk
+of re-rendering an entire subtree when we don't necessarily need to.
+
+And so this is something that we see all the time.
+So say we have an object, or an array, or a function, or anything
+that can be expressed as a literal, say we have
+an object literal in our render method.
+That means every single time this component
+is rendered, a new object is created, just because it's
+an object literal in that sense.
+So this means we might be rendering something that we don't intend to.
+And so let's take a look at an example that has this side effect.
+So let's implement something called a Pure Button.
+
+And we'll only use this for an example.
+All it is is it's going to be a button that will change colors
+if its props are changed.
+So let's just import React from React.
+Let's import Button from React Native.
+
+And let's export a default--
+a class called Pure Button, which extends React.PureComponent,
+which as we learned in the previous slide
+is just a component that we'll check to see if its props have been updating.
+If so, it will re-render.
+And if not, it actually won't.
+And let's just render and return a button
+where it just retains all of its props.
+
+And let's actually do something additional.
+So let's have our state default to a color of null.
+And if the component updates--
+so component did update--
+let's set state and update that color to be something red.
+
+And let's also pass this color down here.
+
+So in other words, we have a button.
+Oh, and excuse this ESLint error.
+
+So we have a component here, what we're calling a Pure Button.
+And all it does is it has a state which initializes as a null color.
+And so when it renders, it's just going to be a button.
+It's going to pass all of its props just straight through to a button.
+But it's also going to say, hey, I have a special color that at first, it's
+just null.
+It doesn't have a color.
+But if I ever update, I'm going to change myself to be red.
+And so this component here, it'll turn red if we accidentally update it.
+So let's now create a new screen.
+
+Let's have a screen that--
+let's just copy it from our Contact List screen.
+
+So this screen is not going to have much.
+We can actually delete these things.
+Let's-- ah, it's probably going to be faster just to rewrite it.
+
+So let's have a screen.
+First we need to import React.
+
+We're going to import a View from React Native.
+
+And that's render this view.
+
+And since I'll be quick, I'm just going to put the style inline.
+
+And what should we have happen when you click the Pure Button-- so
+let's first say the Pure Button is going to have some style that
+will align itself to be centered.
+
+And on press, what should we do?
+
+Let's have it count.
+
+So we're going to need a count here.
+
+So this class extends React component.
+It's going to be initialized with a state that starts at 0.
+So if you recognize this example, it's the example
+that we gave on almost the first day of class
+when we were discussing React Native.
+Let's have a render method which returns this.
+
+And what's going to happen on press?
+Let's do this.setstate, and do the previous state,
+and then return the count plus 1.
+
+And then close our View.
+
+And in theory, every time we click the button, it should increment the count.
+And maybe we should actually show the count.
+So let's also import some Text and display it.
+
+And let's also remember to import our Pure Button.
+
+And that should close those errors.
+So, cool, we just implemented the app that we had on nearly day one.
+And let's go ahead and render it.
+
+So import that Pure Button screen from Pure Button screen, and render it.
+
+So now we have--
+oop.
+
+We forgot to give a title to our button.
+So let's go ahead and do that.
+
+And now we have our thing, so we can increment the count if we click it.
+And it will increment that number in the top left when you click it.
+And uh-oh, our button turns red.
+But it's a PureComponent, so it shouldn't be re-updating.
+And so remember, if we have any object literals in our render method,
+it's creating those object literals every single time render is clicked,
+or render happens.
+And so since in our render here we have a Pure
+Button, every single time this render is created,
+this object is getting recreated.
+And if we remember back to day one, we are talking
+about things like a style sheet.
+And so we can go ahead and use a style sheet here,
+which will guarantee that it won't create a new object every single time
+we re-render.
+And so let's do const styles equals a style sheet.create,
+something you should be pretty familiar with at this point.
+
+And let's have our button style be align Self center.
+
+And then go ahead and use it down here.
+
+Great.
+So now it's not going to create a new style object
+every single time we render.
+And so now, we can see that we click it.
+And uh-oh, it still turns red.
+So even though we changed our object that was getting recreated every time,
+we still have here a function literal.
+And since we have just a literal function definition here,
+it's actually recreating that function every single render method as well.
+And so every single time we render this Pure Button,
+we're passing down a new function.
+Even though it does the exact same thing,
+it's actually a completely new function reference.
+And so what we can do here is declare a class property.
+So you can say increment, and all it does
+is this.setState and takes the previous state
+and sets the count equal to the previous state's count.
+
+And add 1.
+
+And so now down here, rather than declaring a new function,
+we can actually just use this.increment.
+
+And it's complaining.
+But now it will run if we click.
+Oh, good.
+It's not turning red.
+But that's strange because we still have a string
+that we're just declaring here.
+So why isn't PureComponent re-rendering even though we're
+declaring a new string literal here?
+
+So if you remember all the way back to one of the first lectures,
+we talked about the JavaScript primitive types.
+We talked about how there were numbers.
+There were many other types, including strings.
+And lastly, there were objects.
+And anything that wasn't one of those primitives was an object.
+And every object gets recreated when you--
+and so, sorry, the way that you compare these things when you compare them with
+triple equals, objects-- their references--
+will be changed.
+And so if we declare a new object and we want
+to compare it by doing a triple equals, if it's a new object,
+no matter what's inside of it, they're going to be different.
+Whereas for the primitives, when you compare them with triple equals,
+you're just seeing if their values are the same.
+And so even though this is technically a new string that we've
+gone ahead and created, when you compare those,
+since it's the same exact string, the PureComponent will know,
+oh, it's the same one.
+I don't need to re-render here.
+And so that's please this ESLint.
+
+And now this does behave how we actually wanted it to.
+And why is that?
+Well, it's because the title isn't changing.
+The styles we're not declaring inline.
+We actually brought it out to a separate style object here.
+And same thing with this function.
+And you see it's no longer turning red.
+
+And so the last common error--
+so the way that we fix this is by using constants, or methods, or properties
+on the class instance, which we just saw.
+
+So let's look at the last very common error that I see,
+which is unnecessary logic in a mount or an update.
+So this one is a lot more subtle than the others.
+But adding class properties to an instance--
+so adding properties to that particular instance of a class instead of methods
+on the class.
+And why is this bad?
+Well, properties are created at every single mount.
+Whereas methods are created just once ever.
+And so in other words, when we create something
+like this, which is a class property, which is set equal to a function,
+as I explained when we first talked about this syntax,
+it's basically the same as doing a constructor here, invoking the super,
+and then doing this.increment equals a function that does this.
+
+So that means every single time this component is constructed,
+it creates a new function and says to equal to this.
+Whereas if we had instead done something like this.
+
+This is a method.
+And this method is only created once at the time of creating this module.
+And so something like array.map isn't created every single time
+we create a new array.
+It's just something that lives on the array prototype.
+And so it's only created once.
+Whereas here, same thing-- if we implement-- increment-- as a method
+here, it's only created once at the time of this module's creation,
+rather than every single time this component gets mounted or created,
+which is effectively what happens when we do this as a class property as such.
+And so this is one of the things that might get you
+because if you had actually done it as a class method like this, what happens?
+There's actually a bug here.
+And we've seen this bug many times.
+We'll click, and we say, oh, this.setstate is not a function.
+Why is it not a function?
+Because what is this when increment gets invoked?
+It's not this class.
+Who knows what it is?
+And so there's actually a bug here.
+And so we actually do need to bind this to the instance.
+And so this is actually a time where it might not
+be worth implementing this small, small optimization.
+In fact, you can't even do it in this case.
+But there are cases where if you have something like render where every time
+render is invoked, it's always going to be in the correct this context.
+That way, we don't have to implement render as a class property.
+So it's possible that we wanted to bind render to this class.
+And we can do that by using this notation.
+But since every time render's invoked, it's using the right this context,
+we don't have to.
+And so that is a small optimization.
+But again, remember, there are trade-offs for all these optimizations.
+And what is it?
+Well, these performance optimizations come at complexity costs.
+And often times, it's just not worth the cost of complexity and maintainability.
+So don't forget.
+Don't over optimize until a bottleneck is found.
+So let's go ahead and take a quick break.
+And then after the break, we're going to look at a specific optimization built
+into React Native.
+Hello, and welcome back.
+So before the break, we were talking about performance and a few
+of the common pitfalls in React.
+And we ended with me reminding you that a lot of these pitfalls
+are less performance.
+But it's not necessarily a bad thing.
+Oftentimes, optimization comes at a cost that is too great.
+The complexity that you end up adding to your app
+is not worth the marginal benefits that you get in terms of cost.
+
+So let's talk about a time where often it actually does
+matter to be as performant as possible.
+And that's in animations.
+And so if you remember back to Project 1,
+we implemented what was a Pomodoro timer.
+And so let's add a progress bar to that timer.
+So this progress bar should show us how much time is left in the timer.
+And so the animation that we're about to create
+is going to require both the JavaScript and UI thread.
+And so let's go ahead and do it.
+So I have it running here.
+So this is just a solution.
+It has a work timer.
+It'll switch to a break timer.
+25 minutes is probably too long for us to sit here
+and wait to see the progress bar go up.
+So let's actually modify the code.
+
+So the code is conveniently copied into the repo if you cloned it before class.
+
+So let's actually first just take a quick look
+at exactly what this is doing.
+So for those of you who took a look at the solution
+that I released a few weeks ago, this is basically
+the exact same solution cut and pasted.
+Well, let's just take a look at what it's doing.
+And so an app, we declare a couple things.
+We declare the defaults for our work minutes and break minutes.
+So let's actually adjust those to be something like 0.1 minutes,
+or 6 seconds each.
+And so if we save that, we'll see that it got reset to 6 seconds each.
+But here we have a couple things.
+We have our state, which has a work time and break time where the work time
+and break time are measured in seconds.
+We then have something called time remaining, which is the same thing
+but measured in milliseconds.
+We have a flag that is letting us know if the timer's running
+or if it's paused.
+And we have a flag that lets us know if the active timers work or break.
+When that component mounts, we create a new timer.
+I created a timer class, set the state to be running,
+and then every single time the timer ticks,
+we pass this function called Update Time Remaining, which is declared here,
+which just sets the state.
+And it does a bunch of other stuff.
+But let's go take a look at what the timer is--
+how it's implemented.
+So let's look at the utils.
+I created a timer class to encapsulate all of the logic for timing.
+And so this timer takes a duration--
+how long the timer should be in milliseconds.
+It takes what it should it do every time it ticks a function--
+a callback there--
+and what should it do when it hits 0.
+And so it goes ahead and saves all of those values.
+It then goes ahead and creates what should be the end time.
+And it starts ticking.
+And what happens at every single tick?
+Well, if the end time is less than what it is now, then it means we're done.
+So let's invoke the callback with 0.
+Let's invoke that on end function.
+Otherwise, it means we're still ticking.
+So let's invoke the tick function with however much time we have remaining.
+Let's figure out exactly what time it should be when we want to tick next.
+And so by moduloing the time remaining by 1,000,
+we get however many milliseconds that are left until the next second
+or until the next tick should be.
+Then we create a timeout to invoke the same exact tick function again
+that amount of milliseconds later.
+And so this accounts for any delays if the JavaScript thread was full,
+or if there's some time drift or something like that.
+And this makes sure that the next tick should
+be as close to the second as possible.
+And then we have some logic for handling stop.
+But that's a little bit less relevant for right now.
+And so let's go ahead--
+go back into our app.
+And let's try to create a progress bar right here that
+will just grow and grow to the full width by the time our timer gets to 0.
+And so how are we going to do that?
+Should we implement that in our app component?
+Probably not.
+It sounds like it should be something that's
+encapsulated into its own component.
+So let's go ahead and do that.
+
+So let's create a progress bar.
+
+And it's just going to first import React
+from React, import probably a View, and maybe also
+a style sheet from React Native.
+
+And that's-- for now, just export empty View.
+
+And that's imported into app.
+
+All right, so we have our progress bar, which all it does is just render
+an empty View.
+And that's imported into--
+and use it into our app.
+So we have our countdown.
+And let's just put it directly below the countdown.
+
+Yeah, we want the progress bar here.
+Cool.
+So nothing should've visibly changed.
+It's just an empty View.
+We can style it so that we are sure that it's actually appearing.
+
+So maybe let's do--
+
+so let's have the progress bar just be a height of 10 and a width of 100.
+And let's make it blue.
+
+So now we should see a blue bar up here, which is not actually
+happening because I need to actually use that style.
+
+So now we see a blue bar appear.
+And so we're going to want to have that bar increase in width
+as our timer goes down.
+And so what information are you going to need in order
+to ensure that that happens?
+So what information do we have?
+We have the time here, which is the time remaining left.
+That's probably going to be important information
+because the bar's going to be a different width depending
+on how much time is left.
+We probably also want to know how much time there is total.
+And so just having one second left doesn't really
+give us enough information that we need to know how wide it should be.
+So it needs to be one second left out of how many--
+out of the 6 seconds that were total for the work time.
+So we need to know both the time left and the time total.
+What else do we need to know?
+Probably nothing else.
+So let's go ahead and pass those props down to our progress bar
+so that we can go ahead and use them.
+
+So here, what do we have at our disposal?
+
+We have work time and break time.
+So we need to figure out exactly which one of those to use.
+And we have time remaining, so that's already there.
+So we can pass the time remaining into our progress bar.
+
+Remaining-- and we want to have the total time.
+Let's call it time Total.
+
+So we need to figure out how to calculate that.
+
+So let's just write a helper method here.
+We can do get total--
+we get time Total.
+
+And what is it going to do?
+Well, let's get the work and break time, so const work time
+is this.state.workTime is I believe what I called it.
+Yep.
+
+And const break time is this.state.breakTime.
+
+So there's probably a better way to do this.
+So the shorthand here is const workTime.
+And breakTime is this.state, which is the shorthand for these two lines.
+So we can just replace that.
+And then we can return if this.state.--
+I think it's called active timer--
+yep-- if this.state.activetimer is work, return work time.
+Otherwise, return break time.
+So this helper method is just a simple function
+that gets the work time and break time and returns the correct one depending
+on what the active timer is.
+And so that will get our total time.
+So let's do this.
+
+Let's do this.getTimeTotal.
+
+And that will get the correct amount of time.
+There's a potential bug here because that time is measured in seconds,
+and this time is measured in milliseconds.
+So let's get ahead of that by multiplying this by 1,000.
+Cool.
+So now get Time Total is in the same unit of time or measurement
+as the time remaining.
+Now they're both in milliseconds.
+And maybe it might be helpful for this to know if it's running.
+
+Cool.
+So now let's go ahead and open up progress bar.
+
+Let's actually use prop types here just so
+that we can remember exactly what props we have.
+
+So why did we pass?
+We passed something called Time Total or Time Remaining, which is a number.
+We passed Time Total, which is also a number.
+And we also passed is running, which is a Boolean.
+
+Cool.
+So now we have a progress bar.
+We're passing down the props that we want, which is just the time
+remaining--
+Time Total when it's running.
+And right now it's just showing a blue bar.
+But there is a bug here.
+Where?
+Line 13.
+At line 13.
+I forgot an equals.
+Thank you, Yowon.
+
+And now, yeah, it's just a blue bar.
+So how are we going to get that bar to show the correct width?
+Probably some math.
+So let's do some math.
+So in React Native, there's actually a really easy way
+to get the width of the window.
+We can import dimensions from React Native.
+And we can do some calculation here.
+So before you return, let's figure out exactly how wide the window is.
+So const width of the window is Dimensions.get the window width.
+So this will get us the dimensions, which is both height and width.
+So we can just do .width because that's the one that we want.
+Or again, we can use that shorthand where we de-structure
+and grab the width out of that object.
+So now we have the total width of the window.
+And if we wanted to, we can actually just pass that in directly.
+
+So we have the width here.
+Oh, I typed widow.
+[LAUGHTER]
+I now see why you were laughing.
+We don't want the widow's width, which is kind of a funny statement.
+We actually want the window width.
+And so we do indeed get the correct width of the window there.
+So now let's go ahead and do some math.
+So we know exactly how much time is remaining.
+We know how much time there is total.
+And so we could figure out using some proportions exactly how much of that
+width of the window we should take.
+So let's do const percentage is just the time remaining over the time Total.
+And I'm grabbing those from props.
+
+Cool.
+So now I have the width, and I have a percentage
+of the width I want to actually take up.
+And we can just do here the percent times the width.
+And so hopefully, we should now have a timer where the width is
+proportional to the time left.
+Unfortunately, it's going in the wrong direction.
+The way I had imagined it was just a progress bar that grows from the left
+to the right.
+So again, not that hard to do with math.
+So that's the inverse of the width that we want.
+So we actually want the width minus that.
+
+Or we could do the inverse of the percent.
+So 1 minus that is the percentage of time that has occurred.
+And now we can see it grow from the left to the right,
+just like I'd imagined it in my mind.
+Unfortunately, the way that I imagined it in my mind
+was also a little bit smoother than it is currently.
+Right now, it's only happening once per tick.
+So as the seconds count down, a big block of the progress is achieved.
+So how might we optimize this?
+How might we actually make it do what we want it to do?
+Well, there's a few ways.
+Maybe we should just make it tick more often.
+And so we saw the code for the timer.
+
+We see that the way that this calculates when the next tick should be
+is it just mooulos by 1,000, meaning it's going to tick again
+at the next 1,000-- the next second.
+So we can make this number smaller and have it tick more often.
+So that's declare a constant up here called tick duration.
+And set it to a second at first.
+So we can just replace this with the tick duration.
+And now it'll do the same thing--
+1 per second.
+We can say now the tick duration is going to be a half second.
+And we'll see that it now does twice per second.
+Let's make it go even faster--
+maybe 1/20 of a second.
+Now it's going pretty dang smooth.
+Let's actually just make it run at 60 FPS.
+So let's just do--
+
+this would be one frame a second.
+And let's actually just divide it by 60.
+So now we have 60 FPS.
+And dang, is that smooth.
+So cool, we just got it.
+Done.
+Easy.
+But there's not really much happening in this app.
+It's just a timer that ticks.
+But what if this app was actually doing other stuff?
+What if it was busy?
+What if the JavaScript thread once in a while would actually get full?
+So let's actually write up a function that will randomly block the JavaScript
+thread, because why not?
+It'll stimulate a lot of work being done.
+So let's go back into app.
+Let's write a block statement.
+
+You might recall this block statement when I demonstrated it in
+maybe Lecture 1, was it?
+But all we're going to do is say done time is the current date.
+And let's make it block for 200 milliseconds--
+not that long-- a fifth of a second.
+And so let's do while the day done now is less than the done time.
+Don't do anything-- just loop.
+
+And in the render, let's say if randomly, so flip a coin.
+If it's heads, block.
+
+And so now we'll see it's getting really jittery.
+And why is that?
+Well, this thing is ticking once every--
+close to 17 milliseconds.
+And each render, there's a 50% chance that it's going
+to block randomly for 200 milliseconds.
+And so now we're seeing the progress bar get really janky.
+It goes smoothly.
+And then the JavaScript thread gets busy.
+It blocks for 200 milliseconds, and then goes again.
+And so we see what people refer to as jank.
+And so how might we fix this?
+Well, the current animation that we wrote
+requires both the JavaScript and the UI thread to run.
+And what's happening?
+Well, it's sending messages over the bridge tens of times per second.
+It's actually not cheap to do that.
+Every single time we do that, we need to serialize
+any of the information that needs to get sent to the other thread,
+and back and forth.
+That's happening 60 times per second.
+That's quite a lot.
+And blocking either thread will impact the user experience.
+And as we see here, this is blocking the JavaScript thread,
+even though it's ultimately should be running on the UI thread.
+And it's causing some jank.
+It's really actually hurting our user experience.
+So how can we go about fixing this?
+Well, this is React Native, right?
+We have the React side, and we have the Native side,
+so let's just implement the animation in Native.
+Easy-peasy.
+We all know Swift, right?
+We all know Objective-C. We all know Java.
+I don't.
+So this requires knowing many other languages, which a lot of people don't.
+And so this probably isn't the correct way to do things.
+But what if we could declare the animation in JavaScript--
+we all know JavaScript-- and have it run on the Native thread?
+That would be pretty cool.
+And it turns out that's already possible.
+And so there's this API called Animated.
+This allows us to declare our computation in JavaScript,
+and actually compute it on the Native thread.
+So now the JavaScript thread no longer needs to compute anything.
+So if this was a expensive computation, it
+frees up the JavaScript thread to not have to do it.
+And in addition, the JavaScript thread can be blocked,
+and the animation will still run.
+It will even run smoothly, though, there actually
+is a small caveat to using this-- that we can't use
+this Native driver for layout props.
+But the API documentation is here if you want to take a look.
+I'll allow you to go read the documentation.
+But I'll do a quick demo on exactly what this looks like.
+So currently, again, real quick, what's happening
+is we're declaring this computation.
+This computation is actually just doing a quick percentage.
+It says how much time is there left?
+How much time was there to begin with?
+We know approximately the percentage.
+We know exactly the percentage of what the progress bar should be.
+We compute that in JavaScript.
+We say, OK, the width should be this amount.
+We know it should be this percentage of the way done.
+So you can multiply those two.
+And lo and behold, after all this math, we have the width that we want.
+Then we send that width over to the Native.
+It'll re-render that View so that the View's width is that width.
+And good-- it's good to go, except for the fact
+that our JavaScript thread is randomly blocking.
+So now let's implement this such that it runs completely on the Native thread.
+
+So let's just copy the progress bar to progress bar animated
+and import the correct thing.
+
+So now it's using the animated one.
+It's still janky because we didn't actually change anything.
+So now let's go ahead and use that new cool API.
+
+So what is the first thing we need to do?
+Well, we should probably import animated.
+So now we have this really powerful animated API.
+And so this gives us a few different things.
+It gives us this thing called animated.timing.
+And what that is it's a function, which you
+can say use this value as a reference.
+And so the Native thread is going to compute everything.
+And it will store it in this particular value.
+And as this value changes, again, all of this computation
+is being done on the Native thread, but as it changes,
+just tell me what you want me to do, and tell me how I should change it.
+And so the way that we do that is we actually
+use this animated.timing function.
+So in order to do that, we can no longer use a stateless functional component
+here.
+So let's do make this a class.
+
+So now it's a class.
+It does the exact same thing, except props should really be this.props.
+
+So quick easy way to fix that.
+Again, it's doing the exact same thing.
+It's a component now.
+But that didn't really help us at all.
+So how can we actually make this better?
+So let's store in our state now this percentage.
+
+That's going to be a new animated.value.
+And let's just start it at 0.
+
+So this is basically saying I'm going to store in my local state,
+so only I need to know about this.
+I'm going to store a value that starts at 0.
+Eventually, it's going to get to another value.
+Maybe the value's 100.
+Maybe it's a million.
+Maybe it's anything I want.
+But for now, it's going to start at 0.
+And I'm just declaring it as a new animated value
+because it's subject to change.
+It's going to be changed at a pretty high frequency.
+And it's going to be computed all in the Native thread.
+And so when this component mounts, I'm going to create a new animation.
+I'm going to do this.animation is animated.timing.
+
+And it takes a couple things.
+We first want to tell it what value we want it to animate.
+So it's going to be this.state.percent.
+
+And it's going to take a configuration object.
+And what does it want?
+
+Well, it's going to want a value that it should eventually get to, so
+starting at 0.
+And it's eventually going to get to maybe 100.
+Since we did percentage before, we can do percentage now.
+So we're going to give it a toValue.
+We can give it a 100.
+It's also going to take a duration, so how long should it
+be until it gets there.
+Let's just do the duration is going to be however much time is remaining,
+so this.props.timeRemaining.
+
+And it's also going to take some sort of easing function, or in other words,
+how quickly should this number go up and down?
+So we could give it maybe a cubic if we wanted it to start slow and then
+get really fast.
+Or we could give it sine, or we can give it a quadratic exponential.
+But really, we just want it to be linear,
+so every millisecond that goes by is--
+so if a millisecond goes by at the beginning,
+and a millisecond goes by in the middle, it's
+going to increase by the same amount.
+And so the easing function we want to give
+it is going to be the linear function.
+
+And so we're going to have to import easing from React Native, which
+is built in and linked from the docs.
+
+So now we have an animation.
+It's not really doing anything.
+We're starting it at 0.
+The animation-- we store a reference to the animation.
+It goes up to 100.
+It's going to take as long as the time remaining.
+And it's going to do it in a linear fashion.
+But we should probably start it.
+
+So, bam.
+So now we have an animation.
+It starts at 0.
+It'll eventually get up to 100.
+It's going to take the time remaining to get there.
+And it's all going to happen on the Native threads.
+So that number is going to scale from 0 to 100 at 60 FPS, presumably,
+and is going to update that state and all compute on the Native thread.
+So now what do we have to change here?
+Well, unfortunately, there's a caveat of this Native driver.
+It can't affect the layout props.
+And so we can't actually change width.
+We can't change the flex property.
+We can't change height.
+What we can do is we can actually scale the x dimension of our app.
+So one thing I'm actually missing is it's not actually
+running on the Native side.
+So there's a prop that we need to pass called
+use Native Driver True, which basically says,
+hey, we can compute it on the JavaScript side,
+but actually use the Native side for this--
+actually compute these things on the Native side.
+So, Cool, now this is presumably going to update that state
+value very quickly.
+Now we can do down here--
+rather than scaling the width, let's actually transform it.
+
+So let's do transformation.
+Transform-- transform takes an array.
+And the first one that we want to do is this transform or scale--
+scale x, I believe it's called.
+Let me check my notes real quick.
+
+It is called translate x.
+
+I believe it's actually called scale x.
+I'm not going to trust myself before.
+And it's going to scale by this percent.
+And this percent-- we're no longer computing it here.
+It's actually going to be computed in the state--
+computed on the Native side and stored in this.state.percent value.
+So now let's do transform is const percent is this.state.
+We no longer use props.
+And let's do percent times width.
+So again, same thing.
+Let's see if this works.
+It's not going to.
+And it's saying, oh, syntax error.
+Unexpected token on line 38 because this needs to be an object.
+
+It's not going to work because I'm not going to wait for it to bundle,
+but it's because this is just a normal view.
+And normal views can't actually get connected
+to these animations that are being computed on the Native thread.
+We actually need to use a special thing called
+an animated view, which is just a view.
+But it can watch these values that are being animated.
+So let's go ahead and do this.
+It crashed.
+
+And as it reopens, I realize there's another bug here.
+The width needs to start out at some number, so it can be scaled.
+And I wonder if that was causing the crash.
+Because you can't really scale a non-existent width.
+Nope.
+All right, debugging time.
+
+So style takes styles.progress.
+It also takes a transform, which maybe I should
+trust myself and call this transform.
+
+Translate x-- oh, this needs to take--
+
+OK, so I had the API incorrect in my mind.
+It's scale x.
+And it doesn't just take a number.
+It takes a number--
+
+an input range.
+
+OK, so what's really special about these animated values
+is that it can interpolate itself and graph itself out on a line.
+And so as the number grows, we can also tell it to map to a particular value.
+And so percent right here is not a number,
+so you can't just multiply percent by a number.
+So what used to be percent.width times width doesn't work.
+Why is that?
+Because percent is not a normal number.
+Percent is an animated.value.
+And so you can't multiply an animated value by a number.
+It's just going to crash your app, as we saw,
+and which made me panic a second ago.
+What we need to do is we need to interpolate
+that animated value into a number.
+And you do that by doing that value .interpolate.
+
+And so by interpolating this value, we can say, OK,
+this value is going to be a range from some number to some number.
+And that should map onto some target range of some number to some number.
+And it'll do the math automatically to get those proportions.
+And so we know that the input range starts at 0.
+And it goes to 100.
+How do I know that?
+Well, we declared that it starts at 0 here.
+And we declared that it's eventually going to get to 100.
+And what do we want to map it onto?
+Well, the output range should start at 0.
+And what do we want it to get to?
+We eventually want it to get to the width of the application.
+So now, hopefully, this won't crash our app
+because we're no longer incorrectly multiplying
+an animated value by a number.
+We're instead taking that estimated value
+and mapping it onto some value that starts at 0--
+ends at 100.
+So that's the range of our animated value.
+And we're mapping that onto some value that starts at 0 and ends at width.
+And so we saw that it started at 0 and ends at exactly halfway through.
+So the way that the scale is calculated is that we need to start at 0
+and get to two times the width, or you can just make this 2.
+
+And so now it scales correctly from 0 to the left all the way to 100.
+And even though our app is still getting blocked by the JavaScript thread
+as often as it was before--
+so we never removed that code in app.js that will randomly block--
+it's still blocking half the time, and half the time, every tick.
+So very often, it's going to block randomly for 200 milliseconds.
+But we see a completely smooth animation.
+So there is no jank at all as it goes left to right.
+And if we replace this with the non-animated progress bar,
+we'll see that there is indeed jank as the JavaScript thread gets blocked.
+So that's awesome.
+We were able to with somewhat few bugs go ahead
+and create this animated progress bar that does all the calculation
+on the Native thread.
+And so we see that even though the JavaScript thread is blocking,
+this still works perfectly fine.
+Unfortunately, it's not doing everything we want to.
+When the break timer gets reset, the bar is just still full.
+So let's go ahead and fix that.
+So let's do component Will Receive Props.
+
+And if we're resetting the timer-- so in other words,
+if the next props.timeRemaining is greater than the current
+props.timeRemaining, which will only happen when resetting the timer--
+then what do we want to do?
+Well, let's do this.setState.
+
+The percent is going to be a new Animated Value.
+That starts at 0.
+And then after that happens--
+so we need to make sure it resets the state.
+We're going to restart this animation.
+So let's change componentDidMount to be called startAnimation.
+
+And when it mounts, let's go ahead and invoke this.startAnimation.
+
+And then if we reset the timer, let's go ahead and reset the animated value.
+And after that's done resetting, then go ahead
+and pass a callback that will start the animation.
+Because as we talked about in a prior lecture,
+you can actually pass a callback to set state, which
+will invoke after the state is set.
+So now we see that as the timer goes down,
+even though the JavaScript thread is randomly blocked, it's very smooth.
+And when the timer gets reset, the animation gets reset.
+And everything is good.
+Unfortunately, we're out of time.
+And so we won't go ahead and implement the pausing.
+But hopefully, that has given you enough of a taste of the animated API
+to go explore on your own.
+So, great.
+Thank you for joining us today.
+And tomorrow for our final lecture, we'll
+talk about deploying apps and maybe a little bit of testing.
+Thank you.

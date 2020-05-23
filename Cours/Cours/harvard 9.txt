@@ -1,0 +1,1789 @@
+[MUSIC PLAYING]
+
+SPEAKER: Hello, and welcome back for lecture 10.
+This week, we'll be talking about asynchronous Redux and some tooling
+around JavaScript.
+So in the previous lecture we talked about scaling complexity
+and some of the issues that a company like Facebook
+runs into when they're running at scale.
+We talked about their particular solution
+to that problem, which is the Flux architecture, whereby
+data takes a one-way street, basically.
+There are no two-way bindings between models and the controllers.
+We then talked about Redux, which is an implementation of Flux.
+And we talked about a lot of the things that you
+do in order to implement Redux in your current project.
+We actually implemented our own version of Redux, which we called simpleRedux,
+and in that implementation we have things like reducers, the store,
+and some actions.
+And we wrapped up last week by looking at this library called react-redux,
+which is React bindings which allow us to use Redux along
+with a project written in React.
+So I thought we should start off this week by reviewing react-redux
+and what it gives us.
+So, again, react-redux are some React bindings for Redux
+that give us a couple of things.
+One is this concept of a provider, and another is this higher-order component
+called connect.
+So, again, what provider does is it gives our children
+access to a Redux store.
+That way, every single child doesn't have
+to do something like import our store from our store file.
+Instead, what they do is they use this higher-order component called connect,
+which helps us to subscribe to any subset of our store
+and bind our action creators to our dispatch function.
+And so what exactly does that look like in code?
+So, as you recall, last week we added Redux to our app.
+And one place that was listening to our Redux store
+was this page called the ContactListScreen.
+
+So in this ContactListScreen, we have, at the very bottom here,
+export default connect mapStateToProps ContactListScreen.
+And so the connect function comes from react-redux,
+as we see imported up here.
+And so what exactly does this connect function do?
+Well, if you recall, it takes a couple of different arguments,
+the first of which is this function called mapStateToProps.
+And I've only called it mapStateToProps here by convention.
+I can call it anything I want.
+I could call this getState, or getPropsFromStates, or really
+whatever I want, as long as what I declared
+matched the name of the function that I passed in here.
+So in this case, it would be getPropsFromState.
+And so what this function does is it takes the state object
+which it receives from the store--
+and, again, the way that you get the state from the store
+is that store.getState, which we don't have to worry about.
+React-redux handles all of that for us.
+But what this function does is it takes the state and extracts from the state
+exactly the props that we want to listen to in this particular component.
+And so, in this component, we determined that we wanted a prop called contacts
+to be passed down.
+And where did that contacts get its data from?
+Well, it's the state key, it's the contacts key in that state object.
+And so, by defining this function that takes in the state
+and returns an object where the key called contacts gets the value
+state.contacts, that's exactly how we determine the props that
+are then passed into this class.
+And so one thing that may be confusing to you
+is this connect function prototype.
+So, generally, what we've seen thus far is
+something like a function called connect that might take one, or two, or maybe
+even three arguments.
+So it would look like getPropsFromState, maybe map--
+
+I forget what the exact function is called,
+but something like map or bindDispatchToActions.
+
+And then maybe something like the component that you want to receive,
+so something like ContactListScreen.
+
+Like this, where you have a function which takes in some number of arguments
+and returns something else.
+But here we see something different.
+We see connect getPropsFromState, which is an invoked function there.
+And then we see it invoked again.
+So it suggests to us that connect actually returns some sort of function.
+Why might that be?
+So it turns out there was this movement in JavaScript where we wanted to--
+or JavaScript, ECMAScript-- wanted to use something
+that Python developers actually use quite often, called a decorator.
+So, if you remember back to CS50, you might have seen some syntax
+like this, where its like at @connect or some function,
+and you pass it a couple of parameters.
+So maybe something like getPropsFromState.
+And then, immediately below, you see some class creations,
+so like class ContactListScreen.
+
+And maybe it extends React.Component and the like.
+And so this is something that you see quite often in Python,
+where you have a higher-order function that might take some parameters.
+And then it looks to this class beyond it
+to basically wrap in whatever function that higher-order function is
+looking for.
+And so this was actually a language feature
+that was proposed into JavaScript but never really took off.
+People didn't really-- not that they didn't enjoy it,
+but the community didn't really start using it.
+And so a lot of higher-order components retained that function prototype,
+whereby you pass in some--
+you actually invoke the function with some configuration
+and it returns another function, which we immediately
+invoke right here, with the particular class that we want wrapped by connect.
+And so even though it looks very strange,
+there is actually a reason why this prototype looks like this.
+
+But this is exactly how we end up using connect in this particular function.
+We also looked at another function or another--
+the second argument to connect is actually
+a way to bind dispatch to your action creators.
+And so we did that in the AddContactScreen,
+where we again imported connect from react-redux.
+And down here, we actually pass null for our first argument.
+And so, in the previous example, that first argument
+was a function that maps our current state to the props
+that we expect the particular class to receive.
+But in this example, we didn't actually care about any props from the store.
+Rather, we only cared about this action creator called addContact.
+And so, by passing in this object here in the second parameter,
+it actually bound that addContact call to our dispatch.
+So by invoking it with this object here, it actually dispatches it for us,
+rather than having to import the store and then using store.dispatch
+and passing that an action.
+
+So that's react-redux.
+But last week we didn't actually talk about how
+to use Redux with any asynchronous action.
+So, if you recall from a couple of weeks ago,
+we actually had a bunch of different asynchronous functions
+when we wanted to use something like an API or a network request.
+So this week, we're going to extend our simpleRedux with the ability
+to handle asynchronous actions.
+
+So what sort of things might we need to consider
+when we want to support async requests?
+Well, first, where do we want to add this support?
+And how do we change our API so that what is supported can work?
+Well, where can we do that?
+So there are three different places--
+our reducers, our store, and our actions.
+And so, if you recall from last week, Redux
+is a cycle where you start with something like an action.
+
+It goes through this thing called a reducer, whereby the reducer will
+decide exactly what to do with that action
+and how it might want to change the centralized store.
+
+And, from the store, any views will update.
+
+And then, from those views, we might kick off another action.
+And so, in this model, we're going have to extend it
+with some sort of asynchronous ability.
+Where might we want to do that?
+
+Well, if we did it in our reducer, what problems will we run into?
+We might run into this thing where our reducer actually
+ends up using an old value of the state when it wants to update.
+And so it might not be a good idea to introduce anything asynchronous
+in there.
+As you recall from last week, when we talked about reducers,
+everything in the reducer should be very pure.
+And so, by waiting for asynchronous calls to come back,
+we kind of break that guarantee of purity,
+where if we have a call that comes back after another action has been
+dispatched, then we might be using an invalid value
+for our current state and our reducer.
+And so should we rather, then, do it in the store?
+Well, I'm not sure it makes sense to do it in the store,
+because the store, all it does is it tracks the current state of our app.
+And so it doesn't really make sense to add any sort of asynchronous things
+to that.
+What's left?
+Actions.
+Can we add anything to our actions?
+So what are actions?
+Actions are just basically objects with a type that
+lets us know exactly what type of action it is,
+and maybe a payload to know exactly what we want to update our store with.
+So it also doesn't really make sense to add anything asynchronous to there.
+And so what might we do instead?
+
+Well, if you recall, we have these things
+called action creators, which are functions that return actions.
+And it might actually make sense to add some asynchronous things to there,
+whereby an action creator, rather than just returning a single action,
+maybe it will return multiple actions.
+Maybe it will kick off an asynchronous request
+and then start dispatching actions as those asynchronous requests come back.
+So how might we be able to do that?
+Well, certainly we'd have to change more than just the action
+creators, because how do action creators,
+how do the actions actually get dispatched?
+It's by the store.dispatch function.
+And so, if we're doing multiple actions in our action creators,
+we might need to extend our dispatch function
+to handle those functions as well.
+So store.dispatch needs to accept other types, types other than just actions.
+So let's check our implementation of simpleRedux
+So this file is copied exactly from last week, and if we want to review
+we can just take a quick look through this.
+So in the first couple of lines, we declare a couple action types.
+And if you recall, action types are just that key
+in an action that lets us know exactly what the action type is.
+And the reason that we created these types,
+rather than just having an action hard code their exact type,
+is just to save us from typos, since we use these types to mark actions
+as a particular kind of action.
+And we also use these action types to check in our reducer against what
+the action type may be.
+And so by abstracting these types out, it kind of
+gives us the guarantee that we don't accidentally have a typo in there
+or something like that.
+And then we went and implemented our store.
+And so our store, when you create it, is passed a couple of things.
+One is the reducer, and one is the initial state.
+And so we just go ahead and store those things in the constructor.
+That way, when something like store.getState or store.dispatch
+is invoked, we remember those arguments.
+So first, we implemented store.getState, which was pretty simple.
+We just returned whatever the current state of our store is.
+And then we implemented this thing called store.dispatch,
+where we passed it some sort of update.
+And what did we do?
+Well, we said, hey, whatever reducer you ended up creating me with,
+just pass the reducer the current state of our store and any update
+that we wanted to update this store with.
+So pretty simple store implementation.
+Then down here, we wrote our reducers.
+So line 20, we just declared a default state.
+Line 22, we had a helper function called merge.
+And then we implemented our three reducers.
+So we had our main reducer, which takes a state and an action, just
+like every other reducer.
+So every single reducer has the same function prototype.
+We expect a state or the previous state, an action.
+And we want to return whatever the new state is.
+And so our main reducer, what it did is it just dispatched
+to our other reducers.
+And so it said, hey, the user key in our main application state
+is actually handled by our userReducer.
+And so let me just pass the user part of the state
+along with the action to the userReducer,
+and we'll just set the user key to whatever that happens to return.
+And we did the same thing with the contacts.
+And so, up here, we actually implemented those.
+And so our contactReducer took the current state.
+And keep in mind, this state and this state here are different.
+This one actually refers to only the contacts key in that state.
+And, again, it got the same action.
+And if the action was something like updateContact, what we did
+is we just returned an array with the new contact appended to the end.
+And if it was an action other than that, we just
+said, hey, the state in this particular part of the store remains unchanged.
+In the userReducer, we did a very similar thing.
+If we want to update the user, what we're doing
+is we're just going to merge into the state the action.payload.
+And as a just quick example, if we wanted
+to update contact, or the same action as we did in the contactReducer,
+we just store something in our user state
+as well, just keeping track of the previous contact.
+That didn't really have any significance to our app.
+We just wanted to demonstrate that our two reducers could actually
+handle the same exact action type.
+And then, lastly, we started defining our action creators, which
+were the things that get passed some actual updates
+and will return exactly the shape of the action that we wanted.
+And so we had one that was called updateUser, which took an update.
+And so whatever the updated user, or whatever
+the updated object we want the user to be, we just pass it in here.
+And then we output a Flux standard action, or an action
+that has a type and a payload.
+And the payload just happens to be the update.
+Again, we do a very similar thing with addContact,
+where we take the new contact, we create a Flex standard action
+with the type UPDATE_CONTACT, and the payload
+is just whatever the new contact is.
+And then, down here, we wrote some tests to make
+sure our store does exactly what we expected it to do.
+So we created a new store with the reducer and our default state.
+We dispatched a few actions.
+And then we just logged our store.getState.
+And at the very end, when we run this, we
+are output with the current state of our app after all of those
+dispatched actions.
+So lots of stuff jammed into that single file,
+but we were missing one key thing.
+We were missing a way to support those asynchronous actions.
+And so let's go ahead and copy this file into a file called store3.js,
+and in this file we're going to go ahead and implement a way
+to handle asynchronous actions.
+And so, in this slide, we discussed and determined
+that the best way to do this would be to change our action creators such
+that the action creators can do some logic for sending out a network request
+and dispatch multiple actions as this happens.
+And so, down here, we have a few action creators.
+We have something like updateUser and addContact, but both of them
+just immediately return a new object.
+So let's actually try to flesh out a way that we can do something like logInUser
+such that it handles some sort of asynchronous network request.
+And so let's just leave a comment here that lets
+us know that this is going to be an asynchronous action creator.
+
+So how might we do that?
+In the past, all we did is just immediately return an object.
+So we'll probably want to do that, so eventually we're
+going to want to at least--
+for now, let's just write return something
+like type LOG_IN_SUCCESS or something.
+
+So this works.
+We can go ahead and do something like invoke logInUser.
+And if we store.dispatch that, then it will correctly dispatch the action,
+as long as it's declared after store.
+But, again, that doesn't really do what we want.
+We want something asynchronous.
+And so maybe we should do something like fetch something and then do a .then
+return this exact object.
+
+But this actually doesn't work either.
+All this does is it returns to the next .then statement in our promise chain.
+So what we actually have to do is figure out a way to dispatch these actions.
+And so what if we expected something to pass in something like dispatch?
+
+So, again, now we have a completely new function prototype.
+And so when we invoke something like logInUser,
+this actually returns a function.
+And what function is that?
+It expects a dispatch, and then it does some logic.
+And so we'll come back to that later.
+But let's just assume that this dispatch here is the dispatch that we want.
+And so what might we want to do?
+Maybe first we will dispatch an action that says, hey,
+I'm about to send an asynchronous request.
+And maybe that type is LOG_IN_SENT.
+
+And we can rename that later.
+So great.
+This effectively does, if we comment out this part,
+this effectively does what our other functions are doing.
+Our other action creators immediately return an object,
+which is dispatched down here.
+But what this asynchronous action creator does
+is it expects us to pass it a dispatch, and then it
+will handle the dispatching itself.
+And so we're going to have to add support to our store in order for it
+to know that it needs to pass the dispatch into our new action creators.
+And so we'll add some logic for that in a bit.
+But maybe after this it'll send off the fetch request.
+
+And then, when it comes back, maybe it will dispatch that new action creator.
+And this dispatch is the same as this dispatch,
+and so it will go ahead and actually dispatch
+that action completely asynchronously.
+
+And maybe we would want to catch any errors.
+And if there is an error, maybe we should dispatch something
+like LOG_IN_REJECTED.
+
+And now we have what is starting to resemble an asynchronous action
+creator.
+And so it's a function that takes currently no arguments.
+It returns a function that expects us to let it know exactly how it
+should be dispatching these actions.
+And then it goes ahead and actually dispatches an action here.
+And then it sends a fetch request.
+And when it comes back asynchronously, it
+knows how to dispatch another action, and so it can go ahead and dispatch
+a new action for us.
+And maybe if the fetch errors or maybe it gets rejected,
+we know exactly how to dispatch a new action that's letting our app
+know that that login was rejected.
+So this is exactly what an asynchronous action creator looks like.
+But now we just need to add support.
+We need to change more than just the action creators.
+We need to change our store.dispatch so that it
+knows that it should be letting our async action creator know
+how to dispatch its own actions.
+So how might we do that?
+
+Well, currently in our dispatch function, we take an update
+and pass it to our reducers.
+And so let's actually change the name of this argument to something like action.
+
+So it takes an action and immediately resets the state
+to the return value of our reducer.
+But now we need to make sure that action is actually an action.
+Or more, we should check and see if the action is actually a function.
+So let's just do this.
+If the type of the action is a function, we're
+going to want to do something else.
+
+And if it's not, then we're going to do what we did before
+and just assume that the action is an action and pass it to our reducer.
+But what are we going to do if the action is a function?
+Well, if the action is a function, it wants
+to know how to dispatch its own actions.
+And so we should actually pass to the action the way to dispatch,
+so this.dispatch.
+
+And then, once it knows how to dispatch, it
+can then take care of dispatching its own actions
+and do that completely asynchronously.
+There is a small bug here.
+So if we pass something like this.dispatch and dispatch
+is then invoked in some other context, then we lose the correct this binding.
+And so we've run into this bug many times throughout this course,
+and we know how to fix that.
+We could just make dispatch a class property.
+
+That automatically takes care of the this binding for us.
+But, unfortunately, that doesn't work in Node.
+And since we're going to try to run this in Node,
+we're going to have to do something else.
+We can just do .bind here and explicitly bind it to the this context when we run
+this function.
+Cool.
+So we're pretty much there.
+And let's just go ahead and finish this action creator.
+And so logInUser should actually take something
+like a username and a password, because you need those two things in order
+to log in a user.
+Then we're going to want to fetch our actual login endpoint.
+And so, if you remember from the previous lectures,
+our login endpoint was just this authServer here.
+So let's actually go ahead and start that server.
+
+So now this server is actually running.
+
+In the previous lecture, we wrote a function
+that helps us abstract out the log in logic here, so let's
+actually just cut and paste this to our simpleRedux here.
+
+So I just cut and paste that login function from our API module
+that we wrote a few weeks ago, which handles all of the logic for us.
+It takes in a username and a password.
+It goes ahead and fetches everything for us,
+making sure that the correct headers are set.
+It then checks if the response is what we want it to be.
+And if not, then it will throw an error.
+So we can go ahead and use that login function down here.
+Rather than just this empty fetch call, we can do login,
+and we pass it that username and password.
+
+And then what do we do?
+If it was a success, then we go ahead and let
+our store know that it was a success.
+And how do we let our store know?
+Well, we dispatch an action saying that it was a success.
+And if it was an error, then what do we do?
+Well, we let our store know that it was an error
+by dispatching an action that just lets us know that the login was rejected.
+
+Great.
+So let's actually try running this.
+
+So let's comment out all of this old dispatching,
+and instead do store.dispatch.
+And what are we dispatching?
+Well, we're going to dispatch this action creator called logInUser.
+And we're going to pass it the username and the password
+that we know are correct.
+And what do we expect to happen?
+Well, we first expect it to dispatch an action that
+lets our reducer know that the login was sent.
+We then want to dispatch an action that lets
+our store know that it was a success.
+And if not, then we want to dispatch an action that
+lets us know that it was a failure.
+So let's actually add some logging so that we know that this is happening.
+So if the action is a function, then run this.
+Otherwise, let's console.log received an action, and let's log that action.type.
+
+So, presumably, this is going to work, so we're just
+going to dispatch the logInUser, and then we're going to log the state.
+We don't expect the state to change because we never actually updated
+our reducer functions.
+But hopefully we're going to see a few actions that
+say something along the lines of LOG_IN_SENT and then LOG_IN_SUCCESS.
+So let's go ahead and run store3.
+And we received LOG_IN_SENT and then received LOG_IN_REJECTED.
+The reason for that is because we're using Node,
+and Node does not have any concept of what fetch is.
+Because, if you remember from previous lectures,
+we discussed that fetch was actually part of the browser API
+rather than part of the JavaScript API.
+And since we're using Node.js, which is more just-- the JavaScript in it
+doesn't have all of the browser APIs built in.
+What we can actually do is install this thing
+called isomorphic-fetch, which is just a package that implements fetch for us,
+that we can then use in a Node.js environment.
+And so let's again try this file and do this require statement, which
+is Node's version of an import.
+Then now we can run this again and see that the login was indeed a success.
+Great.
+So now we went and actually implemented our own asynchronous action creator.
+And we can go ahead, if we want to add something to our reducer,
+or userReducer, that says, if the action type is LOG_IN_SUCCESS,
+then we can just maybe store some sort of token.
+So let's go ahead and actually implement that.
+So we could do, if action.type is LOG_IN_SUCCESS, then do something.
+But now we're starting to get a little bit unnecessarily terse
+in here, unnecessarily repeating ourself here.
+So we have action.type, action.type, action.type.
+And we can actually use something built into JavaScript called a switch
+statement, which is a cleaner way of checking against the same value
+over and over and over.
+And so we can say, if action.type happens to be UPDATE_USER,
+then return what we're going to return here.
+
+In the case where it's UPDATE_CONTACT, we're going to return this here.
+
+And if the case is LOG_IN_SUCCESS, then we
+can return merge the state with something like token, some fake token
+that we're going to hard code.
+
+And, by default, if it isn't any of the types that we're looking for,
+just return the state unchanged.
+And now we have our userReducer.
+
+And now, if we run store3, it's an asynchronous action
+so this is actually a bit messy.
+So when we do store.getState here, we still
+haven't received the asynchronous response back
+from the action over here.
+So if we wanted to actually log state at the time that it gets added,
+we can either add that to our reducer or add it to our dispatch here.
+Or we could actually add that into our Redux implementation.
+But now, if we want to add a bunch of these things, what we're doing
+is we're messing with Redux itself, and that's probably not something
+that every single consumer should do.
+So not everybody who wants to use this library
+called Redux should have to change the implementation.
+And so our additions here have been somewhat ideal
+because we're actually changing the implementation of Redux,
+and we don't want to do that every time we want to add something.
+So it turns out, built into Redux is this concept of Redux middleware, which
+allows us to extend Redux without actually
+having to mess with the implementation like we just did.
+So any function can actually be middleware.
+And what happens here is that these functions, when a new action is
+dispatched, it passes through all of these different middlewares
+before actually being dispatched.
+And so any function can be a middleware as long
+as it fits a particular function prototype, and that prototype is this.
+We first expect an object that has a couple of keys.
+One is getState, and one is dispatch.
+We then return a function that expects an argument called
+next, which is basically the next middleware in the chain.
+We then return a function that expects as an argument an action, which
+is basically every single action that gets dispatched.
+And, finally, we do whatever we want, and we
+don't have to return something at the end if we don't want to.
+So we can actually re-implement our feature as middleware.
+And so let's go ahead and do that.
+So we have a lot of logic here, and let's remove
+what we actually added to Redux itself.
+So we added this thing here that changed the way that we dispatched.
+And let's actually do that in our real Redux store.
+So let's leave our simpleRedux implementation and change directories
+into our actual directory where we use Redux.
+
+So let's look in this file that we call store.js.
+So, last week, we wrote this file and it actually
+creates a store from a reducer, dispatches a few actions, console log
+store.getState, and then exports that store.
+So it's basically the same thing that we did in our other store file
+but in real Redux rather than in our simpleRedux implementation.
+So now let's actually do this thing called--
+
+let's just call it thunk.
+
+And what a thunk is, is it's a way to wrap an expression
+to delay its evaluation.
+So, basically, what we're doing is, rather than returning an object,
+we're going to delay the return of an object
+by instead returning a function that can be invoked at any other time.
+And so let's actually just copy this exact function prototype.
+And so it's going to be something with keys getState and dispatch.
+Or let's just call that store.
+It's going to then return a function that expects next.
+It's then going to return a function that expects an action.
+And then it's going to do something.
+
+And so what are we going to do here?
+And so, in our particular example, what we ended up doing is,
+if the type of the action is a function, then we're going to do something.
+Otherwise, we know that the action's an actual action,
+and we can just pass it on to the next middleware in the chain
+by literally passing the action to the next in the chain.
+And so the reason that these arguments are
+named next and action is because action is the actual action that was getting
+dispatched, and next is just whatever's next in the middleware chain,
+and it might actually be dispatch.
+And so if the action that we receive is a real action,
+we're just going to say, hey, we don't need to do anything.
+Just pass this action to whatever's next in the chain.
+
+Otherwise, if it's a function, what do we want to do?
+Well, we want to pass our action a couple of things.
+So we could do store.dispatch, and store.getState If we want,
+but for now let's just pass the dispatch.
+And so now we can use what's called applyMiddleware,
+which is something built into Redux.
+And what it does is it lets Redux know that it should
+run every single action that we get through this middleware
+that we called thunk.
+And so here, let's just pass applyMiddleware and pass it
+this thing called thunk.
+
+So what exactly did we do here?
+So in our previous--
+
+in simpleRedux, in order to support the case where our action might actually
+be a function--
+or in other words, the thing returned by our action creator
+is a function that wants to know how to dispatch itself--
+we added to Redux a way to know that, to notice that.
+So if the action is actually a function, then
+let it know how to dispatch its own actions.
+We don't have to dispatch the action for it.
+But if it's not, then we're just going to do our normal thing
+and handle the action how we would have done before
+But, again, that required us to actually mess with the implementation of Redux.
+And so the way Redux actually works is as follows.
+So you get an action.
+And before it's passed to reducer, we actually have an opportunity
+to mess with the action.
+
+And what that is, is it's called middleware.
+
+And what middleware is, is it's a chain by which we can just
+keep passing the action down the chain and modify it however we want.
+And maybe by modifying it, we just ignore it.
+We don't even dispatch a new action.
+Instead, maybe we will just say, hey action,
+you can dispatch your own things if we just pass it
+this thing called dispatch to you.
+And so middleware is actually a chain of a bunch of things.
+We could have our thing called thunk.
+If we wanted to log all of our asynchronous actions,
+maybe we'll log things as it comes through this middleware.
+And so, when you get an action, rather than going directly into the reducer,
+we have the chance to pass it into this middleware chain.
+So this action gets passed into the middleware
+through all of these functions.
+And then only here does it then get passed into the actual reducer.
+And so this concept called middleware is not something unique to Redux.
+It's actually a pattern that you see all over the place,
+including Express, which is the library that we used in order to create
+our simple authentication server.
+And so, basically, what middleware does is
+it allows us to mess with any of our parameters
+before we send those parameters into the core library.
+In this case, the core library is the reducer and the store.
+And so let's build out the rest of this example.
+
+So again, what we did is we created a function called thunk middleware.
+It has the function prototype that we expect middleware to be.
+It takes a store.
+And if we wanted to, we can use object spread in order to extract the getState
+and dispatch methods there.
+But instead, we'll call it store and we'll pass store.dispatch.
+We then return a function that expects whatever's next.
+And then we return a function that expects an action.
+And then we get to mess with the action if we want.
+And so we've gone ahead and implemented some middleware that takes
+care of asynchronous actions for us.
+And, actually, this is not a problem that we're the first ones
+to run into, believe it or not.
+There's actually a library called Redux Thunk
+by a man named Dan Abramov, who actually implemented a very similar thing.
+And if you look at the README, he explains
+that a thunk is a function that wraps an expression to delay its evaluation.
+That's just why he happened to name the package Redux Thunk.
+And if we open the page, we can see a few things.
+We see that this "allows us to write action creators that return
+a function instead of an action."
+So very similar to our particular implementation.
+"The thunk can be used to delay the dispatch of an action,
+or to dispatch only if a certain condition is met."
+Or, in other words, "an action creator that returns a function
+to perform an asynchronous dispatch."
+And so this library solves the same problem that we just solved.
+And let's actually look at how he was able to solve it.
+So this is the first time that we're looking at an open source library
+and actually starting to open up how it works under the hood.
+And so let's actually look in the source folder
+and look at his particular implementation.
+And what do we see?
+We see a function called createThunkMiddleware.
+It takes an extra argument, something that we didn't really worry about.
+But then, we see this very familiar function prototype.
+That prototype happens to exactly match the prototype
+that we're looking for for middleware.
+And then what does it do?
+It checks to see if the type of the action is a function.
+So, in other words, if the action is a thunk, or a function that's
+delaying its evaluation, or if it's just a normal action.
+And if it is a thunk, what it does is it invokes the action
+and passes it dispatch, getState, and maybe an extra argument if you so
+chose.
+And then, if it's not, it returns next action.
+So something very, very familiar to us.
+And then it ends up doing some additional configuration, where
+it creates this thing called thunk, which
+is invoking this createThunkMiddleware with no extra argument.
+Which ends up basically just moving this,
+so it gets even closer to what we implemented.
+And then it exports its default export as this thunk.
+So this man Dan Abramov wrote a library that handles asynchronous actions,
+and his implementation was almost exactly
+the way that we implemented our own.
+
+So let's actually use this.
+
+So rather than using our own thunk middleware,
+let's just go ahead and import his, so let's just
+do import thunk from redux-thunk.
+
+Delete our particular implementation.
+Actually, let me save this for reference.
+
+And now we're basically where we were before.
+But rather than having to re-implement our own middleware
+every single time, now we can rely on an external library, and a very popular
+one at that.
+Before we run this, we're of course going to want to install it.
+
+And as soon as it's installed, now our app can handle asynchronous actions.
+And let's go ahead and start using those asynchronous actions.
+And so let's go ahead and actually re-add our login
+screen to our application, which we removed last week.
+So the way that we're going to do that is let's just reopen our app.
+And rather than rendering our main tabs by default,
+let's render our actual app navigator.
+
+So, once in a while, your dependencies might get out
+of sync with what's running in the packager,
+and so you might have to reload your bundle to make sure that all
+of the dependencies get picked up.
+And so, as this builds, let's think about exactly how we're
+going to add that login screen back to our app.
+And so the way that we did this a few weeks ago is we
+had an API where we defined a function called login.
+That is still around.
+
+So in our api.js file, we have this login function that we defined,
+that takes a username and password.
+It will fetch to our particular--
+the port where our authentication server is running.
+It will send the username and password.
+And if it's OK, then it's going to say, hey, it worked.
+And if not, it's going to throw an error.
+And we're going to have to use that login function in order
+to log in our user.
+And the way that we did that a few weeks ago is in our screens, the login page.
+We had a function called login, which would try
+to handle all of the login logic here.
+So it would await the result of sending that asynchronous login.
+If it's successful, then it will navigate us over to our main page.
+And if it's unsuccessful, then it will set the state here
+to the message, which then shows up in our UI.
+And so we have some text here, that is the error.
+And if there's an error, it will go ahead and show.
+So let's check on this.
+And so this is exactly what we saw.
+So if we try to log in and there's no password, then it will let us know,
+hey, you're missing a username or password.
+If we have incorrect username and password, the user might not exist.
+If we use a user that we know exists with the wrong password,
+it will let us know that it's the wrong password.
+And, finally, the correct username with its correct password,
+then it will log us in.
+And so that, again, is all done in this class called LoginScreen.
+So let's now start to use Redux here, rather than using the logic directly
+on this class.
+And so what have we done in the past when
+we want to move logic out of a component and into our Redux setup?
+
+Well, first we need to add maybe some new action types.
+So let's go into actions.js and then add a couple of action types.
+So right now we have UPDATE_USER and UPDATE_CONTACT.
+Let's also add an action type for sending out a login request.
+So let's do LOG_IN_SENT.
+
+Let's have an action type for when it succeeds, LOG_IN,
+and let's call it FULFILLED.
+
+And, lastly, let's have an action type for if login
+did not succeed or got rejected.
+
+Cool.
+So now we have all of the action types that we need.
+We are, however, missing the action creators.
+So let's go and actually steal the action creator that we wrote
+in our simpleRedux implementation.
+
+So let me just cut and paste that one.
+
+So now we have an asynchronous action creator called logInUser
+that expects a username and password.
+
+It then returns a function that expects a dispatch,
+and then dispatches something of type--
+we renamed it to LOG_IN_SENT here.
+It then tries to actually log in.
+If it's successful, then it will dispatch the LOG_IN_SUCCESS.
+
+We call it LOG_IN_FULFILLED.
+And, lastly, if it is unsuccessful or throws an error,
+we dispatch something called LOG_IN_REJECTED.
+Great.
+So now we have an asynchronous action creator, that we first need to export.
+And now, how are we going to go ahead and use that?
+How do we import our action creators, bind them to dispatch,
+and have them available for us to use in our application?
+Well, that's exactly what React Redux does for us,
+and that connect higher-order component.
+And so in screens/LoginScreen, let's go ahead
+and import connect from react-redux, and also import our action.
+So import logInUser from the Redux actions that we defined.
+And now that all of that login logic is in our action creator,
+we can now not use the login from API within this class.
+So now, how do we get that logInUser to work correctly in this class?
+
+Do we do something like logInUser and then
+pass this.state.username and this.state.password?
+
+No, we don't, because what does that actually do?
+What does logInUser do?
+
+logInUser, all it does is it returns a new function that expects a dispatch
+and will do a bunch of things.
+And so, by just invoking that straight here,
+all this does is return a function, and we never actually do anything
+with that function.
+So what do we actually have to do with that function?
+Well, we need to store.dispatch it so that Redux knows,
+and more specifically, our middleware knows exactly how to handle that.
+And so how do we, then, go ahead and do store.dispatch this function here?
+Well, we could import store and do store.dispatch,
+or we could just use connect.
+And so, rather than default exporting LoginScreen here, what we do is we
+default export the LoginScreen, but we actually
+pass that in to our higher-order component called connect.
+
+And what are we going to pass to connect for parameters?
+Well, for now, we're not going to care about anything in our Redux store,
+but we want to bind the logInUser to the dispatch.
+And so now this is going to be passed down as a prop,
+so we could do this.props.logInUser.
+And that will go ahead and do exactly what we want.
+And so what is missing?
+Let's go ahead and try to run this.
+
+Username, password.
+
+So that logged us in perfectly fine.
+But what happens if we put something that should actually be error?
+
+It worked for some strange reason.
+
+Oh, because we still have the old call on there.
+Oh, I've got default export when I meant to write export default that--
+
+And we can now run it, try using the correct username and password.
+
+And we can't find the variable login, which
+would make sense because we did not import it into our Redux actions.
+
+So we need to import that login function that we created in our API
+since we go ahead and use it down here.
+So now let's go ahead and see if this works.
+
+And it goes ahead and logs us in perfectly fine.
+But now let's see what happens if we put something invalid.
+It also logs us in perfectly fine.
+And so let's take a short break, and then after the break fix everything up
+and use Redux in our Redux, in our contacts app.
+Hello, and welcome back.
+So, before the break, what we were doing is we were working on our contacts app
+and re-adding our login functionality by using Redux.
+And, so far, what we've done is we've added to Redux our Redux actions.
+We've added a few action types, which we're
+going to need in order to know exactly what we're doing
+in terms of sending off the login.
+So we have an action type for when we send the initial request.
+We have one for when it comes back with a success.
+And we have an action type where it comes back
+with an error, where maybe we used the wrong password or something like that.
+We also wrote an action creator, an asynchronous one,
+which, rather than returning an object, we return a thunk.
+We return a function which expects as an argument a way
+so that it knows how to dispatch its own actions.
+And so this async action creator here takes a username and password,
+returns a function that expects dispatch, or it expects
+to know a way to dispatch its own actions,
+and then immediately dispatches an action that says,
+hey, I'm sending off a request.
+It goes ahead and sends off the request.
+If it comes back without an error, it dispatches an action
+that says, hey, we're all good.
+It came back.
+And if it comes back with an error, then it says, oh, sorry.
+This got rejected.
+What we haven't yet done is gone into a reducer
+and listened for those action types and told our reducer what to do
+or how to change the state when those different types come back.
+And since we haven't finished implementing that,
+basically what happens is our application
+lets us in without any authentication.
+And so let's go ahead and build out the rest of the functionality such
+that the login screen works exactly as expected.
+So what are we going to need to do here?
+Well, first we're going to need to open up a reducer
+and change the state of our app when these different actions appear.
+And so let's go ahead and import a few different actions.
+So we created LOG_IN_SENT.
+
+We created LOG_IN_FULFILLED.
+
+And we created LOG_IN_REJECTED.
+
+And so now, what are we going to do?
+Well, we should look in our userReducer and handle those cases.
+So if this is LOG_IN_FULFILLED, what should we do?
+Well, maybe it's going to be fulfilled with a login token, or something
+like that.
+So let's just assume that a token is coming back in the payload
+and set that here.
+
+We'll handle the case where the login gets rejected.
+
+And let's create something like login error, where the error
+message is whatever the payload is.
+
+And so, because we're using Flux standard actions,
+every single action is going to have a type and some payload,
+where the payload is whatever is important for that particular action
+type.
+And so, in the case of UPDATE_CONTACT, it's going to be the previous contact.
+In the case of LOG_IN_FULFILLED, it's going to be whatever token we get back,
+authentication token.
+And if the login gets rejected, it's going
+to be, presumably, some sort of error message,
+where we can set the login error to be that payload.
+
+So let's actually make that happen.
+So, in our actions, currently when we receive an error back from this,
+we're not passing in any payload.
+So let's actually pass in the payload, where the payload is actually
+the error message.
+
+And so how about with LOG_IN_FULFILLED?
+So, currently, what we're doing in our API function is,
+if it comes back as a success, we're just returning true.
+But let's actually go fix that so it returns a token.
+And so here, let's expect the payload to come back as a token,
+and expect that login, if it works, it's going
+to fulfill or return with a token.
+
+So let's just go quickly change our API function.
+So, right now, login, it will try to log in.
+If it worked, we're returning true.
+But let's actually do something instead.
+If it works, let's actually take--
+let's extract from the response a token.
+The reason that we know a token is coming back
+is because, in our authserver, we actually changed the code--
+or I changed the code here.
+So rather than just returning an OK, let's
+actually return some JSON that says--
+the token is thisIsARealToken.
+
+So, again, you don't need to understand what's happening
+in this server code, but a quick--
+if there is no username or password, return this error that says,
+we're missing a username or password.
+If the user doesn't exist, say, the user doesn't exist.
+If the password is incorrect, say, incorrect password.
+Otherwise, we're good.
+This is the correct username and password combo,
+so return just a fake token.
+And the fake token is the string thisIsARealToken.
+
+So now, in our API file, we know that if the response is OK,
+we should be looking for a JSON response that has a token in it.
+So how, again, do we extract JSON from a response type?
+So, if you remember back to the lecture on data,
+the way that we do that is we do const json is await whatever the response is
+.json.
+And that .json method says, hey, extract the JSON from this response and return
+it to me whenever it gets back.
+And it returns a promise, and we'll go ahead and await that promise.
+And now we can just return json.token.
+
+Or, if you want to use the shorthand, we can use this object destructuring
+to create a new constant called token.
+The value of that is whatever the value is of the key
+called token in whatever this returns.
+And then we can return token here.
+
+And then, if the response is not OK, we're
+going to grab the error message from whatever text comes back.
+And, again, we have to await the response of that
+because it returns a promise.
+And then we're going to throw an error with that error message.
+And we go ahead and extract that error message back out in our Redux action.
+So, down here, we try to log in.
+If we're successful, we're just going to return a token,
+and we can dispatch LOG_IN_FULFILLED with that token.
+If there's an error in that function, then we
+can extract the error message from that and dispatch
+a action of the type LOG_IN_REJECTED.
+And if you're not very familiar with this promise syntax,
+we can also refactor it to async await, so async dispatch.
+
+We can await the result of the login and dispatch an action, assuming
+it's successful with that payload.
+And then, if it's errors, we want to catch that error
+and dispatch that error action.
+So we can try this.
+
+We can catch the error.
+
+And if there is an error, then we can dispatch this particular action type.
+
+Great.
+So now we fixed everything in our API.
+We fixed the things in our actions, and we
+went ahead and implemented our reducer to check for those particular values.
+So to just review that really quick, if we
+receive an action called LOG_IN_FULFILLED,
+then we know from our actions that the payload is going to be the token.
+So we can go ahead and merge the previous state
+with a new state that has a key called token, where the value is that payload.
+If we have an error because it's rejected,
+we can go ahead and dispatch this action,
+with the payload as the error message, look for it here,
+and return a new state that has a login error where the value is that payload.
+So that's all good on the Redux side.
+Now let's actually add it to our particular class.
+And so let's look at our LoginScreen and review what's happening here.
+So, currently, when the asynchronous function is dispatched,
+what we do is we invoke the action where we do this.props.logInUser.
+We pass the username and password.
+That dispatches all of those actions that we defined in Redux.
+It stores it up in the state.
+And then what we do is we just log in anyway.
+So that's probably not what we want to do.
+Instead, what we should do is look at those values in the state,
+and when they change to things that we want to react to,
+we should do that in this particular class.
+And so how again do we listen to those values that change in the state?
+So we're going to have to use that higher-order component called connect.
+So, down here, what we're doing with connect
+is we're passing the first argument as null.
+And if you recall what that first argument is,
+it's a function that takes whatever our Redux store is and maps
+particular values in the store to be props that
+are passed into this particular class.
+So let's now define that function.
+So let's just call it mapStateToProps, just because that's convention.
+And it's going to take the state of our application and return an object.
+And the object key-value pairs refer to the props that are passed.
+And so we're going to have a prop called error, or err for short.
+And what's that going to be?
+Well, it's going to be the state.user, because, if you recall,
+that userReducer is only the user key of that state.
+And then what did we call it?
+We called it something like loginErr.
+
+What else are we going to look for?
+Well, presumably we're going to leave the screen
+when we have a token in our state.
+So let's look for the token, and that value is going to be state.user.token.
+
+Cool.
+So now we are now effectively listening for the values
+that we put up in the state.
+So let's just ensure that those are the values that we actually
+do, so let's look at our reducer.
+
+So we see, for our userReducer, we're adding
+this thing called a token, which we're looking for here, state.user.token.
+We're adding this thing called a loginErr, which we're looking for here,
+state.user.loginErr.
+So, if everything goes correctly, what should happen
+is we should expect a couple of new props.
+And so let's just define those here.
+
+So we're expecting something like an error, which is going to be a string.
+We're expecting a token, which could be a string.
+
+And, lastly, we're expecting a function called logInUser here.
+
+That's a function.
+
+And we're going to have to import PropTypes.
+
+And so I'm just writing that for documentation
+so we know what we're expecting.
+So we get error and token because we're looking for those in our state.
+And we get logInUser because we're binding that in our connect function.
+So the last thing we need to do is, rather than passing null here,
+pass our mapStateToProps function.
+
+Great.
+So now, when we send off this function, we probably
+don't want to immediately navigate away, so let's delete that.
+We no longer have to catch the error message
+because that's now done in Redux.
+So we can delete all of those.
+We don't have to try because it's just going to work.
+And so now we have this for our login.
+
+So now what's happening?
+If we try running this, we get no feedback.
+We are not logged in, nor are we seeing any error.
+Why is that?
+Well, it's because we're not really looking for the error anywhere.
+So, currently, the error that shows up is
+this.state.err, which no longer exists.
+Now it's this.props.err, which, again, we receive in our props.
+And we receive it because this mapStateToProps function lets
+us know that something's coming down called err, and the value of that
+corresponds with the state.user.logInErr value in our Redux store.
+So now, if we do this--
+I need to save the file.
+Now, if we do this, we see that error come through.
+
+Why is that coming through?
+Let's just do a quick sanity check and see exactly the path of this request.
+So first, what happens is we open this up.
+We type in a text, our text inputs, everything.
+And then we click that button that says, press to log in, which fires this
+.login method.
+What does that do?
+Well, it invokes this.props.logInUser with the state,
+with the username and the password.
+And what is this.props.logInUser?
+Well, it's our logInUser action creator, which
+is actually bound to dispatch because connect does that for us.
+And so, by invoking this.props.loginUser,
+it's effectively doing our Redux store.dispatch
+and then dispatching whatever the return value of logInUser is.
+And so what is the return value there?
+So we can just check our actions to see.
+So we invoke logInUser with the username and password.
+And it returns a function that expects another function called dispatch.
+And that dispatch function is a way for our action creator
+to know how to dispatch its own actions.
+So the first thing that does is it dispatches
+LOG_IN_SENT, which gets sent to our store, or reducer, I mean.
+
+And what happens?
+Well, we're not actually listening for that action type,
+so it just returns the state as the default. Then it tries this.
+It tries to await login username, password, which, in our API file,
+does that request for us.
+
+It awaits the value of that, and if it's successful,
+then it's going to take a token.
+But since we passed in the incorrect username and password,
+it actually throws an error.
+And the error gets caught here.
+And now we dispatch an action called LOG_IN_REJECTED.
+And the payload here is the error message for that particular error.
+That gets dispatched and sent to a reducer.
+It matches this here, LOG_IN_REJECTED.
+It ends up merging the state, and adds into our user state
+this thing called loginErr.
+And the value of that is the payload, or the error message that comes back.
+Then what happens with that error message?
+Well, in our LoginScreen, we're actually listening for that error message.
+We're saying here, every single time a Redux store changes,
+update the props that are passed to this particular component
+to be the values in the state that correspond with this object.
+And so the error value here corresponds to the state.user.loginErr value that
+just got updated in our Redux store.
+So that gets passed down as a prop to this class.
+That causes it to be re-rendered.
+And that causes this.props.err to appear in our text box here,
+which is exactly what happens when you type in something like this.
+
+And, as you see, if we resubmit with an incorrect user,
+it will update the error message correctly.
+If we then change the username to be something
+that's valid with the wrong password, then it updates correctly.
+And now, if we update with the correct username and the correct password,
+what happens?
+Well, nothing actually happens.
+Well, we get a JSON parse error, but nothing that's supposed to happen
+happens.
+
+So let's actually just fix that JSON parse error by restarting the server,
+because I changed it and didn't restart it.
+So now, if we refresh with the correct username and password combo,
+nothing actually happens.
+And why is that?
+Well, we could look through everything again, but what ends up happening
+is the token updates.
+The token gets passed as a prop to this class and what happens?
+Well, we don't actually look for the token.
+And so maybe we should add some sort of listener
+that says, hey, if we get a new token, then maybe we
+should navigate to our main screen.
+And so how might we do that?
+Is there a particular way that we can have a React class listen to its props
+and do something when it's changed?
+Well, there is.
+There's a React lifecycle method called componentWillRecieveProps.
+
+And it's invoked with whatever the next props are.
+And we can just do, if the nextProps.token exists,
+then we can do this.props.navigation.navigate,
+and we can navigate to our main screen.
+
+And now we're actually listening for the token.
+And when we receive it, we are logged in correctly.
+So now we've gone ahead and implemented Redux
+to handle all of our asynchronous actions
+and our asynchronous logic in our contacts app.
+
+Cool.
+So now I'm going to close this app and reopen it.
+And what happens?
+Well, I'm logged out again, which is unideal,
+because presumably I'm going to be the only one using my phone,
+and an app like Facebook doesn't make me log
+in every single time I reopen the app.
+So how might we go ahead and store the state of our app
+to persist throughout closing?
+
+Well, now that our app basically looks to our Redux store
+in order to know what we should be rendering,
+our app is basically just a pure function of our store.
+And so, basically, all of the things that we need
+can be stored in the state.
+And if we can persist that store, then we
+can reload the app into its current state even after it's been closed.
+So there's a few ways to do this.
+React Native provides this API called AsyncStorage,
+which is a persistent data store.
+But if you read the docs, it says this.
+"Use an abstraction on top of AsyncStorage
+instead of using it directly for anything more than light usage
+since it operates globally."
+Or, in other words, we should probably stay away from that
+if we want to preserve our sanity.
+And so what might we want to do instead?
+Well, it turns out there are abstractions on top of AsyncStorage,
+one of which is called redux-persist.
+So what this does is it abstracts out the storage of the store
+into AsyncStorage for us.
+So we don't have to handle anything in AsyncStorage.
+Instead, we just use this library that does all that for us.
+So it gives us a few different things.
+It gives us this thing called a persistStore, a persistReducer,
+and a persistGate.
+And what that does is it automatically stores this data every single change.
+It will automatically rehydrate our app when it's reopened.
+And so, in other words, it takes what was stored in AsyncStorage
+and puts that into Redux when the app is reopened.
+And it all displays some sort of loading screen
+while it's waiting for that to happen.
+And so the docs are here, and let's go look
+at how to implement that in our app.
+
+So it tells us how to install it.
+We should just run npm install react-persist, or redux-persist.
+So let's go ahead and do that.
+And while we're waiting, we can read on.
+Basically, what it says is, we're going to pass
+it some sort of config where we tell it what storage to use.
+And since Redux is something you can use in React Web and React Native,
+we need to know whether we should be using
+something like a local storage for web, or AsyncStorage in our case.
+We can go ahead and create this thing called a persistedReducer, which
+is basically the same thing as a normal reducer but it persists for us.
+We can create the store with that persistedReducer.
+And we can create this thing called a persister, which
+is a persistent version of that store.
+So let's go ahead and just copy all of this and add this to our store.
+
+So let me just copy and paste that there.
+
+And let's modify a few things so that it works
+with exactly what we're trying to do.
+
+So let's delete this comment and move these two up here.
+All right.
+So now we've gone ahead and imported persistStore and persistReducer.
+We've imported storage, which is what we want.
+Rather than importing rootReducer, we're importing our own reducer.
+We've created this thing called persistConfig.
+You can read through the docs to figure out exactly what this does,
+but basically we create a unique key for the only persistent config
+that we have, and we're telling it what storage device to use.
+And it's going to default to AsyncStorage for our use case
+since we're using React Native.
+We then create this thing called a persistedReducer, which
+is persistReducer.
+We pass in our persistConfig, and we're going to pass in our reducer.
+
+Let's move this down for now.
+
+Let's comment out all this stuff.
+
+And then what we do is we create a store, which
+is basically what we've already done.
+So we can delete this line, delete this line.
+We can create a persister, which is basically wrapping our store
+in this API called persistStore.
+And then, rather than wrapping that in a thunk, let's just return
+the store in the persister.
+So let's export the store and the persister.
+Or we can just use the syntax that we're familiar with by doing--
+export the const store is this, and export the const persister is this.
+So, basically, what I just did is I cut and paste the API usage.
+I read through the docs beforehand, but I
+happen to know that the key here is it refers
+to, if we want to use multiple different persisters in our app, we can.
+But since we're only using one, we can just hard code the key here.
+We tell it which storage device to use.
+In our case, it's AsyncStorage.
+We create the persistedReducer.
+
+This here should actually be persistReducer, I believe.
+So we should use the persistedReducer here, which I spelled incorrectly.
+
+We still are using our thunk middleware.
+And then we're also exporting this thing called
+a persister, which we need to pass into our persistent gate.
+And our PersistGate, what it's doing is it's waiting for our store to rehydrate
+and displaying a loading screen while we're waiting.
+And, in this case, we're just going to pass in null for that.
+So rather than retyping, I'm just going to cut and paste that
+into our application.
+
+So let's have a PersistGate here and import PersistGate from this library.
+
+And now, rather than importing store from our Redux store,
+we had a couple of named exports.
+We had a store and we had a persister.
+
+And those correspond to the store here and the persister here.
+So I just did a very whirlwind cut and paste from their docs,
+but this default configuration should work fine for us.
+
+So let's now refresh.
+And look, we're back in.
+If we refresh again, we're back in.
+Why is that?
+Well, it's because we're storing the token in our Redux store.
+And when we refresh the app, then it rehydrates our store
+so that the token is still in our Redux store.
+And then our LoginScreen sees that the token is in our store
+and brings us to this contacts page.
+And if you see really quickly, there's a flash of our login screen
+before, because what we're doing there is we're looking--
+when it receives new props, that's when it does the navigation.
+But everything is working exactly as expected.
+
+So now we have a few components that are listening to our application
+state via this connect.
+And we also have a bunch of components that are just
+receiving props and displaying them.
+And so how can we go ahead and determine when to use which?
+So the actual terms behind these components
+are container and presentational, where these containers
+are aware of the Redux state, whereas the presentational components are only
+aware of the props that are passed.
+And as our application grows in size and complexity,
+we probably don't want every single class
+to be listening to our application state.
+And likewise, we don't want every single component
+to just wait for the props that are passed down,
+because that was part of the reason that we moved to Redux in the first place.
+
+And so we need to start to figure out a way in order to do this.
+And there's a great article written by Dan Abramov,
+so the same guy who wrote Redux Thunk.
+Also, he's the same guy who actually created Redux.
+He has a great blog post on what the URL says are smart and dumb components,
+but what he actually ended up renaming to container and presentational.
+But, generally, my heuristic is, if I have a very, very simple component,
+like a row in a list or something like that, that should not
+be aware of the application state.
+It should be looking to its parent to pass the data down to it.
+Whereas, if I have a whole screen--
+where maybe the screen does care about the Redux state
+because it needs to handle things like navigation,
+or needs to handle things like listening to the state
+and passing it down to its child components--
+that's when something should then listen to the Redux state.
+And so I highly encourage you to go read this blog post,
+and Dan Abramov will give his explanation
+on what he thinks should be a container and what he thinks
+should be a presentational component.
+One thing to note is that container components
+can have children that are presentational components,
+and that those children can also be container components.
+And those children can be presentational components.
+It doesn't necessarily mean that, once you have a presentational component,
+all of its children have to be presentational.
+And so we've added Redux to a relatively simple app,
+but the question still remains, did we actually need Redux there?
+And so what Redux does is it helps apps scale, but it also adds complexity.
+So, as you remembered, when we wanted to add a simple login action,
+we actually had to touch something like five different files.
+First we had to open up our Redux actions file
+and create a couple of different action types,
+and also create an async action creator.
+Then we also had to open our store to ensure that Redux knew what we were
+doing when we return an async creator.
+We had to actually add the middleware from Redux Thunk
+to know how to handle asynchronous action creators.
+Then we also had to listen for those actions in our Redux reducer.
+And so we had to add these lines that said, hey, if the login worked,
+let's update our state accordingly.
+If the login didn't work, let's update our state accordingly.
+And we still weren't done.
+We also had to update our actual components.
+So in screens/Login, we also had to update this
+with our connect function here, that listen
+to particular parts of the state.
+And we also had to bind our action creator here and use that in our class.
+And so it's a very non-trivial amount of work
+in order to add this simple Redux action.
+But it does definitely add to our scalability.
+But sometimes the complexity isn't necessarily worth it.
+And so you have to ask yourself some questions,
+like is the complexity actually worth it?
+Have I run into some pain points yet?
+And so, generally, what I do is I do as much as I can with local component
+state.
+And then if I end up running into scalability issues,
+I then move to Redux.
+And it doesn't necessarily mean that I implement my entire app then
+run into the paint points and start adding Redux.
+It might be just some forethought.
+Maybe I'm going to start planning as if I'm using only component state,
+and then I see that I'm going to run into pain points
+and then know that I should use Redux before implementing.
+And, again, what are these pain points?
+Well, maybe you're forgetting to pass a prop.
+Maybe you're directly managing a deeply nested state
+when you don't necessarily need to be.
+Maybe you have a lot of duplicate information in your state,
+where you can just instead put it in your Redux store
+and listen to those values when you need to.
+Maybe you're not updating all the dependent props.
+A way you can fix that in Redux is just by having all of those props
+listened to in the reducer when you're going to update the state.
+Maybe you have a component with a large number of props
+because it needs to pass as props to the children,
+and we can just bypass that by using that connect function
+and hopping down to the children very low in the tree
+and listening in to the Redux store.
+And maybe you have some uncertainty where a piece of data is managed.
+And the nice thing about Redux here is if I
+want to change some logic in how the store is updated,
+I know I should be looking at my reducer.
+If I want to add a new or change the way that an asynchronous action is fired,
+I know I should be looking at my actions file.
+So it's very easy for us to know exactly where the logic for a particular thing
+lives.
+So that ends our discussion on Redux.
+Feel free to reach out in Slack if you are curious about when
+you should use Redux.
+But let's actually talk about some tooling
+that might help our JavaScript writing a little bit easier.
+So there are a lot of tools out there.
+There are a lot of JavaScript libraries out there.
+Some people say there are too many JavaScript libraries.
+But you can sift through the noise and find a few really, really great
+JavaScript tools.
+One of them, of course, is npm.
+Npm is something that we've used multiple times today.
+We've done npm install with our dependencies.
+And that, again, stores things in our package.json
+and allows us to keep track of all the dependencies for everybody
+who then later wants to use our application.
+They can just run npm install and have everything that they need.
+We've talked about this thing called Babel,
+which allows us to write JavaScript as if it has all of the language
+features that we need and then transpile down to JavaScript
+that all browsers will understand.
+And so we've talked about these terms called ES6, ES7, ES.Next,
+and we've been using a lot of those things, like our class properties.
+And Babel's running behind the hood to transpile that all down to a language
+that anything that understands basic JavaScript will understand.
+There's this thing called ESM, which is a JavaScript library that you can
+install via npm install at standard /esm.
+And what that allows us to do is use our import statements
+and our export statements in Node.
+So you've seen me, when I'm doing my quick examples,
+changing my syntax to something like require.
+But if we use this library here, you can actually just
+use import directly into Node.
+And I'm not going to demonstrate how to do that,
+but I encourage you to go check that out if it's something that interests you.
+We talked about the Chrome devtools and how we can use those to debug.
+And we'll talk about, next lecture, how we can use those to actually look
+at things, including performance.
+There are also things like React and Redux devtools.
+We already talked about React devtools in our debugging lecture.
+But there also exists Redux devtools, which allows you to replay actions
+or see what actions have happened.
+And I encourage you to go look at that if you want to debug your Redux.
+We're going to talk about, later today, this thing called ESLint and Prettier.
+And then there's also this thing called Flow or TypeScript.
+Those are both things that allow us to statically check
+the types of all of our functions.
+And so it helps us eliminate bugs where maybe we
+changed the function prototype somewhere but forgot to update
+wherever we use those functions.
+And so, when we want to really scale up our application,
+we might consider using something like Flow or TypeScript
+to statically check the types to make sure that no bugs are
+created as we change things around.
+And so let's actually talk about two tools in particular today, those being
+ESLint and Prettier.
+And so what is ESLint?
+You may have seen it floating around on open source projects that you use.
+You may have seen me try to use it earlier today as I
+was debugging a syntax error.
+But what this is is it's a fully pluggable tool
+for identifying and reporting on patterns in JavaScript.
+Or, in other words, it allows us to enforce some code style rules
+and statically analyze our code to ensure
+that it complies with those rules.
+What this helps us do is it helps ensure the style consistency across our code
+base.
+And this is great if we have maybe a hundred different people using
+the same code base, where maybe everybody writes JavaScript
+slightly differently.
+What we can do is we can use ESLint to yell at our developers and say,
+hey, we should all be writing the same style JavaScript.
+Maybe you should use this instead.
+And so here's a link to it if you want to check it out.
+And so how do we go ahead and set it up?
+Well, first we'll need to install it.
+So there are two different ways you can install it.
+You can install it per particular project, which
+means it's not installed on your computer as a whole,
+like you can't just type eslint at a terminal.
+But what it does is it allows you to use it in your particular project.
+So if you want to use an npm script to ESLint.
+Or if you want to--
+I'll show you a command later to use it directly.
+You can install it for a particular library rather than
+your whole computer.
+Or you can do it globally.
+You can just do npm install -g or --global, which allows you to just run
+that command eslint anywhere.
+So let's actually install it here.
+And I'm going to install it only in this project.
+So I'm going to npm install --save-dev, or capital D, eslint.
+
+And then what?
+We should create our own config.
+And so we can do this by, again, two different ways.
+If we installed it globally, we can just do eslint init.
+I believe that should be --init.
+Or we can do per project.
+So we can do ./node_modules/.bin/eslint, which is where that eslint script
+happens to live, and then initialize it.
+So let's go ahead and do that.
+I can do npm, or I can do ./node_modules/.bin/eslint,
+and then --init.
+And now it's going to ask me a few questions,
+like how do I actually want to lint my code.
+So let's answer some questions about my style.
+Are we using ES6 features?
+Yes, we are.
+Are you using ES6 modules?
+Yes, we are.
+We're using the import.
+Where is it going to run?
+Technically neither, but browser is the more accurate one here.
+Do we use CommonJS?
+No, we don't.
+You don't have to know what that is?
+Do we use JSX?
+Yes, in fact we do.
+And in fact we also use React.
+What style of indentation do I use?
+I use spaces.
+What quotes do I use?
+I prefer single.
+What line endings do we use?
+I'm using Unix.
+Do I require semicolons?
+This one is of great debate.
+I prefer not.
+And what format do we want our config file to be in?
+There's a few options.
+I'm just going to use YAML here.
+And then it's going to install the dependencies for me
+and actually create this config file.
+
+And as that installs, let's forge ahead.
+So we can create our own config by answering that questionnaire.
+We'll see exactly how that looks in a second.
+Or we can actually steal a config from somebody else.
+We can extend an existing config.
+So there's this thing called Airbnb's JavaScript style
+guide, which is a very, very popular one that a lot of people like to use.
+And there's also the one I prefer, which is the one
+that I use at our company called Kensho, and it's the style guide
+that I've been loosely following as I type and lecture.
+And so let's actually--
+now that this is done installing, let's see what happened.
+I can see that if I do ls -a, I can see that this file called
+eslint.yml got created.
+And so let's take a look at that real quick.
+
+I see a lot of key-value pairs that actually correspond
+to the questionnaire that I just did.
+Env browser true is because we answered that we
+said we're running in a browser.
+ES6 true because we answered that we are, in fact, using ES6.
+And you see a bunch of other things, like plugins
+react, rules indent, blah blah blah.
+And I can run this by doing ./node_modules/.bin/eslint.
+
+And then I can run it on any file I want, so let's just do API.
+And we see a parsing error because there's an unexpected token.
+What does that mean?
+
+Well, it turns out--
+and you can see I have a extension in my text editor
+that automatically lints as I write.
+And it's telling me that this is an unexpected token,
+that this syntax actually isn't really supported by JavaScript yet.
+And so maybe we should add some ESLint rules that
+allow us to use these future things.
+One way to do that is to use somebody else's config.
+So I'm actually going to use the Kensho config because it's
+the one that I tend to follow.
+And the way to install that is to install this, and then
+use an eslint.yml file that just has this.
+So let me do npm install, npm install save-dev eslint-config-kensho.
+
+And that's going to go ahead and install that particular ESLint rule set for me.
+And then what I can do is I can use that.
+Well, now nothing is going to happen if I just
+try it because our ESLint configuration file still has all of the old stuff.
+So let me just update that.
+
+Now, instead of having all of these things,
+I'm just going to say extend the Kensho one.
+So now, if I do npx eslint--
+so npx is a shortcut for ./node_modules/.bin/eslint.
+It's a shortcut for this, so I could just
+do npx eslint if I happen to be running Node 5 or above.
+And I can just lint that API file.
+And I'm going to run into this, that says, cannot find module prettier.
+And what exactly is Prettier?
+So it's something that I mentioned earlier today.
+
+And it's a very opinionated code formatter.
+What the heck does that mean?
+Well, it will actually rewrite your files to a specified code style.
+So rather than ESLint complaining and saying,
+hey, your code isn't styled correctly, Prettier will actually say,
+hey, your code isn't styled correctly and I'm
+going to rewrite it to style it correctly for you.
+And what it can do is it can actually integrate with ESLint
+so that I can automatically lint a file and also
+rewrite it to adhere to a particular code standard.
+And so let's go ahead and install that for us.
+
+And what that does is it allows us to use ESLint and have that automatically
+fix.
+And so if you have an ESLint config that tells
+it to use Prettier to rewrite files, you can
+pass a flag that says --fix, telling ESLint to rewrite your file for you so
+that it adheres to the code standards.
+So now, again, let's run npx eslint on API.
+
+Oh.
+I don't happen to have any errors in there, so let me add one.
+
+So maybe I'm going to export a const called poorlyFormatted.
+
+And it's going to be something like unused variable.
+And then it's going to just return unused variable.
+
+It's going to take two.
+Actually, it's going to take used variable and unused variable,
+and it's just going to return that used variable.
+So this would be considered poorly formatted.
+Let's make it even worse by making it inline.
+
+And so now let's run eslint on that.
+
+And now it's actually going to complain.
+It says, hey, unused variable is defined but is never used.
+And so we happen to have a config that says, don't allow unused variables.
+It's also saying, an unexpected block statement surrounding the arrow body.
+Move the return value immediately after the arrow.
+So, in other words, it knows that an arrow function can just implicitly
+return, so I don't need to do this arrow function and then
+a block that says return.
+I can just return implicitly.
+And, lastly, it says, replace return unused variable with a new line.
+So it wants me to also add a new line here, like that.
+
+So I could go ahead and fix all of those things manually,
+but it turns out a couple of these can actually be fixed by Prettier.
+So I can do npx eslint API, pass it that fix flag,
+and it's going to automatically rewrite the file as much as it can.
+And so it still has an error that unused variable is defined
+and not used, because it can't really rewrite that part of my code.
+It doesn't necessarily know if that unused variable is also
+modifying some data structure that is necessary for the logic.
+But it lets me know that, hey, you're not using it
+so maybe there's a possible bug here.
+So let's check out what it did.
+Well, it removed that return automatically for us.
+And so now let me fix that unused variable.
+And now see what happens.
+
+It's still going to complain because I have unused variable with parentheses,
+and our opinionated code style guide says, hey, there's only one argument.
+You should drop the parentheses.
+It turns out this one is also potentially fixable,
+so I can do npx eslint this file, and we'll pass the fix flag.
+And lo and behold, no more errors and.
+I can check the API and see that it did remove those parentheses for me.
+So this is great.
+It's just a little bit tedious to manually lint every single file
+that I want.
+So it turns out that we can run eslint as an npm script.
+And so, just like our authserver has a script that
+allows us to do this thing called npm start and start the server here,
+the reason that it works is because, in our package.json,
+we have this thing called scripts.
+And we have defined a script called start that just runs that index file.
+And so we can also, in this project, add a script
+to our package.json to lint our file.
+And so let's go up here, add this thing called scripts.
+
+And now I'm going to add a script called lint.
+And what's it going to do?
+Well, it's going to run eslint.
+And I don't have to do ./node_modules/.bin/eslint
+because the package.json knows that, for this particular project,
+it knows that eslint is installed as a dev dependency for this particular
+project.
+So it knows that it should look for that in that ./node_modules/,bin/eslint
+file.
+So we can just use it here.
+And then we can just start listing off any files that we want.
+So we can do api.js.
+We can do our components directory, and list off any other ones that we want.
+And for this example let's just do those two.
+And now I can actually just run that here.
+I can do npm run to see exactly what scripts are available.
+I see that we have a lint one.
+So now I can run npm run lint.
+And it will go ahead, run this eslint api.js and /components for us,
+and it will go ahead and just lint all of those.
+I just noticed there's no such thing as components.
+So maybe we should run that as our screens page instead.
+
+And now this will automatically lint all of the files that we want for us.
+And, as we see, I had quite a few lint errors, including navigation
+is missing in props validation, because our style guide says,
+hey, if you're going to use a prop, make sure to explicitly state
+those prop types.
+And so you're welcome to use this config file if you want.
+You're welcome to use Airbnb's JavaScript.
+There are many others online.
+But now you should have no problem styling your project because now
+you have something to yell at you and fix it for you.
+So thanks, and next week we'll start looking at performance.

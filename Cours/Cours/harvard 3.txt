@@ -1,0 +1,1679 @@
+[MUSIC PLAYING]
+
+JORDAN HAYASHI: Hello, and welcome for Lecture Two--
+React, Props, and State.
+So last week, we talked about a bunch of different topics, one being ES6
+and beyond and the syntax that comes with each of those.
+We talked about closures, the process by which
+a function can reference variables declared in a parent function.
+We talked about IIFEs, Immediately Invoked Function Expressions.
+We talked about using functions as first-class citizens.
+We talked about the execution stack and event loop,
+and how JavaScript actually executes in browsers.
+We talked about callbacks, promises, and async/await, all of the different ways
+to handle asynchronous actions.
+And last, we talked about this and the way that this is bound.
+This week, we're going to start with classes, which
+is a syntax I was introduced in ES6.
+It simplifies the defining of complex objects that have their own prototypes.
+And with that, you have two different things.
+You have classes and instances.
+Classes is basically an abstract thing that you can declare,
+basically saying, hey, by the way, any of these objects
+that you create will have these methods associated with them.
+Or they might have these things attached to them that you can use.
+And then when you actually turn an abstract class
+into an instance of that object, that is called an instance.
+An example of that would be the difference between the date,
+which is a function-- it's a class--
+or a new date.
+So if you do something like const d equals new date,
+then now you have a date object itself.
+And so Date with a capital D would be a class in that case,
+and the lowercase D would be an instance.
+
+These instances have things attached to them, like methods and properties,
+and the classes have things like static methods.
+And so methods are basically anything that's
+a function that can be invoked on any of the instances.
+You can think of that as a function on the classes prototype.
+A static method, on the other hand, is basically
+a method that doesn't really care about the particular instance of a class.
+Instead, it cares about all instances of the class, so something like Date.now,
+where you don't really care about a specific instance of a date
+if you just want to get the time.
+Whereas something like turning a date to a string--
+in this class, d.toString--
+in that case, you do care about the particular date
+object that you're working on.
+And so when you do capital Date.now, that's
+considered a static method, since it's attached to the class.
+And if you do something like date--
+lowercase d-- dot toString, that really matters which instance you're attached
+to, and therefore, that's a method.
+Lastly, we have properties, which are like methods.
+But rather than being functions, they're actually just values,
+and they are associated with a particular instance of a class.
+And so with classes come a few different keywords.
+We have new, which you saw me type over here, which is basically saying,
+hey, give me an instance of this particular class.
+You invoke the class like an object, in case you want to pass anything into it.
+And so say we want to do new const d2 equals new date,
+and we actually want to pass in some number.
+
+That gives us a new date from a very long time ago.
+So d.toString.
+
+Oh, d2.toString.
+
+Since we passed in the number 1, 2, 3, 4, that's basically saying,
+give me a date that's 1,234 milliseconds after date 0, which is back in 1969.
+So a constructor is basically something that you
+define within a class that says, hey, when you create a new class,
+invoke this method such that you create a new instance of a class.
+So let's actually practice this a little bit.
+So is everybody here familiar with a data structure called a set?
+
+So basically what a set is, is it's a list,
+a data structure that supports things like add, delete, and inclusion,
+where you cannot have multiple things of the same value.
+Or in other words, it's a list of unique values.
+And the methods that it should support are
+add, which is basically add to this list;
+delete, which is basically get rid of something from this;
+or inclusion, which is saying, hey, does this list have a particular value?
+And it should also have the ability to get its size.
+And so down at the bottom of the file, I defined a few tests
+that we're going to run after we implement this, such as line 7 here,
+we have const s gets a new set with an array from 1 to 5,
+which is basically saying, give me a new set with five values, 1, 2, 3, 4,
+and 5.
+We're going to try to do S.add1, and so we're
+going to try to add 1 three times to the set.
+And when we do S.size, we want it actually to only have five members,
+because you shouldn't be able to add 1 multiple times.
+Down here, we do S.add6, and then we try S.has6,
+and it should contain the number 6.
+That thing should not be there.
+We try to see the size of it, and it should have added another member.
+And then down here, we tried to delete that and do a couple
+of associated checks with that.
+And so how are we going to go about implementing this class?
+
+So as per the slide over here, we use a method called constructor
+in order to go ahead and construct an instance of this class.
+And so within the class, we should have a method called constructor,
+which takes a single argument.
+It should take an array or some sort of list to be created with.
+And what are we going to do?
+Well, we should attach to the instance the array.
+And that's basically saying, when I'm constructed,
+I expect to have one argument, which is just an array.
+And the only thing I'm going to do when creating this set object
+is just store a reference to that array.
+By doing this.arr = arr.
+
+And so in this case, the this keyword is referring
+to the instance of the object.
+Cool, so let's try adding a couple of different methods to this.
+So we should be able to support add, which should take a value.
+We should be able to support delete, which also takes a value.
+And we should have something called has, which checks for inclusion.
+So how might we do something?
+How might we add to this class?
+Does anybody have any ideas?
+
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Exactly.
+So we should use something like push to add to the array.
+But before we do that, we should make sure that that number does not already
+exist.
+And so maybe we should implement the has method first, which is a great idea.
+Let's go ahead and do that.
+So how might we do has?
+Well, it turns out on the array prototype,
+we already have something called includes, which tells us
+if an array includes a value, so we can just do that.
+We can do return this.arr.includes(val).
+
+And so now that we have that, how might we take care of add?
+
+We should say, oh, well, if this does not have the value already, add to it.
+
+And so here I use this.has.
+So this here is referring to the instance of the set,
+and so this.has is referring to this method
+down here, on this particular instance.
+And then when I do this.arr, this still refers to the instance of this set.
+And so we're just getting at this array property that we have,
+and we're pushing that value to that array.
+Cool.
+So how might we go about this delete?
+
+AUDIENCE: [INAUDIBLE] has value.
+JORDAN HAYASHI: Yeah, we can check if we have the value,
+but it doesn't really matter all that much.
+A quick and easy way would just be doing this.arr = this.arr.filter
+and then we can just filter by the values.
+So we could say, oh, we want for every x in here,
+we want the x's that don't equal this value.
+
+Cool.
+And so we can go ahead and run this to see if it works.
+
+Oops.
+
+While I edit, I should flip these.
+
+And we go ahead.
+S should have five members and actually has-- ooh, we forgot to influence size,
+actually.
+
+And so we took care of all of the methods,
+but we didn't include the size.
+And so we should be able to return the size of this set.
+How might we do that?
+
+Well, this is interesting.
+So we should be able to get at this value by doing the instance.size.
+And JavaScript actually has a convenient way.
+We can do get size, which is saying, when
+somebody tries to get at the value or the property.size,
+actually run this function.
+So this is just syntax for that shortcut.
+So how might we implement size?
+
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah, just return this.arr.length.
+
+So now we can run this, and we see I should have five members,
+and it actually has five.
+So that's good.
+S should contain 5.
+That's true.
+That works.
+S should contain six.
+It's true.
+S should have six members, and actually has six, so we're good still.
+S should no longer contain six.
+That also returns true.
+And lastly, S should have five members, and actually does indeed have five.
+So does anybody have any questions with our implementation of set as a class?
+
+Great.
+So it turns out JavaScript actually already has a set class,
+and it works exactly as we implemented.
+But say we actually wanted to use the native implementation of set
+and actually add some stuff to it.
+So that's where we use these other keywords, called extends and super.
+So extends is the JavaScript way of saying,
+hey, I want to start with a base class and actually add to it.
+Extend this class.
+And super, as we'll see in a second, is when we're writing that class,
+so we can refer to the original class using this keyword.
+
+And so in this example called my set, we're
+going ahead and extending that set with a bunch of different things.
+And so here you see constructor.
+It still takes an array.
+And the first thing that we do is we invoke super on that array.
+So this is basically saying, hey, we're extending a set.
+So when you do the constructor, the first thing you should do
+is actually run the original set's constructor.
+And then let's also keep track of this.originalarray
+is the array that's passed in.
+And so we'll use that later to use this thing called reset.
+And so say we wanted to every single time we added a value to this set,
+we also wanted to log, hey, we added a value to this set.
+So we can just start writing this method called add.
+It takes a value just like any other example.
+But instead of implementing add ourself, we're
+just going to use the native implementation of add.
+And so that's where we use super.add.
+So super, again, refers to the class that we're extending.
+And so when we invoke super.add, it goes ahead
+and does that using the native implementation.
+And then since we're going to extend it with some additional logging.
+We're just going to log, hey, we added this val to the set.
+And if you're not familiar with this, if you use the backticks,
+you can go ahead and add variables in line, in the string,
+and it'll go ahead and substitute those in.
+And so you see we added a couple of other methods here.
+We have to array, which is basically saying, hey, I actually want the array,
+and not the set.
+And so we can just return Array.from (this).
+We're passing in the entire instance.
+And lastly, we have a reset, which is saying, hey,
+I want the original set that I had, or at least
+a new set with equivalent value.
+So you can return a new my set.
+So notice you are referencing my set inside that class.
+We want a new one, and we're going to pass in,
+as the array here, the original array.
+
+So this is an example of us extending a class that already exists.
+And as you see, if we want to reference methods on that original,
+we just use that super keyword.
+So any questions on sets, how we define them--
+or sorry, classes and how we define them, how we extend them?
+So why might this be useful?
+So as you guys are doing on your project,
+you're keeping track of these things called to dos.
+What if we actually had a class for to do?
+And when you invoke this constructor on some configuration object,
+what if it pulls out the text and whether it's checked or not
+and stores it as part of [? its ?] class instance?
+And say we want to render it to the page.
+What if we could just return some HTML like this?
+
+It would be quite handy, right?
+And that actually is our next topic, react.
+So react is a JavaScript library, and it allows
+us to write declarative views that will react to changes in data automatically.
+It allows us to abstract complex problems into smaller components,
+and it allows us to write simple code that still perform it.
+And so I use this word in the first bullet, declarative.
+So what the heck does that mean?
+So in CS50, we learned a paradigm of coding called imperative.
+And today we're going to talk about declarative coding.
+So the difference in imperative and declarative
+is like asking the difference between how you do something
+and actually what you want out of it.
+So imperative programming outlines a series of steps
+to get to what you want, whereas declarative,
+you just say what you want.
+And it's just an implementation detail on how to get it.
+And so we've learned a few different languages through CS50 in this course.
+A couple that come to mind are HTML and JavaScript.
+So in HTML, do we tell the browser exactly how
+we want to render all of these things?
+Do we tell it exactly how we want the DOM to be constructed?
+No, we just tell it what we want.
+And so HTML is considered a declarative language, because you just say,
+hey, I want this.
+And browsers are in charge of just giving you what you want.
+Rather, with JavaScript, as you'll see in your first project, when
+you want to do anything to the DOM with JavaScript,
+you tell it, oh, first get me a new element.
+Call it a div.
+Then do this.
+Then maybe append it to the tree.
+Then maybe add a class to it.
+Maybe give it some inner HTML.
+And so you're telling it exactly what you want and how to do it.
+And so that is the more imperative way of programming.
+
+So let's take this into an example.
+Say we had a classical guitar here, and say we
+wanted to actually create this guitar.
+So in an imperative way, how would you describe that?
+Well, you would say, oh, I need a head over here.
+I need to add some pegs to it.
+Maybe I want the neck.
+Maybe I add some frets to that.
+Oh, I need to create the body and attach them all and then maybe return that.
+And what would be a more declarative way of creating the guitar?
+
+You just say, I want a guitar.
+Maybe tune the strings to this.
+And so an example in pseudo code would be like this.
+So say we have a guitar, and say we have some function
+called create element, similar to what we have in the document in HTML.
+And say we know exactly what strings we want.
+How might we go about creating this guitar?
+Well, first we might want to do something like let's create a head.
+
+Again, telling whoever's listening exactly what we want.
+And then maybe for 6 pegs, maybe we want to start adding pegs to that head.
+
+And so now we, in a very terse manner, have a head with six pegs.
+And so we might do the exact same thing with neck.
+
+And maybe we want to add something like 19 frets.
+
+And you can see how this gets a little bit annoying to write it, right?
+And maybe we do the same thing with body,
+but we have some sort of for each loop with the strings,
+and we pass in the tone that we want.
+And then we go ahead and create a string and tune it to that tone.
+
+And then we go ahead and add that to the body.
+
+And you see how this gets very step-by-step, exactly what we
+want to do to create a guitar.
+
+And this is exactly what we've been doing thus far for writing to the DOM.
+
+And so how might we do this in a more declarative manner?
+
+Well, we would just say, give me a guitar.
+
+Give me a string.
+Maybe I want it to be tuned to the first note in the string.
+
+And maybe copy that a few times.
+
+And there we go.
+A better way to do this would be rather than hard coding these,
+maybe we just do strings.map, and for each note, we stick it in there.
+
+So it looks like there's a little bug here.
+I used string even though I declared the variable called strings.
+So if we map over the array called strings,
+and for each note return a string where the note is note,
+then we have declaratively written a guitar.
+Does this make sense?
+
+So a great thing about react is that the way that you code
+is in a very, very declarative manner.
+The browser APIs aren't super fun to work with.
+You get to work with them a bit in project zero, but react just
+allows us to write exactly what we want.
+And the library will actually take care of the DOM manipulation for us.
+And so what does that really look like?
+
+So say we wanted to create a slide here.
+Say we wanted to use the native DOM manipulation
+API in order to create the slide here.
+So we might have a slide element that we created
+and say we wanted to add a H1 to that.
+Add a title to it.
+How might we do it?
+Well, we'd have to do something like const title = document.createElement.
+
+Get an H1.
+And then start adding to that.
+We can do title.innerHTML is equal to the SLIDE.title.
+
+And you see how this starts getting to like what we've been doing earlier,
+where you say exactly what you want, but it might take you a long time to do.
+So in react land, this is actually a lot easier.
+
+So how might we do this if we were doing this completely declaratively?
+Well, we just say exactly what we want.
+We want a slide.
+Maybe it has a title, where the title is equal to the slide's title.
+
+Maybe we have some bullets.
+Or we can just map through the bullets that we have up there.
+We can do SLIDE.bullets.map.
+
+And we can say for every bullet, just give me a list item.
+
+And maybe we should wrap those list items in unordered list.
+
+And maybe instead of using this, we can do an H1 here.
+
+So see how this is a lot more declarative?
+
+Makes sense, right?
+It just makes sense.
+It's easier to read, and it's easier to maintain.
+
+So another great thing about react is it's very easily componentized.
+What do I mean by componentized?
+Well, it's a process by which you break a very complex problem into a bunch
+of different, discrete components.
+You can reuse these components, which is great for consistency.
+So say you had a bunch of slides, and you wanted
+to just change how every title looked.
+Well, if you did this using native DOM manipulation,
+that might be a bunch of different lines of code that you have to change.
+But if you did this using React components,
+it might just be one line that you have to change,
+and then it's applied to every single slide that you have.
+It's also great for iteration speed, because then you
+can just reuse the components over and over,
+rather than having to cut and paste code all over the place.
+Another great thing about these components
+is that React's declarative nature makes it very easy to customize components.
+So say we had the last three slides and wanted to write them in HTML.
+
+It might look like something like this, where
+you have a div, which represents a slide where the titles react.
+You notice these are the same three bullets as previously.
+We have the declarative slide, where we have the same bullets as previously.
+And say we wanted to change this.
+Say we wanted to make all of the titles have a slightly different style.
+Well, how might we do that?
+Well, we'd have to edit this line.
+We'd have to go edit this line.
+Maybe down there, there's another title that we have to change.
+Or what if we wanted to even change the structure of how we represent bullets?
+Maybe rather than using an unordered list,
+we might use an unordered list with a div that wraps the list items.
+Well, in order to do that, that would be a lot of code you have to change.
+But imagine that we had broken this up into a bunch of different components.
+Where might it make sense to break it up?
+Well, you see us repeating code that looks pretty much the same
+over here, right?
+So maybe that should be broken up into a separate component.
+So how might we go about doing that?
+
+Well, first we have to extract the information, and so in this array here,
+we have the slides where I've basically just ripped
+out the information for each slide.
+And so now let's go ahead and implement that slideshow.
+And so in order to do that, we might have
+something like where we have a slide, which might take an array,
+or it might take an object.
+Let's call it a slide.
+And what will it return?
+Well, it should return a div.
+Maybe inside it we have that H1.
+
+Then maybe we have that unordered list.
+
+And then go ahead and close that div.
+
+So what goes in the H1 here?
+Well, maybe we should have that slide's title.
+And what about generating those bullets?
+Well, like we did in the previous example,
+we might want to do the slide.bullets and map [? overflows ?]
+to create those list items.
+So for each bullet, just go ahead and create a list item
+where you have that bullet.
+
+And so now we declared exactly what a slide is.
+Well, a slide takes in an object representing
+the slide in the same shape of the object up here.
+And then it just returns the same HTML that we had in the other example.
+It's a div that wraps in H1, where we stick
+in the title, an unordered list that has some list
+items that represent those bullets.
+And now how might we create that slideshow?
+
+Well, maybe we just do for each slot in the slides,
+maybe we have an outer-wrapping div that maps through the slides.
+
+And for each slide, we actually just use the slide down there.
+
+So now we're going to get ahead and use React and generate
+basically the same HTML as we had in the previous one.
+But now say we wanted to change the styling of the title.
+How would we do that?
+Well, that's just right here.
+What about if we wanted to change the structure of how
+we created those bullets?
+In the previous example, if we wanted to wrap the list items in a div,
+it would be many, many lines of code.
+But here, it's just you stick a div here,
+because this is basically an abstract component that says,
+if we wanted to create a slide, here's exactly how we do it.
+Just make sure to pass me a slide of the correct shape.
+And so the React paradigm is to take a very complex problem
+and break it down into small chunks like this
+that each solve a discrete problem in that UI.
+Any questions so far?
+
+Cool.
+So another great thing is that React is very performant.
+We just write what we want, and React will
+do the hard work of playing with the DOM,
+or changing things so that what we have written
+matches with what we have showing on the page.
+And so the way it does this is through an algorithm called reconciliation.
+And this is the process by which React syncs any changes in app state
+to the DOM.
+So what's great about React is that it actually
+maintains what's called a virtual DOM.
+And so the slow thing about playing with the DOM
+is that anytime you destroy elements or create new elements, that
+takes a relatively long amount of time.
+And so the way that React says, maybe we should do this
+better by rather than changing stuff in the DOM
+every time we want to change something, what if we just stored everything
+in memory?
+And then with any changes, we can just say,
+hey, how does this differ from what's shown on the page?
+And only change what's necessary.
+And so that's what's done in the reconciliation process.
+So first, anytime your data changes, React
+will reconstruct that virtual DOM.
+Then it will diff that DOM against what's actually there in the real DOM.
+And it'll make only the changes that are needed.
+Of course, there is an asterisk that goes along with that,
+but in your mental model, you can just think of it
+as React will just only make the changes as necessary.
+So how the heck do we write React?
+Well, there's this thing called JSX, which
+is short for JavaScript and XML, which is basically just an XML-like syntax
+extension of JavaScript.
+It's great because it just transpiles directly to JavaScript.
+So as we talked about in an earlier lecture,
+the paradigm now is to rather than just writing JavaScript by hand, using ES5
+directly, we can write in these other languages
+that just transpile back to JavaScript.
+So JSX is an extension to that JavaScript syntax, which will just
+compile back down into JavaScript.
+
+And so tags defined in JSX, XML looks exactly like HTML with the tags.
+Lowercase tags are treated as HTML or SVG tags,
+whereas things uppercase are treated as our custom components.
+And what the heck is a component?
+Well, a component is just a function, a function that returns a node.
+What's a node?
+It's something that React can render.
+For example, like a div or a span or a string or a number.
+
+And components will receive an object of properties
+that are passed to this element.
+So going back to the example that we were doing before,
+see how one, we declared a const called slide down here.
+And notice how I uppercased that S. That was
+fully intentional, because in JSX, a tag with a capital S gets
+invoked like a function.
+And what does it get invoked with?
+Well, anything you pass it as properties.
+So if you remember properties from HTML, you just
+pass them in line with the key and a value pair.
+In React, you do the exact same thing, and it actually
+gets passed as an object to the component that you described.
+
+And so now to talk about props.
+Well, props are just past as an object through a component
+and used to compute the return node.
+So basically, the object that we were just referring to in this example,
+we called it a slide.
+In React convention, we always call that props, short for properties,
+like those HTML properties.
+And any change to these props will cause a recomputation of that return node,
+or in React vocab, a re-render.
+And so unlike in HTML, these can be any JavaScript value.
+So if you remember back to HTML, when you declare a property,
+it has to be a string.
+It might be JavaScript, like a JavaScript function,
+but really it's just a string.
+And so you can't pass any complex objects or a date, object, classes,
+instances, and stuff like that.
+But in React, we can pass anything.
+So notice here, slide is an object as declared in the array
+that we have up there.
+And we're just passing the object over there.
+And the way that we pass values in JavaScript
+is we wrap them in single curlies, which means,
+hey, execute this as a JavaScript.
+
+Does that makes sense?
+
+So let's actually use a live example of this.
+So there's this website called codesandbox.io,
+which is linked on the website in the Resources tab,
+and this allows us to write React and actually render it live.
+And so can everybody read this?
+
+So basically, what's on the left over there is code that gets executed
+and runs live on the right side here.
+So if we started editing this, you see it applied directly on the right side
+there.
+And so you see we have a const called app,
+which doesn't care about any arguments it
+receives and just renders the static HTML here.
+So what if we actually wanted to pass it a prop?
+So say we passed it something like a count and passed it the number 1.
+Again, we use curly braces there to represent this is JavaScript coming,
+and the JavaScript is just the number 1.
+So how might we go ahead and render that in the app?
+Well, first, we need to actually pay attention to the object
+that we receive here.
+
+And second, we can just do it directly in line.
+And so we use those curly braces to represent,
+hey, here comes some JavaScript.
+And we can just use props.count, and now we'll
+go ahead and grab the prop with the key [? call ?] account.
+And so I mentioned that as props change, React gets re-rendered.
+So how might we do that?
+
+Well, we can just wrap this in a set timeout, or a set interval, rather.
+
+And every 1,000 milliseconds or 1,000 milliseconds,
+let's go ahead and pass it not just one, but the count plus plus,
+where count starts at 0.
+And every time this is invoked, it increments.
+
+And so down here, we're saying, sudden interval,
+which means run some function every n seconds.
+We set n to equal 1,000 milliseconds, or one second there.
+And every time we want to render this function
+called app with a count of one more than it was last time.
+And so we start at 0, and every second you
+see we pass a new prop count incremented.
+And even though we're not really doing anything actively in the app here,
+we wrote this in a very declarative nature, right?
+We said, for any props that you give me, just render a div with an H2 where
+the H2 is the value of the props.
+See how that's very declarative.
+We don't say, oh, first you have to grab the count,
+then check to see if it is different than the last one,
+and then append this to the DOM.
+We just say, hey, this is what we want.
+And React will give it to us.
+Any questions on React or props thus far?
+Yeah?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yes, of course.
+So set interval requires two arguments, where the first one is a function.
+So the question was can you go over the arrow notation here?
+And so set interval expects two arguments.
+One is a function that it will invoke with no arguments,
+and so I'm just declaring an anonymous function here with no arguments.
+So I'm saying, here is a function that takes no arguments,
+and what should I do?
+Well, I should render this.
+I could have also written this as this, and it would have functionally
+been the exact same.
+
+Does that makes sense?
+
+Any other questions on React or props?
+Yeah?
+AUDIENCE: So in line 10 [INAUDIBLE]?
+
+JORDAN HAYASHI: So in line 10, we have braces after the arrow here.
+So that's just saying, interpret all of this as one statement.
+So something special about arrow notation
+is that it has an implicit return, which means we don't actually
+have to write-- so we could have written the same thing as this,
+as a function that takes props.
+And what does it do?
+It returns this.
+
+So this actually does the exact same thing.
+So we're saying, app two is a function that
+takes a single argument called props.
+And what we do is we return this, and so arrow notation shorthand is just
+you have your arguments in arrow.
+And then if you don't have braces, which referred to it like a code block,
+it just returns whatever's next.
+And so we're saying, return this.
+What is this?
+Well, it's this div and H2.
+We're going to wrap it in a parentheses so we know that it's just one value.
+Does that make sense?
+A great question.
+Do you guys see how these are the same?
+
+So this is great, but we don't really have all that much power yet, right?
+If we wanted to go ahead and change these props,
+we still have to drop down to this raw JavaScript over here.
+So next we'll see exactly how we create apps that are stateful.
+What does that mean?
+Well, there's this notion of state in React,
+and state is basically an internally managed configuration
+for any component.
+And so now components become classes, and this .state is a property on that
+component's instance.
+
+So how do we update the state?
+Well, there's a method called this.setState,
+which is implemented in this thing called a React.Component, which
+we have to extend in order to have access to that method.
+And this goes ahead and changes that value.
+So you can pass an object to be merged or a function of the previous state.
+And so if we pass this.setState, an object,
+it will go ahead and merge that in with the existing state.
+So if we pass it in an updater function, it's
+basically a function that gets run when we want to change the state.
+And the set state calls are batched and run asynchronously.
+And of course, any change in state will also cause a re-render,
+because it would be silly if we were to change the state
+but not reflect that in the UI.
+And so how might we go about representing state over here?
+So first, let me copy this so that we can save it.
+
+So let's go ahead, and rather than having an app be a function,
+let's actually have it be a class.
+
+So we can do class app, and we want to extend React.Component.
+
+And within that, we want to have this method called render, which is
+automatically invoked on a re-render.
+
+Within render, we want to return this.
+
+Cool.
+
+So the way to now write this is rather than having
+app be a function that takes props and returns something,
+we're actually writing a class for app.
+And so as we talked about earlier, classes have instances.
+And React knows that when you want to render something
+like this, if it's a class, go ahead and create a new instance of that
+and pass in these as props.
+And notice how we don't ever take the props anywhere.
+That's because when we extend React Component,
+React Component, that base class, goes ahead and attaches the props
+to the instance.
+And so in order to get at them, rather than doing props does something,
+we do this dot props dot count.
+So again, the props that come in, in the way that React.Component
+is implemented, it automatically takes the props
+and attaches it to that instance of the class.
+And so in order for us to get them in the render method,
+we do this dot props dot count.
+Does that make sense so far, going from a function to a class?
+We'll talk about this in depth the next lecture.
+And so we talked about this thing called state,
+and how do we actually go ahead and use that?
+Well, when we want to create our state, we actually
+do that in the constructor method.
+
+And so the first thing that we want to do in our constructor method
+is actually called a super, which means allow
+React.Component to do stuff with the props
+that it would have done otherwise.
+And now go ahead and do what we want to do.
+What do we want to do?
+Well, we want to initialize this thing called state.
+
+Cool.
+So now we have this thing called state, and how are we
+going to go ahead and update it?
+Well, maybe we should have something called increase count, which
+is a method on this instance.
+And let's go ahead and increase the count here.
+So how might I do that?
+Well, I should call this dot set state and pass in count is this dot state dot
+count plus 1.
+And so now we have a method on this instance called increase count
+that we can call.
+And it should, in theory, increase that count.
+And so rather than referencing the props down here, let's reference state.
+
+And now it should be 0, and it's just going
+to stay at 0, because we're not doing anything.
+So we can go ahead and get rid of this interval.
+
+And so how are we going to change that value of 0 to be something like 1?
+We have to invoke that method, and so let's go ahead
+and do that when we click a button.
+So let's have something like div here, and within that div,
+let's create a button.
+
+And when we click that button, let's go ahead and invoke this thing
+called increase count.
+
+And let's call it increase.
+
+So now if we click this button, what do we expect to happen?
+
+So notice how we pass this thing called unclick.
+What's the value of unclick?
+Or what function should we invoke?
+Well, we should invoke this dot increase count, which should be this.
+We'll see what it is in a second.
+And then that should call this dot set state, which
+should, in theory, increase count.
+So what happens?
+Uh-oh!
+Cannot read property set state of undefined.
+So there's a bug here.
+Can anybody spot the bug?
+Cannot read property set state of undefined.
+It even tells us exactly where that was.
+So we're seeing this dot set state, which
+I told you is a method that we can use.
+But it's saying, we cannot read a property of undefined,
+which implies that this is undefined here.
+Yeah?
+What do you think is going on here?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah.
+So we have to bind that function to this.
+So we talked about this and binding this towards the end of last lecture.
+And we talked about how this is bound on whatever object it's invoked on.
+And so right now, this isn't invoked on the class, right?
+It's invoked when you click that button.
+And so we're going to have to bind this to the value that we want it to be.
+And so towards the end of the lecture, we talked about different ways
+to bind this.
+Can anybody remember those?
+
+Yeah?
+AUDIENCE: Bind method.
+JORDAN HAYASHI: Yeah.
+There's this thing called bind, which is a method on all functions.
+And similar to bind there is call and apply.
+And we also talked about a different way of writing functions,
+which actually lexically binds this.
+Do you guys remember how that was?
+Remember, if you use arrow notation, it automatically binds this for you.
+And so you can solve this problem in all three different ways.
+And so down here, if we wanted to do dot bind,
+we could do dot bind to this, which, since we're invoking it
+on the render method, which is a method that's invoked on the class,
+this is bound correctly.
+And so when we increase it, it will increase.
+We could also use--
+well, call and apply don't really work here.
+But we could actually use arrow notation.
+So we can say, let's have an arrow notation down here,
+which creates a new, anonymous function.
+And what does that anonymous function do?
+Well, all it does is invoke increase count.
+And so since this we wrote as an ES6 arrow notation,
+it automatically binds this to be what we want it to be.
+
+Does that makes sense?
+There are a couple other places that you could do this.
+We could also do it in the constructor method.
+You could do this dot increase count equals this dot increase count dot bind
+this.
+Or lastly, you could also--
+and then down here, you'd just have to do this dot increase count.
+Or alternatively, you could actually just define this in the constructor.
+
+And so that would be the other way.
+So you could say, this dot increase count equals an arrow notation in this.
+But let's stick with this way for now.
+Cool.
+So now we have a button that works, that increases as we expected.
+
+So what if instead of increasing it by 1, we wanted to increase it by 2?
+Well, of course, you could just do this.
+Let's say we want to do it by sending state twice.
+
+So what do we expect to happen here?
+
+We expect it to set state to be count as this dot state dot count plus 1 is 1.
+And then [? it does ?] set count to be 1 plus 1 to be 2, right?
+But we see it's only going up by 1.
+Why might that be?
+Well, set state calls are actually batched and run asynchronously,
+which means React is smart enough to know that if this dot set state is
+getting called a bunch of times in a row,
+rather than immediately doing that, maybe it would be better to just batch
+them and do it all in one go.
+And like I said, if you pass an object to this dot set state,
+it will just merge it into the new state.
+And so what is actually happening when you
+call this dot set state twice in a row?
+Well, they get batched together.
+And so it says, OK, now we know we need to merge
+into the old state these two objects.
+And so it's basically saying, merge the current state-- in this case,
+it's count is 0.
+And then what are we merging into it?
+Well, we want to merge this dot state dot count plus 1.
+
+And then we also want to merge that same thing again.
+
+And so what happens when you merge these three things together?
+
+Well, these two get merged together, and it actually turns into this.
+
+Well, you go left to right, so count gets merged,
+gets replaced by this dot state dot count,
+which then gets replaced by this dot state dot count plus 1.
+And so that is actually just 0 plus 1, which is why we end up getting a 1
+here.
+Does that make sense?
+
+And so we can prove that it runs asynchronously by logging.
+
+So what do we expect this dot state dot count to be at line 21?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: It actually logs 0, because when you call this dot set
+state, all it does is add it to that queue
+that we know it's eventually going to execute.
+Same with this dot set state.
+It gets added to a queue as well.
+And so when we get to line 21 here, what has actually executed?
+Well, nothing.
+And so this dot state dot count still has a value of 0,
+and then only after that do those batch set states run.
+So what if we actually did care about the previous count before?
+Say we wanted to add 1 to the previous count,
+but we actually really wanted that state to exist beforehand.
+Well, we can pass it what's called an updater function,
+and that's a function that takes the previous state
+and returns some new state.
+In this case, we want it to be the previous state, dot count plus 1.
+
+So now we have two set states, where rather
+than just passing an object to emerge, we're saying,
+actually run this function.
+This function takes the old state and returns
+a new object, which is where the count is the previous state's count plus 1.
+And so now when it batches it, it says, oh, we actually
+need to run this function twice.
+And so now when we click, it actually goes up by two.
+
+So any questions on React, props, or state thus far?
+
+Cool.
+Let's go ahead and take a quick break.
+And then when we come back, we can play with React a little bit more.
+
+Hello, and welcome back.
+So before the break, we were talking about React and props and state.
+And now with all three, we can actually go ahead and start
+building pretty powerful apps.
+And so for homework, for the project zero,
+you guys have been working on a to do app, which you've
+been writing in all vanilla JavaScript.
+And today for the rest of the class, we're
+going to go ahead and together implement that in all React.
+
+So what are some strategies you may go around doing
+your thing in vanilla JavaScript?
+Well, say we had to dos created as list items, where within each list item,
+we have input, which has a checkbox.
+Maybe you're doing the challenge and you want to take care of the deletes
+as well.
+And then, of course, you're going to have some span
+or some way of displaying text.
+And so maybe have a couple different functions.
+One is to create a to do.
+One is to delete a to do.
+And what might you do in those functions in order to create those to dos?
+
+Well, first, maybe you'll get the text.
+Then what?
+Maybe go ahead and using document dot create element,
+maybe you want to create a list item.
+Then what?
+You'll probably have to create the input.
+
+Then probably create a button.
+Create the span.
+And maybe at the end, you hook those all up together
+and append those to the list.
+
+And so how might you take care of delete?
+Well, find the to do.
+
+Maybe delete that.
+Then what?
+Make sure to update the counts.
+
+And maybe we have to do that over here as well.
+
+So you see how we're doing this in a very imperative manner.
+Using JavaScript, we tell the browser exactly what we want to do.
+Well, we know that our to dos are shaped like this.
+So first go ahead and get the text.
+Maybe create that [INAUDIBLE],, create the checkbox,
+create all these other things.
+Append them to each other, and maybe append them to the list.
+And so we go ahead, and we created a new to do, but we had to do a lot of steps
+in order to get there.
+And so what might be an easier way to do this?
+Well, in to do one, maybe we wanted to abstract out the creation of the
+to do itself.
+So maybe in that new create to do function,
+we go ahead and make the list item, make the input, make the button,
+make the span.
+Hook those all up together.
+But that's one, little, discrete part of the UI, right?
+We're going to start to componentize these things.
+Maybe abstract out a function for creating the to do, and then in the new
+to do, we can still get the text, update the counts, and append to the list.
+But rather than doing all of this work in the new to do function,
+maybe we just invoke create to do.
+And so we're starting to break out something
+that was pretty complicated into now two separate steps, where
+each step is relatively simple.
+But still in each step, we have to go about all of these steps
+in order to get what we want.
+So what might be a better way to do this?
+Well, rather than going through the steps, where we say, oh, hey,
+get me a new element called a list item and input button in a span,
+maybe we wanted just to write that all somewhat declaratively ourselves.
+And so we can actually do something called innerHTML,
+so say we created a list item.
+
+And maybe we want to take advantage of JavaScript's ability
+to do in-line string concatenation in order
+to create some HTML directly here.
+So we could do something like li.innerHTML,
+and we can start actually putting this directly in here.
+
+And so this will actually, in a more declarative manner, say,
+hey, I want an input, a button in the span,
+and just stick this in the innerHTML of that list item.
+And so it's starting to look somewhat like something
+we've seen before, right?
+It's starting to represent more of a React component.
+Do you guys see how that is starting to look a lot like what we were
+doing before, using React components?
+
+But let's stick with vanilla JavaScript still and take this a step further
+and actually store the to dos in memory.
+And so what have we been previously using to store to dos?
+Well, we've just been adding them to the DOM,
+and then using the DOM as a way to remember exactly what our to dos are.
+But what if we actually wanted to rather than storing it on the DOM,
+actually store that in JavaScript, in some sort of data
+structure in our JavaScripted memory?
+Well, that might be easier to do stuff like delete on.
+But how are we going to get that to the DOM?
+Well, we're going to actually have to write a method ourselves.
+And so maybe we have to dos stored in memory as an array.
+Maybe we have something called a render to do,
+which will actually render a single to do.
+And by render, I mean turn that to do, an object in memory,
+into actual HTML, something that the browser can display.
+And so that takes care of rendering a single to do,
+but how are we going to render that entire to do list?
+Well, maybe we want to clear the list and actually map over the to dos.
+So we do to dos dot map.
+What are we mapping?
+Well, let's actually render each of those to dos.
+And for each of the to dos that we rendered,
+go ahead and append that to the list.
+And so now we went from storing to dos in memory,
+creating this concept of rendering, where we turn a single JavaScript
+object into an actual thing that the browser can display.
+And then we have this concept called render, which
+actually renders all of our to dos.
+And so we go from what used to be a very imperative way of writing
+JavaScript, and going from having a single to do to appending that
+to the DOM.
+So now we're a more declarative way.
+We're declaring that a bunch of to dos may exist.
+We're declaring that, hey, here's a way to render a single to do
+and writing a way to turn that list into a full rendered page.
+And so now when we want to add a to do, rather
+than doing a bunch of DOM manipulation, maybe we actually
+want to just do something like a new to do and push that to the list.
+Well, once you push it to the list, now we have to manually say, hey,
+we updated the list.
+Let's go ahead and render that to the page.
+And so now if we're storing everything in memory,
+it becomes a lot easier to remove things.
+And so how are we going to remove the to dos?
+Well, we have to figure out exactly how to do the to dos,
+and this is just an implementation detail.
+But we can actually reset to dos to be a filtered list.
+So just filter them by excluding that to do that we didn't want to be included.
+And then we, again, since we changed everything,
+now we're going to have to go and manually kick off a render.
+And so now we're writing JavaScript in more of a declarative paradigm, more
+like what we saw in React earlier.
+But we're still implementing stuff like rendering and rendering a single to do
+and kicking off these things manually.
+And let's actually see how this looks if we were all to do it in React,
+where React actually handles a lot of the data rendering to the screen,
+using a library rather than stuff that we have to write manually.
+
+So let's actually do this from scratch.
+First let me save this.
+
+So let's go ahead and actually, from scratch, implement our to do list
+all in React.
+So of course, we're going to have to store stuff in state.
+So rather than having app be a function, what might we want to do instead?
+Have it be a class.
+
+And just like in the example I was showing earlier,
+we have a concept of rendering that app.
+React components actually do this automatically
+for you in this render method.
+
+And so let's go ahead and implement that rendering method.
+
+And so returning this.
+
+And now we have a blank to do list.
+So now we have a class called app.
+It's extending React component, which gives us what?
+It allows us to have state, and it gives us access
+to this thing called this dot set state in order to update the state.
+And this render method goes ahead and just renders a blank div
+with a blank UL.
+Yeah?
+AUDIENCE: In the previous version of render,
+why was it returning a [INAUDIBLE]?
+JORDAN HAYASHI: Oh.
+So the question was in my example to do app three,
+why was render up here returning false?
+So we'll talk about handling events in a little bit.
+But basically, browsers actually all have a way to handle events.
+And so if you do something like click a Submit button,
+it will automatically go ahead and submit a form for you
+and refresh the page.
+And so a lot of times, when we actually want to handle that all in JavaScript,
+we have to have a way to disable the automatic page refresh.
+And so there are a couple different ways to do that.
+You can do something like event dot stop propagation or event dot--
+
+I forget the exact method name, but it's something
+like stop this event from happening.
+Prevent default. Event dot prevent default.
+And a shorthand for doing both of those is just
+returning false out of whatever handler they do.
+And so when I do return false from this render, that
+means if I ever want to do something, like I
+add to do, and hook it up to a button that might automatically submit a form,
+I can return false from that instead and automatically
+prevent that from happening.
+And so this is just some shorthand for rather than having submit buttons
+automatically refresh a page, it just blocks that
+and lets me handle it all in JavaScript.
+
+Cool.
+So back to this example in React.
+So we're up to this point where we have a class called app.
+Right now, we have no state associated with it, and all we're doing
+is rendering this empty list.
+And so how might we go about implementing these features
+that we have in our to do project?
+Well, first, we're going to want to start tracking something
+in [? our ?] state, right?
+Maybe we want to track the to dos.
+And so how do we go ahead and create something called state?
+Well, first, we want to invoke the constructor, which
+for now takes no arguments, since we're not actually passing any props to app.
+First thing we do in the constructor is always
+called the super, which is invoking the constructor on React.Component,
+which gives us things like this dot set state.
+And then now we have the opportunity to initialize our state,
+so we can go ahead and do this.state equals whatever.
+And so what might we want to store in state?
+AUDIENCE: To do list.
+JORDAN HAYASHI: Yeah, the to do list.
+Is there anything else that we should store?
+
+Nothing I can think of off the top of the head.
+But thankfully, if we want to add something later, it's very easy to do.
+And so let's just do to dos, and let's store this all on an empty list.
+Cool.
+So now we have this concept of state.
+We now have this concept of to dos, which is stored in our state,
+but we're not doing anything with it.
+And so let's actually render those to dos to the screen.
+So we might want to do it within the unordered list.
+Let's have something like this dot state dot to dos.
+And again, we wrap things in single curly braces
+when we want to execute them as JavaScript.
+And so we have this dot state dot to dos, which is an empty array.
+But we can't just take for granted that it's always an empty array.
+The point of writing declarative code is that we want this to hold true,
+no matter what the state is.
+And so we just assume that this is full of to dos, and so we can go ahead
+and map over that and render each to do.
+
+So for each to do, let's actually create a to do.
+
+All right, so I'm mapping out the to dos, and for each to do,
+I'm creating this tag called uppercase to do.
+So who remembers what uppercase tags mean?
+AUDIENCE: It's a React component.
+JORDAN HAYASHI: Yeah, it's a React component.
+And we now have to describe something called a React component called capital
+to do.
+And so let's go ahead and do that.
+
+And so just like the examples that I showed you earlier,
+where we abstracted out the concept of creating a to do,
+we can do that in React as well.
+So let's have this thing called a to do.
+And what it does is it takes some props.
+We can call this variable whatever we want,
+but the React convention is to call it props.
+And what are we going to return?
+Well, let's just return an unordered list, or a list item.
+What might we have in that list item?
+
+Well, we had an input of type checkbox.
+
+We had a button that allowed us to delete.
+
+And last but not least, we had some text.
+And what was in that text?
+Well, probably just props, dots--
+we can call it the text for the to do.
+
+Cool.
+So now we declaratively just said, hey, every time we want a to do,
+this is what it looks like.
+It's a list item, and inside it, we have an input.
+It's going to be a checkbox.
+We're going to have a button called delete.
+It doesn't actually do anything for now.
+And we also have a span, and what's that value of the span?
+Well, just look at my props and grab the text.
+
+OK, so now what do we have to do?
+Maybe we should add a way to add to dos.
+So let's create a method called add to do.
+And what should we do first?
+Maybe we should get some text.
+So there are many different ways to do this.
+Let's just for now prompt.
+
+And then what do we want to do with that?
+We have text.
+What should we actually do with it?
+
+AUDIENCE: Add it to the to do list.
+JORDAN HAYASHI: Yeah, we should add it to our to do list.
+And how are we going to do that?
+
+We can just do this dot state equals something, right?
+
+No.
+There's only one way to update state, right?
+We should do this dot set state.
+And what are we doing?
+Well, we have the to do equal this dot state dot to dos.
+And then additional thing.
+And so the way that we've added to an array
+thus far is by doing this sum array dot push.
+What that does is it actually mutates the array.
+And so the way that React knows that it should update
+is it sees if the values that are passed to it are different.
+And as we learned a couple lectures ago, all objects
+are actually stored by reference.
+And so when we go ahead and mutate an object,
+the reference doesn't actually change.
+And so the React paradigm is rather than mutating these props,
+we should actually create new ones.
+And so a quick way to create a new array is
+by using this dot dot dot notation, which
+means given an array, if you dot dot dot array,
+it just pulls out all of those values of the array.
+And so when we do something like brackets dot dot dot some array,
+it pulls out all the values of that array and puts it into a new array.
+And so this is a quick way of cloning an array.
+And so now the array reference is changed, but the values in there
+are all the same.
+And so now we've cloned the array, and now we should add a new to do.
+And so let's call our to dos objects that have a text field,
+and that can be the text.
+
+So there's a small bug in our program now.
+Well, one, we don't know how to add a list.
+Add to that.
+So let's go ahead and create a button that can add a to do.
+So now you have a button, but it's not actually
+doing anything when we click it.
+So first we need to set up an event handler,
+so when that button is clicked, what should it do?
+Well, it should do this dot add to do.
+So what is wrong with this code?
+
+Why isn't it working?
+Yeah, this is not bound to what it should be.
+And so how are we going to fix that?
+Well, the easiest way is to just declare an arrow
+function in line here, which will lexically bind what we want it to do.
+And so now we have another bug, so we declared
+to do to be a list item with an input, a button, and a span.
+And we see the input in the button, but we don't see any spans.
+So does anybody spot exactly why that's happening?
+
+So what text are we populating that span with?
+
+Props dot text.
+And so what does the object called props--
+what values are in there?
+They're key value pairs that are mapped to what are passed in here.
+Are we passing a key called text into to do?
+
+No, we're not.
+We're only passing something called to do, right?
+
+To do may have a value called text, but in order
+to actually access that, what we would have to do is to do props.todo.text.
+
+And that will allow us to pull up the correct field.
+
+So now we have a way to add to dos.
+Great.
+That doesn't make much of a to do app.
+We should be able to check and uncheck, which we can.
+But we're not really handling that in state.
+We have no way of telling whether these to dos are checked or not,
+and we also have no way to delete to dos.
+
+And so we need some sort of way to recognize which to do is which.
+What are some strategies to go about doing that?
+Can anybody think of one?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah, we should give each one an ID.
+That way, if we can guarantee that those IDs are unique,
+then we'll have a unique way of recognizing each to do.
+And so let's go ahead and do that real quick.
+So a very easy way to do that would be to do something like this--
+
+have some value called ID declared outside, initialized to 0.
+And every time you create a new one, you just increment that.
+
+And so now every single time we add a to do, it has an ID field.
+And we're guaranteed that it's unique, since it's
+a counter outside the state of our app.
+Does that makes sense?
+So how does that help us?
+
+So now we have a way of recognizing which to do is which.
+And so say we wanted to get rid of one, it's now pretty easy to do that, right?
+So if we want to now remove to do, that should now do what?
+Does it make sense to have a remove to do with no arguments?
+Not really, right?
+Because we need to know exactly which to do we want to delete.
+It makes sense that we want to add a to do with no arguments,
+because there's no particular to do that we want to add.
+We create that text later.
+But when we want to remove a to do, we need
+to know exactly which to do to remove.
+And so now we should have remove to do actually taking argument.
+And so what argument should it take?
+Well, we created some sort of unique identifier field,
+so we can just take the ID.
+And so now how are we going to remove the to do?
+Well, we could do this.setState, which is the only way to update the state.
+And the to dos are what?
+They can take the old state's to dos and just filter them, where for each
+to do, what do we want to keep?
+Well, as long as the to do dot ID is not equal to the ID that we pass in,
+those are the to dos that we want to take.
+
+Great.
+But the Delete button is not working.
+Why not?
+Well, our component called to do is not doing anything
+when you click on the button.
+So how might we handle that?
+
+Well, that's where props come in.
+Since we can pass any JavaScript value as props,
+what's to stop us from just passing a function down?
+And so when we map over the to dos like this,
+we can actually also pass a function down.
+So we could pass something called onDelete and just pass a function.
+And what would that function do?
+Well, it's going to call this.delete removeTodo.
+And what are we going to pass in when we invoke that?
+Well, this todo.id.
+
+Does that make sense?
+
+So we're mapping over to dos, and for each to do in that array,
+we're going to invoke that to do function, that component.
+And what are we passing as props?
+We're passing it this thing called onDelete
+which is a function that invokes remove to do with that to do's ID.
+So for each to do that we create, we're passing
+a unique function that removes that particular to dos
+from our global state.
+And of course, we're also passing down the to dos,
+so it knows exactly which text to render.
+And so how do we get that to fire when we click the delete button?
+
+Well, that function's just a prop, right?
+So when we click that button, what should we do?
+Well, we should invoke props dot on delete.
+
+And so now when we add things, if we click that button,
+the correct one is deleted.
+Again, how does it know that that first one is the one that should be deleted?
+Well, it's because each to do that gets rendered,
+so when we map over the to dos in our state, we pass a unique on delete
+handler down.
+It's a function that gets bound to that particular to do's ID field.
+And so when we click that particular to do's delete button,
+it invokes remove to do with that ID, and so it knows
+to filter based on that particular ID.
+Does that make sense to people?
+
+Great.
+So we've handled the two big parts--
+well, the add and the delete part of the assignment.
+And so what are we missing?
+We're missing some way of tracking how many to dos we have total
+and how many to dos that we still have to complete-- or in other words,
+to dos that are unchecked.
+And so now we have a choice-- how are we going to handle this?
+Well, if we were back in Vanilla JavaScript world,
+a way to do that would just be to keep track
+of however many unchecked there are, keep track of however many total
+there are.
+And just mess with those values every single time we add, delete, or check
+or uncheck a to do.
+But in React land, that seems a little imperative for our like,
+and so there might be a more declarative way to do this.
+But in order to do that, we also need to track every single to do,
+whether it's checked or not.
+And so currently our to dos are an ID field and a text field.
+But maybe it would be better to also add a field of whether it's checked or not.
+
+And so now when we add to dos, we add an object with three keys--
+an ID which is guaranteed to be unique, because we're incrementing
+this ID counter, which lives outside of our app; the texts that we prompt for;
+and lastly, a value called checked, which keeps track of whether that to do
+is checked or not.
+And we should just initialize it with false,
+because there's no point in creating a to do.
+That's already done.
+Cool.
+And so now we're still missing one thing.
+So when we create to dos, we just create an empty checkbox.
+And so no matter what, it's going to be unchecked.
+And so we should set that check field to equal whether that particular to do
+is checked or not.
+And so how might we do that?
+Well, with props.todo.checked.
+
+And so now that keeps track of whether a to do is checked or not.
+But the problem is we're not actually updating our app state every time
+a to do is checked or not.
+And so we're going to have to actually handle every single time
+an input is clicked.
+Every single time it changes, we need to update our app state accordingly,
+because if you look here, I'm clicking but nothing is happening.
+Why is nothing happening?
+Well, we're initializing our to dos to be checked if false.
+We're saying, for each to do, make sure that checkbox, whether it's checked
+or not, is whether that to do--
+its check value is true or false.
+But we have no way to change that from not false,
+and so no matter how many times I click that,
+it's not going to change the value of props.todo.checked.
+And so we're going to actually have to write some logic in order
+to handle that.
+
+And so now let's create a new method, called toggle to do.
+We're obviously going to need to take an argument here, because we
+need to know which to do to toggle.
+And so what are we going to do here--
+so again, we're going to do this.setState and we can to dos.
+It's this.state.todos.map.
+
+So if you remember back a few lectures ago, when we talked about filter, map,
+and reduce, we talked about how map applies a function to each
+of the values in an array and will return
+a new array with those values swapped out
+with whatever this function returns.
+And so how might we use that map function to handle the toggling of a
+to do?
+Well, first, which to do do we actually care about?
+We only care about the to do with an ID that
+matches the ID that were passed, right?
+So we can immediately off the bat say, if to do
+dot ID is not equal to the ID that were passed, what should we do?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah, we shouldn't do anything, right?
+We should just return that to do.
+
+OK, great.
+We have one condition, but what happens with the to do that we want replaced?
+
+We should flip its checked value, right?
+And so we're going to want to return a new object,
+and what should those objects' field be?
+Well, we can say, ID is to do dot ID.
+
+We can do text is to do dot text.
+And what do we want the checked value to be?
+
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah, the opposite of what it was before.
+
+And now it looks like we should have something that works.
+
+The problem is it doesn't.
+
+It still doesn't change anything when we click this value.
+Anybody have any ideas why not?
+It looks like our toggle to do function should work.
+We're setting state, we're updating the to dos,
+we're mapping over this with this function,
+where if the to do's ID doesn't match, we don't change it.
+But if it does, we flip the to check value.
+But when we click over here, nothing actually happens.
+Why might that be?
+Yeah?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah.
+Exactly.
+We defined this function, but we're not actually calling it anywhere.
+And so just like we have this onDelete that passes a new onDelete
+function to every single to do, we should also
+have this thing called onCheck or onToggle that
+passes the unique function to each to do that we
+should invoke when we toggle it.
+And so let's have an arrow function here so we don't
+have to worry about the this binding.
+And when on toggle's invoked, we should do this.toggleTodo with the todos.id.
+
+And so now since we're passing a new prop here,
+we should probably invoke that prop at some point.
+
+And so where are we going to do it?
+Well, we can do it in the input.
+We can do something like onChange = props.onToggle.
+
+And how do I know that this on change attribute exists?
+Well, you can read the docs and it'll be there.
+Or you can wait till the next lecture, when
+we talk about event handling in React.
+And so now we can create a to do.
+And when we click it, look at that-- it works.
+
+Cool.
+So now we're tracking every single to do, whether it's checked or not.
+But that wasn't really the goal, right?
+The underlying goal was to keep track of how many to dos there were,
+and how many unchecked to dos there are.
+And so how might we do that?
+
+Well, first let's create some divs.
+
+This div says to do count.
+
+And then we're going to have some JavaScript in line there,
+and then maybe a div for unchecked to do count.
+And again, some JavaScript.
+Cool.
+And so what is a quick and easy way to calculate how many to dos we have?
+
+We're tracking all of our to dos in memory.
+What are we using to track them?
+Yeah?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Yeah.
+It's just an array that has a length attribute,
+so we can do this dot state dot to dos, which grabs that list,
+and just do dot length.
+And now we have a 0.
+And if we add a to do, it goes ahead and increases.
+Cool.
+And so how are we going to keep track of the unchecked to dos?
+
+Well, we know we're tracking every single to do and whether it's checked
+or not.
+And so one strategy might be to get all of the to dos,
+remove all of the ones that are checked, and then count the number remaining.
+So what functions might we use to implement that algorithm?
+
+Yeah, we can use the filter function.
+So we can do this dot state dot to dos dot filter.
+And what are we going to filter by?
+Well, for each to do, return if it's not checked.
+
+And then we're left with a new array, and we can just grab the length.
+
+And so if we do a test, now we have it unchecked.
+What happens when we check it?
+Well, that's going to get filtered out here, and what's left is an empty list.
+And you grab the length of that, and we have 0.
+What happens when we delete it?
+Well, we don't actually have to update any logic,
+because everything is handled completely declaratively.
+
+Is there anything here that says, every time
+we change something, make sure to go and change this count that we're keeping?
+Not really, right?
+We just assume that we have some to dos and some data that's coming down,
+and we just run calculations based on that data.
+And so we're just declaring what we want, based
+on any data that's passed into us.
+And so React, in that way, is very declarative.
+
+And so this is great.
+If we want to add any new features, we don't really have to worry about, oh,
+what is every single possible method that we
+need to update this new feature with.
+Whereas if we were doing this in more Vanilla JS
+and more an imperative nature, we would have
+to make sure, oh, if we want to also keep track of the count of checks
+to dos, we're going to have to check every single method where
+that number might be affected and go ahead and update it there.
+And so keeping track of all that in your mind
+might create bugs that you might not otherwise
+if the paradigm were more simple.
+And so this is a much more simple way of saying, hey, given some app state,
+go ahead and render an app based on that state.
+
+Any questions?
+Yeah?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: Can you repeat your question?
+AUDIENCE: [INAUDIBLE]
+JORDAN HAYASHI: So the question was if we,
+rather than replacing the old state.todos over here with a new array,
+would it still work, if we were to mutate the array?
+And the answer to that is, it depends.
+It depends on the React component that you're using,
+and it depends on some other methods that you
+could write that we'll talk about in future lectures.
+But the fact that it depends is a bad thing,
+because then you don't really know--
+it depends on what else you've written, whether it will work or not.
+But if you do it like this, where it's a completely new array,
+it will always work.
+And we'll talk about this in future lectures,
+but the React paradigm is always to do things immutably,
+which means if you ever change something, replace it
+with something completely new.
+And that-- be a reference to that.
+That way, if you're ever comparing values,
+you don't have any bugs that can appear there if you've mutated a value.
+So technically it's changed, but the reference to that value
+has not changed.
+Does that make sense?
+Cool.
+Any other questions about React, props, state, or anything
+that we've seen today?
+
+All right.
+So we talked about to do app.JS and using React on the web.
+But why limit React just to the web?
+So there exists this thing called React Native, which
+is a framework that relies on React Core and the core algorithms implemented
+by the React library.
+But it's actually a framework that allows you to do much, much more.
+It allows us to build mobile apps using only JavaScript.
+And so when Facebook released this framework called React Native,
+they released it with the tagline, "learn once, write anywhere."
+So you only have to learn JavaScript once.
+You only have to learn React once.
+But you can actually write it, and it'll run anywhere.
+And this supports both iOS and Android.
+And so I'll leave you there for this lecture, and next lecture,
+we'll look at this thing called React Native
+and how to run JavaScript for mobile apps.

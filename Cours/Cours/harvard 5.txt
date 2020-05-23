@@ -1,0 +1,1684 @@
+[MUSIC PLAYING]
+
+SPEAKER 1: Hello, and welcome for lecture four.
+This week, we'll be covering lists and user input.
+And so in the previous lecture, we looked into React Native.
+So we started diving into the components that they give us.
+We looked at how to style these components.
+We looked at how to handle some events, and how that differs from reactive web.
+We talked about a couple of different types of components.
+One, being stateless functional components and the other being React
+components with their life cycles.
+We looked at Expo, which is a library of--
+a bunch of tools around React Native that
+allow you to develop much more quickly.
+We looked at how to import and export things from packages and modules.
+And then lastly, we looked at prop types, which are library given to you
+by React that allows you to keep track of the different props,
+now that you're passing two different components.
+So this week we're going to talk about React Native
+much more deeply, and in the context of contacts.
+And so we're going to write a simple application, whereby
+we can add contacts to a list and display those for the user.
+And so what might we want to implement in doing that?
+Obviously, we'll need some sort of way to add
+users, which we'll do towards the end of lecture,
+but also we have to have some sort of way to display those users.
+So if you can imagine on your phone, if you
+want to keep track of your contacts, you want to be able to see all of them
+and scroll through all of that.
+
+In order to do that, we need to use what are called lists.
+And so in web, browsers will automatically become scrollable.
+If the content is greater than the window height then
+the browser will take care of the scrolling for you.
+Unfortunately, this is not true in React Native.
+For mobile, we actually have to do that manually.
+So there are a few different components that allow you to do that.
+The most simple of which, is called a ScrollView.
+And so it's just like a normal view, except you have the ability to scroll.
+We have something that was called ThisView.
+If you see that in some source code or maybe some libraries
+that you're looking into, that used to exist.
+It still exists, though it is deprecated and is not actively used anymore.
+To replace those, there are a couple things
+called FlatList and SectionList, which we'll be looking into in a little bit.
+So firstly, we have this thing called a ScrollView.
+So this is the most basic scrolling view.
+And so it will actually render all of its children before appearing.
+And so, if you can imagine, say you have a view that
+has a bunch of children in it.
+If it overflows the page, unfortunately you
+can't see the content that's beyond the window because unlike in web,
+mobile apps don't allow you to scroll down.
+But with the scroll view, it will actually do that.
+It will render all of it's children and then
+allow you to scroll back and forth.
+And so let's dive into how that is actually used.
+
+And so if you saw on Slack, I posted a link to the source code,
+it's also linked on the web site.
+And today, we're going to be working through a simple application,
+and there is a bit of code that is posted
+right now that will allow you to follow along in class, if you so wish.
+So first thing that we're going to do is look into how we actually
+create contacts for the first time.
+So if you look into this file called, contacts.js, you
+have a bunch of things in there.
+At the very top, we declare this constant, called number of contacts.
+And as you'll see in a second, I wrote this little thing
+that will allow you to just generate a bunch of random contacts.
+And so it pulls from a list of long first names.
+And so on line three, here we see that there
+are a bunch of hard coded first names.
+If you scroll a little bit farther down, you see a long list of last names.
+So the functions that we'll look at in the second
+will actually pull from that array of first names,
+and that array of second names of last names.
+And so some sort of function that we might
+want to have when we're generating random names
+is some sort of function that generates random numbers.
+And so you see here, we have some function
+called rand, which will generate a random number between some minimum
+and some [INAUDIBLE].
+So you can look into the math that's done here,
+but basically, it's just a little bit of math that
+generates a random number from 0 to 1.
+Multiplies that by some scaling, and then scales it up to the minimum.
+Basically, it does a little bit of math and gives you
+a number between a minimum and maximum.
+Next, we have a function that will actually generate a name.
+And so we have this thing called generate name, which when invoked,
+you see this, what's called a template literal, which
+allows us to do some JavaScript, evaluate an expression,
+and actually add that to a string without having
+to do some string concatenation.
+And so with backticks and this thing, a dollar sign, and brackets,
+we can actually throw in line a JavaScript expression,
+which will get evaluated and automatically add this to a string.
+And so we see here we're invoking this random function
+with the number of first names that we have minus one,
+which will give us a random first name.
+We do a similar thing with the last name and then use this template literal
+to give us a random name.
+So first name, space, last name.
+We see a similar function down here, that will allow
+us to generate a random phone number.
+So we see that random function again, giving us a number between 100 and 999.
+So basically, some random three digit number.
+Again, another random three digit number, and the random four digit
+number with dashes in the middle, which will give us the 10-digit phone number.
+We have a function down here, which will create a contact.
+And so the way that we're defining your contact is by giving it a name.
+The way that we get a name is by calling that generate name function and a phone
+number.
+And the way that we get a phone number is just
+by invoking that generate phone number function.
+And so when we invoke this function called, create contact,
+we're given an object with a name and a phone number,
+and that's what we're going to consider a contact for our examples.
+I also wrote a little helper function there
+that we'll use in a little bit, which allows us to alphabetize lists.
+And so it's just a way of comparing a couple of names.
+So if we pass a couple of contacts, we just
+extract the name here, extract the name of the second contact,
+and just compare them.
+So see which one comes first in the alphabet, which
+will allow us to do some alphabetizing.
+And lastly, we have this function, which allows us to add keys.
+And basically, what we're doing is we're passing a value in a key.
+We're inserting the key.
+And so we see a couple of new things here.
+One is the shorthand.
+And so if we have something like that, that's actually shorthand for something
+you may do a lot, which is this.
+So the people who maintain JavaScript, who have made an [INAUDIBLE] actually,
+notice that this is something that you see very often in code.
+And so rather than repeating a key and its value where
+the key is the name of a variable, you can actually
+do that in line and just by removing the second half,
+it automatically fills that in for you.
+We also see this dot, dot, dot, val.
+So we talked about a little bit in previous lectures
+doing what's called array destructuring.
+And so by doing dot, dot, dot, in array name,
+it will actually explode that array into a new array,
+which is helpful for when you want to concatenate two new array's immutably.
+It just happens to be that this thing also exists for objects,
+and so one way we could implement this function
+would be by hard coding all of those key value pairs.
+So if we want to do const addKeyToContact,
+if it were a function that takes a contact and a key,
+we could actually do the exact same thing
+by first doing key gets whatever the key was passed.
+We could also-- we know exactly all of the key value pairs in a contact,
+right?
+We have name gets generate name and phone gets generate phone.
+So we know that every single contact is going to have a name and a phone.
+And so we can actually just hard code that in.
+We can say the name gets the contacts name, and we can do the phone
+gets contact phone, which is fine.
+It does exactly the same thing as this bottom function does,
+assuming that contact is in the shape.
+The downside is, what happens if we start to add new keys to contacts?
+Say we added a first name, last name rather than name,
+or say we added an address, or a bunch of other fields,
+we'd also need to remember to go add all of those key value pairs
+into this add key to contact.
+And so the maintainers of ECMAScript realized hey,
+this is something that we're going to be doing very often, so why not have
+some sort of shorthand to do that?
+And so what they gave us was this.
+It's called object destructuring, where you do dot, dot, dot contact
+and that will actually take all of the key value pairs of contact
+and automatically do what I had there before for you.
+So this is a pattern that you see very often.
+So say you wanted to clone state or say you wanted to clone a bunch of props.
+Those are also in the shape of objects and so this dot, dot, dot notation
+allows you to do that easily.
+And so we use that here and add keys so that when
+we're past the value of an object, we can actually just clone the object very
+quickly and append the key.
+In the very final line, we see what we are exporting
+as the default export for this module.
+We see, create an array of length, number contacts.
+And so at the very top, rather than hard coding in some value here,
+we just said, hey, give us some sort of number where
+we want that number to be the number of contacts
+that we eventually export, and then we go ahead and use that there.
+And then we go ahead and map add keys to it.
+And so array dot from is a function in JavaScript
+where it allows you to take something of array like shape
+and turn into an array.
+It takes another argument, which you map over these things.
+And so by passing in length NUM_CONTACTS,
+that's the shape of an array object.
+Because every single array has a dot length value,
+and so by passing in this object called length NUM_CONTACTS,
+it's a shorthand way of just creating an array of arbitrary length.
+We then map over it create contacts.
+And what does create contact do?
+Well, it doesn't care what objects are passed to it,
+and so in this case when we use map, we really
+don't care about what the value of the array values
+are to begin with because we're just going
+to replace those with random contacts.
+And so by doing array dot from length of number of contacts,
+that creates an empty array of length and number
+of contacts, which we declared at the very top.
+We then map create contact over it, so now we
+have an array of length and NUM_CONTACTS filled with random contacts.
+And then go ahead and map over that to add keys,
+and we'll see why this is valuable in a second.
+So any questions on this little helper file that I put together?
+Basically, all it does is create a length--
+an array of length NUM_CONTACTS.
+So 1,000 here and then it goes ahead and fills that
+with a bunch of contacts where we define a contact as a name and a phone number.
+
+So let's go ahead and first try to add that to some sort of application
+where we can display all of these contacts.
+And so if you go ahead and run the project that I've linked to,
+all it is, is a blank screen that allows you to toggle the contacts being shown.
+And so now, that's actually--
+
+look at what the application is doing.
+And so if you open up this application we see the usual imports at the top.
+So we're importing React from React.
+We're importing a bunch of views from React Native.
+One of those is ScrollView, which we'll be looking at in a second.
+We see important concepts from Expo, which as we saw in a previous lecture,
+allows us to have some padding for the status bar at the top.
+We're importing contacts from contacts, which is
+the file that we were just looking at.
+And then we're just declaring a new class called, app.
+And so the first thing that you see that looks
+different than what we've seen before is this thing called, state.
+We've talked about state extensively, but in prior lectures
+when we look at state, we always do that in the constructor.
+There's actually another shorthand that we see here
+that is very useful for when you want to use constructors that all they do
+is add state.
+And so as we saw in previous lectures, when we were doing something
+like binding an anonymous function like this to some sort of class property,
+we can actually also do that with state.
+And so this is a shorthand, which actually will compile down to this.
+
+And so as we saw earlier, all I had was state equals this.
+And what happens when you compile this, is it actually compiles into this.
+It takes all of the class properties that we declared and moves that
+into the constructor.
+And so you see that we have this toggle contacts, that
+actually gets moved up into the constructor during translation.
+And so we see this dot contacts, this dot toggle contacts,
+equals some anonymous function, like this.
+And so when this actually gets compiled, it all actually turns into this.
+But since we're not actually doing anything in the constructor other
+than calling the super, then why not just use the class properties
+so that it is easier to read?
+And so if you are looking at other people's code
+or maybe reading libraries, most people actually
+do something like this, just because it's slightly easier to read.
+
+And so we see toggle contacts is a function
+that we defined, and all it does is it toggles the show contacts
+Boolean, which we store in the state.
+And finally, we see render.
+As we talked about extensively last lecture, components,
+their sole purpose is to render things to the UI.
+And so the render function here is just returning a view
+with a button that toggles the contacts.
+And right now, we're not actually doing anything with that value,
+but we're actually going to turn this into an app
+where we can actually show the contacts on the screen here.
+And so let's try to do this in a way that we--
+using things that we have learned in prior lectures.
+And so if we wanted to display all of these contacts on the screen,
+how might we go about doing that?
+Some previous lectures, we've learned a few different components.
+We've talked about buttons.
+We've talked about text, and we've talked about view.
+And so using those, we can sort of start to create this application
+where we can see what contacts we have.
+And so using things that we've seen in previous lectures, you would use a view
+and wrap a bunch of texts to show those contacts.
+And so right now, we've imported contacts,
+which is a big long list of contacts, and we're
+going to go ahead and display that in that view.
+And so how might we go from an array of contacts
+to a bunch of people in that view?
+
+Are there any functions that we've learned thus far, where
+we take an array and turn that array of values
+and turn that into something like an array of elements?
+Yeah?
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: Yeah.
+Map would be a great example here.
+So what map does is it takes an array, and for every single value in the array
+it runs it through a function and takes the return value of the function
+and returns a new array.
+And so right now, we have imported contacts
+from contacts, which as we saw, is just an array of people.
+And if we are able to turn that into an array of elements,
+we can actually use React to render those elements.
+And so let's actually do that here.
+
+So we can do contacts dot map and what do we
+want to do for each of these contacts?
+
+Well, maybe we should render some text to the screen.
+And so let's just start with this, where the text is the contact's name.
+
+And we see that it's rendering.
+So I see 1, 2, 10, maybe 50 or so contacts,
+but when I try to scroll nothing happens because as we
+saw earlier, unlike in mobile, when we have
+views that are larger than the viewport, there's
+actually no way for React Native to automatically add
+the scrolling for you.
+And so we have to actually have some additional components to handle that.
+And so as we talked about, we have this thing called a ScrollView,
+and so this is the most basic scrolling view,
+and it will render all of its children before appearing.
+
+If we want to render an array of data, as we saw,
+we can just use that dot map function.
+And so now, let's try just replacing this view with the ScrollView.
+
+So all we changed was replacing view with ScrollView,
+and now, we have a view that scrolls.
+
+One thing you notice, is that we have a warning at the bottom of the screen.
+It says, each child in an array or iterator
+should have unique key property.
+
+So what does that mean?
+So this is actually something that reacts uses for performance reasons.
+Because if you can imagine, say we have a list of items.
+
+That list is Jordan and David.
+
+So in previous lectures, we talked about this thing called the React's tree
+or the React virtual dom.
+And what that is, is React's way of maintaining all of its components
+that it's rendered in some tree like data structure.
+And so we might have something like a list.
+
+And then within that list we have this thing called Jordan and this thing
+called David.
+
+So in previous lectures, we talked about how when we add something
+or when we rerender, React will actually recalculate this dom
+and then only do what's necessary for a new rerender.
+So say we added somebody to this list.
+
+So say we add Yowan to this list.
+In this example, it's pretty easy because we
+have Jordan is where he was before, David was where he was before,
+and now we just add Yowan to the very bottom.
+And so React can see oh, Jordan, David, easy, let's just add Yowan.
+
+And so in this example, it's fairly easy to just tell oh, we just
+added somebody to the bottom of list because the top two stayed the same.
+But say rather than adding Yowan to the bottom of the list,
+say we actually added him to the top of the list.
+
+So now when React does it's diffing, so when it compares all of the nodes,
+it says, oh, we used to have Jordan in position one,
+and now we have Yowan in position one.
+That's not good.
+We should update this to be Yowan.
+
+What's in position two?
+Oh, position two is now Jordan.
+It used to be David.
+We better update that.
+
+And now we see in the third position here, oh, that's new.
+We better add David.
+
+So does anybody see why that might not be ideal?
+There is actually a shorter route, right?
+Rather than replacing Yowan for Jordan, and rather
+than replacing David with Jordan here, we
+could have just added Yowan to the beginning of the list there.
+And so if you could imagine, if this list is 1,000 things long,
+it might not be trivial to know exactly where things should be moved
+and where things should actually just be replaced or updated.
+And so React actually implements this by using these things called, keys.
+
+And so how can we tell that this Jordan is the same as this Jordan here?
+What if you have multiple people in the list called, Jordan?
+And so in our example we have a bunch of contacts.
+What if a few contacts have the same name?
+That might be true.
+We can pretty much guarantee that multiple contacts won't
+have phone numbers, but there's no--
+won't have the same phone numbers, that is.
+There's no way for React to inherently know
+that oh, this is a unique key in the object that we have here.
+And so what it has done to solve this, is it actually
+uses this thing called a key.
+And so anytime we have a list of data, React
+says, oh, one of the things in that-- one
+of the props that you should pass for each of the things in the list
+is this thing called a key.
+And so if we see here in this example, say we had--
+back up a few.
+
+Say we had given Jordan and David a key of one and two,
+and now we added Yowan at the top.
+React can just see oh, look, what used to be key number one here,
+we used to be key number two in this place.
+We can see that they've actually just moved to the second and third places
+here.
+And so we can actually use that and just add Yowan here.
+And so React can do the thing that was actually the most efficient,
+and the way it does that is by comparing keys rather than trying
+to figure out exactly which value is the most important.
+And so that's why in this example here, we
+passed this element, a long list of elements with names,
+and React is complaining, hey, I can't do the most efficient thing
+because you never told me what keys there are.
+And I'm sure that in this list of 1,000 names, maybe
+there is one or two that repeat.
+And so React, when we want to update later down the line,
+it doesn't know what it should be doing with those nodes, and so it says,
+hey, just as a warning, you should actually pass me some keys.
+
+And so if you actually look at the code over here, we actually assigned keys.
+And so when we created all those contacts,
+we mapped this function called, assign keys.
+And as you recall from previous lectures,
+map passes two values to each of the function invocations.
+The first one being whatever the value is in the array,
+and the second one being the index.
+And so we're actually using that index as the key here.
+And so now in this example, we can say, hey, React, we have keys for you
+and we'll actually pass it to you.
+And so you can say the key is the contacts key.
+
+And so by doing that we pass React a key for each of the things in the array,
+and now it can do its magic and not show us that error.
+So any questions on passing arrays to elements and why keys are useful?
+
+So let's actually build out this app a little bit more.
+So right now, we're showing our users a bunch of contact names,
+but that's not very helpful for an app that's trying
+to tell people their phone numbers.
+And so let's also display the phone number.
+So probably need to wrap this in a view.
+
+And this also provide the contacts phone number.
+
+And so now when we map through the contacts, we create these views,
+and we still pass that key like we were before, and inside that view
+we're passing the contacts name and the contacts phone number.
+And so now when this very rerenders we can
+see a list of names and phone numbers.
+And so our app is starting to come into place.
+
+So does anybody see an opportunity for making this code a little bit more
+readable?
+Right now every time we're mapping over these contacts,
+we're using this element that we're declaring in line.
+But we can actually make our code a little bit more readable by
+rather than having just an arbitrary few lines creating a element here.
+We can actually abstract them out into its own component.
+And so as we talked about in previous lectures,
+React allows us to break our code up into smaller components
+and allows these components to be pulled in to other components.
+And so rather than having these four lines declared in line here,
+let's actually create this concept of a row.
+
+And so now we have a stateless functional component,
+which is just a component that takes a function that
+takes props and returns an element.
+And so right now, we have this thing called contact dot key, contact dot
+name, contact dot phone, but instead we should be looking at the props.
+And so let's call this props dot key, props dot name, and props dot phone.
+
+And so down here, we can actually just use this real component.
+
+And so we need to pass to the relevant component the prop that it's expecting.
+And so that are what?
+The key, is the contacts key.
+
+What else was it expecting?
+The name, which is the contact dot name and the phone,
+which was the contacts phone.
+
+And so basically, we're taking all of the keys of each contact
+and passing them down--
+the exact values down.
+So just actually, like we saw earlier, how you can do dot,
+dot, dot the object, which will spread out all the key value pairs of object
+and pass it to a new object, you can actually also use
+that in line in React elements.
+And so rather than just being very explicit in declaring
+oh, let's pass key, which is the contacts key, name,
+which is the contacts name, and phone, which is the contact phone,
+we can actually have a shortcut.
+We can actually say, for every single key value
+pair of the object called contact, pass closing those props.
+And so here again, you see that dot, dot,
+dot notation, which is a very convenient way of taking a bunch of key value
+pairs of an object and passing them either to a new object, as we
+saw earlier, or to a React component as we see here.
+
+And so if we save and run that, we see a key is not a prop.
+So one caveat about these keys here is that you can't--
+having it as a prop here in it's own component is not very helpful for React
+because React is actually looking at the element not the--
+the element that you map over, not necessarily the element
+that that element returns, which is a long winded explanation for just saying
+you should do this.
+
+So we need to pass the key in to this element, rather than using it as a prop
+up there.
+Actually, which we did, it was just complaining about.
+
+So we were in fact, passing the key because it gets spread out here.
+But since I was also passing it into the view up there, the view is saying, hey,
+I'm not expecting this prop called a key.
+
+And so that should have silenced the warning over here.
+And so we see nothing visually has changed in between the two examples.
+All we did was just abstract out a smaller component called, row.
+
+We could actually take this a step further in cleaning up our application.
+So why do we feel the need of declaring this component called, row
+inside app.js?
+We can actually start to break these things apart and actually
+have a new file for row, and let's do that together.
+
+So I'm going to create a new file called,
+row and open it here, and just cut and paste this.
+
+And let's say, import row from dot slash row.
+Save and quit.
+It's going to error for now because we actually haven't finished writing row.
+And so first, we need to import a few things, including React.
+
+We need to import view, and row, and text, from React Native.
+
+And lastly, we need to actually export row.
+
+And so now again, we're in the same exact place in terms of UI,
+but our code looks slightly different.
+And so why might we have wanted to split this row component away from this app?
+So I went to the audience.
+Why might we consider that a good thing?
+Removing this, what's only five lines of code.
+This component out of this file and moving it to a new file.
+What benefits do we have there?
+AUDIENCE: Use it for different things.
+SPEAKER 1: Yeah.
+We can use it for different things.
+So certainly, if you have a bunch of different new files,
+we can actually pull in a row to all those files and reuse it,
+and that way if we wanted to change exactly what a single row looked like,
+we wouldn't have to do that in multiple places.
+Additionally, it's much more scalable.
+So imagine a company at maybe Facebook's size, or Facebook
+has talked about how they have over 30,000 different components.
+Imagine having 30,000 components all defined in a single file.
+That can get quite unwieldy.
+And so by splitting them out into files and splitting those files into smaller
+files, we can actually have a bunch of bite size logical pieces,
+which compose together to create one more complex piece.
+And so as we talked about in the previous lectures, how
+React allows us to break down a large complex problem
+into a bunch of small ones, this is an example
+of just taking a bite size small problem and solving it.
+And then using that bite size small problem in a slightly larger problem.
+And so as you'll see in a bunch of lectures,
+is that rather than solving a big problem all in one go,
+it's much easier to swallow off a bunch of small problems.
+
+Great.
+And now, let's make this look a little bit better.
+So we have what's pretty hard to read.
+And we can just throw some styles on here to make this look better.
+And so the way that we do that is by importing StyleSheet,
+and then creating styles here.
+
+So let's just call this a row and maybe pass in some padding and call that it.
+
+And so now, it's slightly easier to read.
+
+So we have this button that is supposed to toggle the contact list,
+but it currently isn't doing anything.
+Until-- let's actually add that functionality to our app.
+
+So we already have the logic where we have this Boolean flag called,
+show contacts.
+We have the logic, which will flip that flag
+and so every single time this toggle contacts function is invoked,
+it will update the show contacts state to be
+whatever the previous-- the opposite of what other previous one.
+And we already have a button here, which invokes that.
+And so let's actually figure out some way of using the ScrollView
+and flipping it on and off.
+
+So there's a few different ways to do that.
+We could do, if the state is telling us to show the contacts
+then we can return one thing, and if not, we can return something else.
+And so here, you might imagine that we can paste this exactly
+and if not, we can do that.
+And that would work perfectly fine.
+So we can click toggle contacts, and we'll toggle the contacts.
+If you click it again, it disappears.
+Why might that be slightly un-ideal?
+
+What if we started adding some complexity to that?
+Maybe added a button for adding contacts.
+Maybe added a button for sorting the contacts.
+Where would you have to update the code?
+You have to update here.
+We also have to update here.
+And so for every single conditional render that we do,
+we'd also have to update that for anything that we want to add.
+And so there's actually some sort of shorthand in order to do that.
+
+We could say in here, using JavaScript, we could say,
+if this dot state dot show contacts then return this thing,
+otherwise, return all.
+
+And so this is called a ternary.
+You may or may not have seen it before.
+But it's basically saying, given some expression, if that evaluates to true,
+return what's after the question mark.
+Otherwise, if it returns a falsie value, return whatever is second here.
+And so this would be a slightly more legible way
+of doing exactly what we did before.
+So in other words, take the value of this dot state dot show contacts.
+If it's a truthy value then return whatever is after the question mark.
+So the first thing, which is the ScrollView.
+Otherwise, return null.
+And if you null when you pass it on to a React element,
+it just renders it nothing.
+And so this again, does exactly what we had before.
+But it turns out there's even a better way to do this.
+So we could actually, just do this dot show contacts and this.
+
+Because the and operator, does what?
+If the first thing is true, it returns whatever's next.
+If the first thing is false, it just returns false.
+And so false and null both just disappear when
+you're trying to render those in React.
+And so this is just saying, hey, if this is true return this thing.
+If it's false, just return false.
+And it's the same as rendering something null.
+It's just nonexistent.
+So this again, does the same exact thing as we did in the previous two examples,
+but this in my opinion, is the most legible.
+And so if we hop over to the UI we see again, that it does the same thing.
+But notice, as I click toggle it takes two or three seconds
+to render all of these contacts.
+And say, we have a very popular person and they actually have 10,000 friends.
+Now, when we toggle contacts it's--
+two, three, four.
+It's going to take a few seconds.
+And so why is it taking so long?
+So as we saw, ScrollView will actually render all of its children
+before appearing, which is somewhat un-ideal if you
+have a very long list to render, because even though JavaScript and React are
+extremely fast, when you want to take 10,000 elements, map over all of those,
+create 10,000 more elements and render all of those,
+it can take upwards of 20, 30 seconds.
+And only now has it recently rendered, which can be a problem.
+Say you have a very popular person with 10,000 friends.
+It would be annoying for them if every single time they
+want to open this app it takes 20 or 30 seconds to render.
+
+So let's look at a way to making that faster.
+And if you want to check out the docs for ScrollView,
+they're linked in the slides.
+So there's this thing called a FlatList.
+So FlatList is a very performant scrolling view for rendering data.
+And what it does is-- it's called virtualized,
+which it only renders what's needed at the time that you're viewing it.
+Or in other words, only the visible rows are rendered in the first cycle.
+And so in this example here--
+well, it's going to take a few seconds.
+That's actually-- in this example here, what
+happens when you want to render a FlatList is
+it will only render these elements.
+And as you scroll down, it will say, oh, I need to render more elements
+and go ahead and render those one by one.
+And so as you can imagine, when you want to create that list for the first time,
+it only has to do 1, 2, 3, 4, 5, 10 or so elements, which
+should be blazing fast At least a couple orders of magnitude
+faster than rendering 1,000 of them.
+And what this means is as you scroll down what used to be at the top
+might actually just be recycled.
+It might be used again in some lower cell, which
+means that any rows that leave visibility might be unmounted.
+So if you're maintaining components state in each of those,
+you have to figure out some sort of way to maintain
+that outside of the component itself.
+In a future lecture, we'll talk about some data
+handling libraries that allow you to do that.
+But for now, just avoid using any component to state in these rows.
+
+So how do you use this?
+So we have to pass a couple things.
+We have to pass the data.
+And so as you can imagine, if we have some sort of list that's the rendering
+data, it needs to have the data.
+And we also need to tell it how do we render each of these data points.
+And so we pass an array of that data and a renderItem function.
+And so this renderItem function, it's a function that takes an item
+and returns an element, similar to the row component that we declared earlier.
+And so let's go ahead and use this.
+
+So here, we have a ScrollView, but let's actually call this a FlatView instead.
+
+And so unlike the ScrollView, where the ScrollView,
+we actually declare all the rows as children, for the FlatView
+we're actually going to pass props.
+And FlatView is smart enough to know, hey, given these props,
+I know how to render all of my children.
+So I can go ahead and do that in a very optimized manner.
+And so we can actually just get rid of this here.
+
+And let's have a FlatView.
+We need to pass it data, and so the data are going to be the contacts.
+
+And we also need to pass it this thing called, renderItem.
+
+And renderItem takes some sort of object and returns
+whatever we want to render for that item.
+And so for each item, we want to render a row.
+And what are we passing to the row?
+Well, we want to object spread something,
+and so let's just do object dot item.
+
+And so I only know this because I read the docs,
+but the object that's passed to the renderItem function,
+actually has this thing called a dot, called an item as part of the object.
+And so I go ahead and use that here.
+And so we've passed it renderItem and we've passed it some data.
+
+And I believe that is all that we need to pass it.
+And so let's see what happens.
+
+That's actually-- real quickly.
+Sandy, will you check this?
+
+Let's actually, just declare this outside the function
+and see if I made a typo.
+
+FlatList, ah.
+
+And I also imported FlatView instead of FlatList.
+
+All right.
+Now, we see that it goes ahead and renders almost instantly.
+And so as we see again, pretty instantly.
+And so let's actually scale this up, and do again
+that example with 10,000 contacts.
+And again, we see that it is no slower in rendering those 10,000.
+And I put that into air quotes because really, it's only
+rendering what's on the screen now.
+And as you scroll down, it actually just will
+render the things as we get to them.
+
+So one downside or upside, depending on how you look at it, of FlatList
+is that it only updates if props or changed.
+And that's actually an optimization done by the React team
+so it doesn't necessarily rerender.
+And so let's actually add a feature to our application here.
+And so right now, say I'm looking for a friend named Aaron.
+There is really no way that we've organized this
+so that I can find Aaron easily.
+And so one thing that we can do is we can actually, sort this alphabetically.
+So if I want to find a friend named Aaron,
+it's very easy because he's at the top.
+His name starts with A-A.
+And so let's add this feature to the app.
+And so in order to do that, we need to have some sort of button that's
+going to sort things, and we're going to have to actually sort things as we go.
+
+So let's define a function called, sort.
+
+And what it does is it will take the list of contacts
+and go ahead and sort it.
+So let's do, this dot setState and take the contacts.
+
+Take the previous states contacts and invoke this thing called, sort.
+And so as part of the array prototype, all of arrays
+have this method called, sort.
+
+And sort will take a function that compares two values
+and just will sort them in increasing order.
+And so for things like strings or things like numbers,
+it's very easy to compare those because JavaScript
+knows hey, given two numbers, it knows to use the greater than
+or the less than or the equals to compare them,
+and same thing with strings.
+But for objects, it's non-obvious to do that.
+And so that's actually what this compare names function here, is for.
+It's for us to compare these two contacts while we alphabetized them.
+And so let's actually import that into this function.
+So we want to import contacts, the default export, and also
+this thing called, compare names from contacts.
+
+And let's go ahead and sort that list here.
+And so we pass them to sort that function.
+
+And so when we invoke this thing called, sort, what we do
+is we take whatever the previous state contacts were and we sort them.
+Obviously, we need in state our contacts.
+
+And lastly, we want to have a button that will sort things.
+
+And then rather than passing contacts here,
+let's doe this dot state dot contacts.
+
+So since we're so worried about performance right now,
+there's actually one big performance issue that we have right now.
+So when we declare a renderItem, what we're doing
+is we're passing it a function that we're creating right now.
+And so every single time this component rerenders, a new function is created.
+And so let's actually move that into the class.
+
+That way we can just pass that reference.
+And so let's say, renderItem is this.
+
+And here we can just pass this dot renderItem.
+
+And so now, we see that we can toggle the contacts,
+and we see that we can sort.
+But when I click sort, nothing actually happens,
+which is a very strange bug because if we toggle again, now
+we see that everything is sorted.
+And since I was looking for my friend named Aaron,
+fortunately, I have a lot of friends named Aaron
+and they all are at the very top.
+Let's look at that again.
+So I can see in my contacts.
+They're all out of order.
+I click sort, which is supposed to sort them, but nothing actually changes.
+
+But if I then toggle on and off, all of a sudden everything is sorted.
+Very interesting.
+And so we talked about how FlatList, it only updates if props are changed.
+And are we actually changing any props?
+
+So we're passing down as contacts a sorted list of the previous contacts,
+but is that actually changing anything?
+So if you look at the documentation on array dot prototype dot sort,
+it actually does this in the same array.
+It actually mutates that array such that all of its values are sorted.
+But it doesn't actually create a new array itself.
+And if you remember back in previous lectures, how do we compare objects?
+They're actually just stored by reference, right?
+And so since this is the exact same array,
+when you pass it down to the child down here,
+the reference doesn't actually change.
+And so as we saw, FlatList doesn't update if it's props don't change.
+And so since we're sorting this in line, the array
+itself doesn't actually change.
+And so if we want to do this correctly, we actually
+need to use what's called immutability.
+And so immutability is this concept by which,
+if we're given some sort of object for-- or if we're giving some sort of value,
+that value is guaranteed to not be mutated.
+And if we want to change that value, what we have to do is
+we actually have to create a new value that's very similar,
+but we change what we wanted to change there.
+And so in this example, rather than using the same array
+and sorting within that array, we actually want to create a new array.
+And so again, there's a quick way to do this
+by using that dot, dot, dot notation.
+So if we create a new array literal, so just two brackets,
+that's creating a new array.
+So that took care of the create new array part.
+And if we do dot, dot, dot preState dot contacts, that says,
+all right for every single value in preState dot contacts,
+clone that into a new array.
+And so to be very explicit, for each of the values and contacts,
+those objects have not changed at all.
+They're still the exact same objects, exact same object references,
+but they're put in a brand new array.
+And so when we pass this new array down, it's a brand new array
+and it will rerender.
+And of course, if we do dot sort on this new array,
+since that FlatList hasn't seen this new array before,
+it will go ahead and rerender.
+So now, if we save this, show our contacts and sort,
+it goes ahead and works.
+
+So any question on FlatList or virtualized or scrolling list
+that we've seen thus far?
+
+Yeah?
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: Can you repeat?
+
+Can you repeat the question?
+I missed the last part.
+
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: Right.
+So the question was, for renderItem.
+It takes as an argument the object.
+And what exactly is this object?
+Well, we can actually just look at the docs and it tells us.
+So in the docs if we look for a renderItem,
+it tells us exactly what has passed as arguments to renderItem.
+
+And so as you see here, renderItem is invoked
+with the item, which is an object, as well
+as a few different things like index, separators, which we don't care about.
+We really only care about the item.
+And so since I read the doc page, I know that one
+of the keys that is passed to renderItem in the object is called, item.
+Does that answer your question?
+
+So the reason that I have object here, an object to item,
+is because I know that the object passed to renderItem
+has a key called, item, which refers to the item in that data.
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: So FlatList takes care of passing the object for you
+and creating the object and doing all of that.
+Really, all we care about is the fact that we have the item passed here.
+And actually, there's shorthand for that as well.
+Rather than passing this object, we really only care about the item.
+
+So just like their shorthand for a lot of things, so the analogous--
+so when we wanted to create an object, if we have a variable called, item,
+and we want to create an object with a key called,
+item where the value is item, all we had to do is this.
+You can actually do that in reverse.
+Say we're past an object with a bunch of keys and we only care about one called,
+item.
+We can actually use the syntax, which will create a new variable called,
+item, and extract that key for you.
+So another shorthand that we see is rather than being passed an object
+and only using object dot item here, we can actually-- what's called
+destructure that object.
+Pull that item and use that there.
+And again, the only reason that I know that this key called, item, exists
+is because the documentation for FlatList
+told me hey, we're going to create this object for you, pass down this item,
+and you just can use the item there.
+And so that's all abstracted away from us.
+We don't really care about anything else.
+We just care that the item that's passed down is called, item in this object.
+Yeah?
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: So the question is--
+so I'll just answer.
+So the data is in an array of arbitrary things and each item that is rendered
+takes one of those values, puts it in a key called, item,
+and passes it to whatever the renderItem function is.
+And so we defined it such that it passes--
+it takes an object with an item key, and passes that into our row component.
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: So what is item here, is the question.
+And so item here is an object in the shape of name and phone,
+where name is of type string and phone is also of type string.
+And I know this because I know that each of the data points inside of data
+is of the same shape.
+So if we open--
+
+so up here in contacts.js, when we created that array,
+it's an array of contacts where each contact is a name and a phone number.
+And so that array is passed into here when we import it in.
+And then that array is the same data that we're passing to FlatList.
+And so this dot state dot contacts is what
+we exported from here, which is an array of names and phone numbers.
+And so what FlatList is doing for is it's automatically
+taking all of that data.
+So the data is a bunch of objects of the shape, and it's lazily,
+and when I say lazily, it means only when it's in view,
+rendering each row or each item.
+And so for each item it needs to know exactly how to render it.
+And so what we're passing is a function called,
+renderItem where the renderItem takes a bunch of configuration, one of which
+is the item itself, because it needs that information in order
+to know what to render, and then passes that into whatever we want.
+And so we declared up here, that when we want to render an item,
+we take whatever information is, so the value of the array itself,
+and just pass those into the component that we called row.
+
+Does that makes sense?
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: Here?
+AUDIENCE: Yeah.
+SPEAKER 1: That's just that special notation.
+So we can ignore that.
+
+So that's the same as this, which is the same as this.
+
+So that was just a bunch of shorthand for this.
+So we know that we're passing an object.
+We know that the item that we pulled out of data is object to item.
+And we know that item has two keys, name and phone.
+And so we can just say name is object to item
+dot name and phone is object to item dot phone.
+And if you're reading source code from any libraries that you see,
+most people will use all of JavaScript shorthand, which
+include pulling out item automatically by using less shorthand there,
+and using all the key value pairs automatically
+by doing that dot, dot, dot destructuring notation.
+
+But this effectively does the same thing.
+
+Does that make sense?
+
+Great.
+Let's take a five minute break and then we'll
+go ahead and look at this and other lists after the break.
+Hello, and welcome back.
+So before the break we were talking about the lists and the list components
+React Native gives us.
+I mean, we showed an example for FlatList,
+and one question that came up in Slack, was how come the warning for keys
+was not popping up even though we were not
+being explicit about the keys in the example here.
+And so one thing I left out when I was talking about the shape of items
+here was that key exists, which was number.
+
+And if you look at the FlatList docs, it actually
+automatically extracts the keys for you.
+And so if you have a key value in the objects
+that you're passing in that data array, then it will use those for the keys.
+And if you want to use something other than a key property,
+then you can pass this thing called a key extractor,
+which is a function to FlatList.
+But for our example, since each item had a key,
+then it worked and automatically extracted that key for us.
+So a great question from Slack.
+
+So another scrolling component is actually called a SectionList.
+And so if you open up your actual contacts on a phone,
+it will actually give you sections with section headers.
+
+And so this component is exactly like a FlatList,
+but we have additional support that will automatically
+use those section headers for us.
+And so instead of a data prop, we actually just define sections.
+What do those sections look like?
+Well, each section has its own data array.
+So unlike in FlatList where we had array called data,
+we now have an array called sections where each section is
+an object with its own data array.
+And each section has the opportunity to override the render item function
+with their own custom renderer.
+Say if you wanted to have different colors or different backgrounds
+for each section, you could do that by overriding the render item function.
+
+And for section headers we just pass a separate renderer.
+So just like we defined a renderer for the items,
+we just also define a renderer for section headers.
+And so let's take a look at what that looks like.
+
+So if we replace FlatList with SectionList and we passed--
+rather than data, we pass sections where sections is actually
+an array of sections.
+In this example, lets just hard code those sections where one of the data
+is, this dot state dot contacts.
+And let's say the title or something.
+We can call this whatever we want.
+Let's just call it A.
+So we're passing it a render item, which tells it
+how to render a particular item.
+We're passing the sections, which each section has its own data.
+I mean, each section has its own title.
+We're not telling the section list exactly how to render those sections.
+And let's go ahead and do that.
+So let's do render section header, it's called.
+
+Let's do render section header.
+So now, we have to go ahead and define that.
+
+And let me check my notes to see exactly what that object looks like.
+
+So just like we have an object here, we're passing an object down.
+And just like this object in the renderItem,
+has this thing called an item.
+This thing called intersection header has a section.
+So let's just pass it text and do ob dot section dot title.
+
+And again, the only reason that I know this object dot section key exists
+is because I looked up the docs and wrote it down.
+And so I know-- so just like this object has this thing called object dot
+item, which refers to the item itself in the data,
+this object has object dot section, which refers to the section
+that we're passing down here.
+So refer to this object here.
+And so since the object has a key called, title,
+we can go ahead and use it in here.
+
+And so now, that is more or less complete for SectionList.
+We give it a way to render each item.
+We give it a way to render each header and we tell it what the sections are.
+And so in this example, we have a single section
+that's an object with a title called A, and data being all of our contacts.
+And so if we go ahead and show that--
+save it.
+
+And there is a syntax error somewhere.
+Here.
+
+If you go ahead and run that, we can see that we have a section header here.
+Just the A, and then following it are all of our contacts.
+And again, this is another one of those virtualized lists where it lazy loads.
+And so if we toggle it, it immediately loads
+even though there are 10,000 of them.
+Just because it's only again, rendering what we see on the screen.
+And as you see here, that A is that section title.
+
+And so let's actually improve this a bit.
+And so right now, we have hard-coded the fact
+that we have a section called A with all of our friends down here.
+But what if we actually wrote a function that
+figured out people's appropriate sections.
+And so everybody whose name starts with an A should be in the A section.
+Everybody whose name starts with a B should be in the B section, and so on.
+And so let's go ahead and write a function that does that.
+
+So how might we do that?
+So first, let's clean up our code a little bit.
+Right now, we have this section list down here,
+but this is another example of a time where we can
+abstract another component out of this.
+And so let's create this thing called, our contacts list.
+
+And into that, let's just cut and paste this section list.
+
+Let's just save this for now, so we have some room.
+And so here, let's create this thing called, a contacts list,
+which is a stateless functional component, so it takes some props,
+and it will return this.
+
+But before that, let's do some things.
+
+Actually, first let's complete this example.
+So first we need to import React, and we need to import SectionList.
+
+And lastly, we need to export this because without exporting it,
+we can't import it into our main application.
+
+And so let's call this, props dot render item, props dot render section header,
+and props dot contacts.
+
+And so now, we have three props that are passing down,
+so it might start to get a little bit difficult to keep
+track of all these props.
+Does anybody remember something that we discussed
+in a previous lecture, which will actually
+self document all of our props for us?
+
+There's that package called PropTypes.
+And so if we import PropTypes from PropTypes,
+this is that package allows us to self document things.
+So if we forget to pass down a prop or we
+don't remember what a prop should look like, like what data type is it,
+we can actually use PropTypes to one, check at runtime
+are we passing the correct props, and two,
+to just document for us so that when we open a new file, we know,
+oh, we should be passing this component, these particular props.
+So again, the way to do that is by adding this key to contacts
+list called PropTypes and defining an object with those key value pairs.
+And so we're expecting something called a renderItem,
+which should be a function.
+
+We're passing down render section header,
+which again should be a function.
+
+And we're passing down some contacts, which is an array.
+
+And so now React will tell us if we're passing down the wrong props.
+And so let's go ahead and use this contacts list in our application.
+
+So here we want to import prop ContactsList.
+
+ContactsList.
+
+And down here, let's go ahead and use that.
+
+And what props are we passing down?
+We're passing down to render section header and renderItem.
+
+We're passing down render section header.
+
+And finally, we're passing down contacts.
+And just for fun, let's actually pass down an object for that.
+
+And so we'll see if we pass down an object, one,
+everything is not going to work, and two, it's telling us,
+hey, failed prop type.
+We expected contacts to have type object.
+Or we passed contacts of type object when we're actually expecting an array.
+
+And so again, prop types as we showed last lecture, is just a way for us
+to catch bugs.
+So if we're passing down something that we think is of one type
+and is actually of a different type, it will catch those bugs for us
+and tell us, hey, we're expecting array here.
+And so for contact's, we should actually be passing down the contacts.
+
+And so now, we are back to where we were before.
+
+There's one thing that I think is a little bit strange about this example.
+
+So does the application really care what renderItem is?
+Does the application really care what render section is?
+In a way, yes, but where should that really be defined?
+What component actually really cares about renderItem
+in render section header?
+It really is the ContactsList, right?
+Because the application doesn't really have anything to
+do with the logic in app.js.
+And same with render section header.
+The fact that render section header is just some text
+doesn't have anything to do with the other logic it has on js.
+And so what might be a better place to implement this logic?
+
+AUDIENCE: In the other file.
+SPEAKER 1: Yeah, in the file called, ContactsList.
+And why might we want to do that?
+
+So imagine down the line we're saying--
+so imagine down the line we have a very, very complex app with contacts
+and everything.
+And say we were saying, oh, this is a cool contacts list,
+but I think the rows a little bit ugly.
+Let me go change that.
+And say it wasn't you, say it was a friend who
+is helping you on this project.
+Where are they going to turn to for changing that?
+They're probably going to look at the component that renders it, right?
+And so by having the renderItem, which is arguably something
+that the ContactsList is solely responsible for.
+Having that logic inapt on js is going to lead some problems down the road,
+for one, maintainability, two, readability, and three, scalability.
+And so all of this just goes down to the fact
+that renderItem is really something that contacts cares about and not app.js.
+And so how might we go about solving that problem?
+Well, we can just move that to the other file.
+
+So let's take those, cut and paste that here.
+
+So what we did is we removed those two functions.
+We can remove the render section header here.
+We can remove rendorItem here.
+
+And now, all we're doing is we're passing ContactsList
+the contacts, which makes sense, right?
+What should ContactsList need to render?
+Just a list of contacts, and that makes sense.
+So it's API is saying, hey, I can render ContactsList,
+all you have to do is pass me the contacts.
+And so by removing the logic that's not unique or not necessarily cared
+about inside of app.js, outside of app.js,
+it now makes more sense in like a mental model.
+So everything that's needed for ContactsList to render
+should be implemented in ContactsList.
+
+And so now, let's finish this.
+
+So now, we just created those two functions.
+So we have a function called, a renderItem,
+and it is the same as it is before.
+It's an object that returns a row.
+And of course, we had to import row.
+And then we have a cons called render section header,
+which is the same as it was before.
+It's an object, which returned some text.
+And of course, we had to import in text.
+And so now, we can just go pass that in there
+rather than looking for its props.
+
+And now, if we save that, again, we're in the same place in terms of UI,
+but our code is much, much neater.
+
+If you look at app.js, it's returning something very simple.
+A couple of buttons, which are needed, and a ContactsList, and we're
+passing the contacts.
+And so again, now this bite size piece of application just--
+this layer here, is very simple.
+We have a view with a couple of buttons.
+We take care of those buttons logic in here.
+And then we have a separate component called, ContactsList,
+and we pass the list of contacts.
+And so this is a very simple way of stating our app.
+And if we want to get into the implementation details of ContactsList,
+we can just look at the ContactsList component.
+And in here, we have the logic necessary for ContactsList.
+We're defining what it looks like to render a single item.
+We're also telling the SectionList exactly how we
+should be rendering a section header.
+And of course, we're just looking to our props for the contacts themselves.
+But then, what the heck is a row?
+And so again, that's another bite size small piece of our application.
+So if you want to look at the exact way a row is implemented,
+then you can just look at the row file.
+And here, is another simple problem that we've solved.
+So a row is just a view that tells us some name and a phone number.
+And of course, styles it a little bit by adding some padding
+so everything's not squished together.
+And so what is turning into a more complex app is actually,
+just a few different simple files.
+And so as you work on your next project or personal projects in the future,
+you can start to use these paradigms where you have a big complex problem,
+and break it down into smaller components
+such that each one is very maintainable.
+Each one is very readable.
+And so if you want friends to work on that with you, it's
+very easy to tell them oh, if you want to change this part of the application,
+just look for that particular file.
+
+And so now, let's actually tackle that hard logical problem where
+we have an array of contacts and we want to split that into a bunch of sections
+where each section has--
+
+the section header is defined by the first name of the contacts.
+So how might we do that?
+
+Well, first we're going to have some logic
+that we're going to want to do before we return the section list.
+
+As a first, we might want to say, take props dot contacts
+and split that up into that--
+the shape where we have an array of objects
+separated where the title is again, the first letter
+of every single contact in its data.
+Can anybody think of a good algorithm to do that?
+
+So the way I would implement it myself, is I would go through the array,
+turn that into an object where the keys in the object
+are the first letter of the values in that.
+And then go from that shape, whereas an object, where
+the keys are letters and the value is an array
+of all of the contacts with that letter, and turn that into this shape.
+And so let's go ahead and implement that algorithm.
+And I'll go a little bit quickly for the sake of time.
+
+Let's do contacts by letter.
+What that does, is it takes props dot contacts and reduces it,
+where the reduction is taking the objects, which
+is the objects that we eventually want to get to, where it's the keys
+are the letters and the values are an array of all those contacts,
+and it takes the next contact.
+
+And we want to of course, start with an empty object.
+And so for each contact, we want to grab it's first letter.
+So we can say, take contact, the very first letter in the string
+and uppercase it.
+
+And of course, we want contact dot name.
+So contact dot name.
+So grab its name, look at it's first letter and uppercase it.
+So now, we've extracted the first letter of each contact.
+And then what?
+We want to add that to that object.
+
+So we want to return some sort of object where
+it maintains all the previous keys of object
+and appends this particular contact to the key, which
+matches it's first letter.
+So that's a little bit of work to do, and we can actually
+do that all in one line.
+So what have we learned today, which is a quick way
+to clone all of the old keys of an object?
+
+We can use that object spread.
+
+And so now, all this is doing is just returning the same exact object,
+but in a new immutable object.
+But let's actually add this contact.
+
+So you want the key to be first letter.
+
+And so you can wrap it in brackets and just like,
+this will evaluate zero to become a string.
+This will evaluate this to become the key.
+And what do we want the value to be?
+Well, it's going to be an array.
+And the array is going to be all of the keys that used to be in that object.
+
+And so now, we've again--
+this actually returns pretty much the same object as before.
+So it's cloning all of the keys in object,
+except it's overriding the one where the key is the first letter that we
+extracted from here.
+And what are we setting to be that as value?
+Well, we're setting a new array and we're
+setting that array equal to basically, everything
+that was already that objects--
+where the key was the first letter.
+And so this is a complicated, but basically, it hasn't done anything yet.
+We've just cloned that object.
+
+And so how are we going to actually add that contact to this array?
+
+Well, just like that.
+
+Still with me?
+So now, we're returning this object and we're building it up as we go.
+And so we want to say retain all of the previous keys.
+Just say we have A through Z already.
+Make sure we don't lose those, so go ahead and clone that object.
+And override whatever key is equal to that first letter.
+And so the first letter again, is just upper
+cased the first letter of each contact.
+And so we override it with a new array where that new array is the old array,
+but add that contact.
+
+Yeah?
+AUDIENCE: [INAUDIBLE]
+SPEAKER 1: Great question.
+No.
+So the question was if objects with the key first letter
+is undefined-- so if this is undefined.
+So say, this is the very first iteration, it's an empty object
+and so object A does not exist.
+Will this still work?
+No.
+So we have to actually handle that corner case still, but great catch.
+And so let's actually handle that corner case.
+So what happens if it's undefined?
+
+So now, we'll say oh, if it's undefined, just consider it to be an empty array.
+And so when you spread the empty array then that's nothing and then contact,
+and so you're left with an array with the contact in it.
+
+So I'm going to wave my hand at it for now
+since we're running a little short on time,
+but if you have any questions about this function,
+please feel free to slacker email me and I will talk everybody through it.
+And so now, let's go from the contacts by letter
+to something of the shape, title, and data.
+And so how might we do that?
+Well, we can actually just map over those keys and create that.
+And so I'm going to go a little fast in the sake of time.
+
+So object dot keys takes all of the keys of an object and in array.
+
+So now, this here, is an array where the keys
+are the keys of whatever the contacts by letters are.
+It's going to be something like A, B, C, D, E, F, G,
+but leaving out things like X If we have no friends whose name begin with X.
+Let's just sort it just in case it's not sorted already.
+So say something like, A, C, B. We want that to be A, B, C.
+So we can go ahead and sort it.
+And then let's run a map over it.
+So for each letter, what do we want to do?
+Well, for each letter, we want the section title to be that letter.
+And so we can do the title here is the letter.
+And the data, we actually want to be the data that we created up here.
+And so how might we do that?
+Well, we can just get the contacts by letter
+and grab its key or that keys letter.
+
+So again, going a little bit fast because we're short on time,
+but we're grabbing all of the keys of contacts by letter.
+So that's going to look something like the alphabet.
+Sort it to make sure it's in the correct order.
+Then for each of the letters, we turn that letter into an object
+where the object matches the shape.
+Where the title is the letter, and so it's
+going to be something like title A, title B, title C. And the data
+is actually the data that we created up here.
+And so when we do contacts by letter, we pass it the letter,
+it just grabs that array.
+
+And then we can pass sections down here.
+
+And let me see.
+
+So in theory, now we have sections, which
+looks like an array where for each array we
+have an object where the letter is the letter
+of the first letter of every single contact in it's data array.
+And the data array of course, is all of those contacts.
+
+And so now, the moment of truth.
+When we toggle the contacts, we see A followed
+by a bunch of people whose first name begins with an A.
+And since there are 1,000 of them, there might be a lot of these.
+And this actually simplify this.
+
+Let's make this 100.
+So now, we see A, where we see a bunch of people whose name begin with A.
+We see B, for Benjamin here, and C, and so on.
+Each one with a section header that corresponds
+to the first letter of all those people.
+And if we wanted to style that, we could do so by just changing that render
+section header function.
+And so now, we have something that looks almost exactly
+like the contacts list in your phone.
+But there is one piece missing.
+What happens if you make a new friend?
+And so let's do that.
+Let's have-- or add some sort of way to add new friends to our list.
+And so what sort of things do we need to need in order to do that?
+We should probably have some sort of form where you grab somebody's name
+and grab somebody's phone number, and then it should add that to your list.
+So let's go ahead and implement that.
+
+So that requires something called a user input.
+And so something that is often somewhat difficult to handle.
+And so there's a bit of a debate that goes on in the React community,
+more so React Web and less so React Native,
+should we use controlled or uncontrolled components
+and what do these things mean?
+Well, it's where exactly is the source of truth for the value of an input.
+And so if you imagine just in HTML form, you
+have an input where you can type into.
+That input now how has a value, and who's keeping track of that value?
+And so controlled versus uncontrolled component is actually that debate.
+So in a controlled component to react to controls, what's in that value,
+whereas in an uncontrolled component, it's
+actually controlled by the Dom itself.
+And so if you're writing some static HTML
+and you have something like an input tag, when you type into it,
+it retains the value that you type.
+That's because the Dom tracks exactly what you're typing.
+But in a controlled component, React is the one that controls that.
+And so if you imagine now, in the React world if you have an input,
+every single time you change that, React is going
+to have a variable that tracks that.
+And then what determines the value of that input?
+Well, it's whatever value React says that input should have,
+and that should correspond with whatever the value of the variable that React
+is tracking is.
+And so this goes back into the whole like,
+who keeps track of the Dom debate?
+And so in React, you actually have no choice.
+You have to use the React virtual Dom, which
+will then write to the actual Dom.
+And the same thing here.
+So who keeps track of the value of the user input?
+And so in a controlled environment, React does,
+you do as the person writing React.
+You say, every time this input changes I'm
+going to update a value that I'm keeping track of.
+And what dictates what's inside that value, well, it's what I say it is.
+And obviously, you just set that to whatever value you're keeping track of.
+And so we can see that example in a moment.
+
+React recommends always using controlled components.
+That way you have those values as JavaScript variables.
+That way if you want to submit a form or do some validation,
+you can do that all in JavaScript because you're
+keeping track of those variables in React and presumably in the state.
+
+I mean, how do we actually create those variables?
+Well, you pass a prop called unchanged text to a text input,
+and you pass a value that determines what is the value of that input.
+And if you want to see other props that you can pass to text input,
+you can look at the doc page there, but let's do an example with those.
+And so in order to add contacts, we agreed
+that we needed some sort of way, some sort of page to do so.
+And so let's go ahead and write some page.
+So let's have this thing called, add contact form.
+
+And let's have this be a component.
+
+We're going to need a couple of components like view, which we've
+seen many times before, and text input, which
+is what we'll be looking at today, and we're going to create this class.
+
+So this class is going to have in it a form where
+you can dictate what your user is.
+So in the render function, we're going to want to return
+a view with a couple of text inputs.
+
+And then probably we're going to what some button to submit.
+
+And so now, we have the shell of what is going to be the add content form.
+And so just like in web or in any other project,
+you have a form that has a couple of inputs
+where each input refers to some value in your contacts.
+In the future, this is going to be the name.
+In the future this is going to be the phone number.
+And of course, some way to add that user to submit it.
+And so we have a button where whereby we can add that contact.
+And so we can go ahead and expect that somebody already
+has implemented that add contact function,
+and so we can state that we're expecting a prop called add contact.
+
+And so when we submit this, we're going to just invoke that.
+
+But how are we going to keep track of the text inputs?
+Those values?
+And so as you see on the slide, they expect two props.
+They expect a value, so something that determines what their value is.
+And how do you update that value?
+So a function called, unchanged text.
+And so let's actually initialize a state.
+And I'll again, use that shorthand for class properties
+where we're going to have the name be blank and the phone be blank.
+
+And so what dictates the value of this one?
+Well, it's going to be the value in the state.
+
+And same with the phone down here.
+
+And now, let's go ahead and get this form hooked up in our app.
+And I'm going to go a little bit fast for the sake of time.
+
+So import that.
+We're going to have in state, we'll say, show form.
+
+We want to have some sort of way to toggle that.
+So let's call this, toggle form.
+
+And we'll just say, show form is opposite of show form.
+And now, let's have another button.
+Let's get rid of the sort button and instead call it add contact.
+
+So now we have another Boolean flag, which
+is updated by a button, which toggles the form.
+And let's do this a quick and easy way for navigation.
+So if we should be showing the form, then just show the form.
+
+Otherwise, return the default. And so now, we
+have this been called add contact, and when you click it,
+we see this other page, which we've partially implemented,
+which right now, only has this add contact field.
+So now, let's go ahead and finish up that form.
+
+First, let's add some basic styling.
+
+Let's give the input some padding, a border, and now
+they should be a little bit more visible.
+
+And so now, we should be able to see the inputs up there.
+Again, there's one that's way up there, so let's just add some quick style.
+
+So now, we see those two inputs there.
+And if I type into them nothing is happening.
+Why is that?
+
+Well, because right now, React is a source
+of truth for the values of these text inputs.
+And what is the value, is this dot state doe name.
+And what is the value of this variable?
+Well, it's a blank string.
+When does it update?
+Well, it never does, which is why no matter how many times they
+bash on the keyboard, nothing is updating in that text input.
+And so how now might we start to update this source of truth?
+Well, we need to tell it how to, so we need
+to create this function called update or let's
+call it handle name change, which takes a new name
+and it will just do this dot set state the name.
+And same thing with the phone number change.
+
+So now, we have a couple of handlers.
+We have handle name change, which takes a name and just updates in the state.
+We have a phone, which just takes the phone number
+and updates it in the state.
+And now, all we have to do is tell those text inputs hey, how do we
+update that value in the state?
+Well, on change text, is this dot handle name change.
+
+And same thing down here.
+We have the value state dot phone, and the way to update the value
+is by calling this unchanged text, which is this dot handle dot phone change.
+
+And so now, when you start to do this, it actually updates accordingly.
+
+Lastly, for the phone number, doesn't really
+make sense for it to just be all letters,
+and so another way, another prop that we can pass down
+is this thing called, keyboard type.
+
+And we can say numeric.
+And if you want to see what other keyboard types there are,
+you can go ahead and look at the doc pages here.
+But now, when we click the phone number, we see this.
+
+And so now we have a way to handle user input.
+And in future lectures, we'll talk about how to maybe validate that
+and how to handle stuff like that.
+And so on that note, I will close the lecture.

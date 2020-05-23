@@ -1,0 +1,1816 @@
+[MUSIC PLAYING]
+
+JORDAN HAYASHI: Hello and welcome back for lecture 9.
+This week we'll be talking about Redux.
+So in the last couple of lectures, we talked about a few things.
+We talked about APIs, which is the way that you interface
+with external-facing services.
+We talked about making network requests, so how
+do you actually access these APIs if they're not on your own computer--
+maybe out in the cloud somewhere.
+And we talked about promises and async/await,
+which are basically a couple ways to handle asynchronous actions, namely
+making network requests.
+We talked about how to transform data after you get it back from an API.
+It might not be exactly in the shape that you want.
+And so we talked about a few different strategies
+by which we could get it from the shape that it's
+in from the API to exactly what we want in our application.
+We then talked about some simple authentication,
+meaning how do you ensure that users are who they say they are?
+And how do you let them into your app after that?
+We talked about some HTTP methods and response codes,
+which are basically a specification that lets you take a response from a network
+request and know exactly if the request succeeded or if it failed.
+And if it failed, then why did it fail?
+And then lastly, last week, we had Charlie Cheever as our guest
+to talk about expo components.
+
+So our applications, as we move throughout the class,
+are getting more and more complex.
+And now we're starting to run into some problems.
+Our apps thus far have been pretty simple.
+But we're already starting to see some bugs related to complexity, namely
+maybe we forget to pass a prop or have some troubles directly
+managing some state that's possibly deeply nested.
+With more complicated state, we might be starting
+to duplicate some information in that state object.
+Or maybe with that duplicated information,
+when we update one of the props, maybe we
+forget to update another prop or a bunch of the other dependent props.
+Or maybe we have components with the very large number
+of props that don't necessarily need to have that large number of props.
+Or maybe we see a prop that's not behaving
+how we think it should be behaving, and we're not really sure
+where exactly it's going wrong and where that props should be being managed.
+And so this lecture, we're going to take a step back and rethink
+the architecture by which we've been managing our data.
+So one company that's run into scaling issues is Facebook.
+So they found that the MVC architecture is a little bit
+too complex for their scale.
+And so those of you who took CS50, we talked about this architecture called
+model view controller.
+And what exactly is that?
+So in the MVC architecture, we have models.
+
+We have views.
+
+And we have controllers.
+
+And so views are basically what a user sees.
+And the data by which--
+are loaded into the views come from these models.
+And how does a user interface with these views?
+Well, they do it through this thing called a controller.
+
+And then maybe the controller will then dispatch an action
+when a user clicks a button or something.
+And maybe that goes and updates a model.
+But also some views might directly change models.
+And so you start to have this two-way connection between models and views.
+And when you're operating at Facebook size,
+you don't just have one model and one view.
+Facebook actually has something like 30,000 different React
+components that they use.
+And so there are a large number of views here.
+
+And with that larger number of views, they're
+also a very large number of models.
+
+And maybe this view talks to this model, and back and forth, and also
+talks to that model.
+And maybe that view talks to this model.
+And now with all of these connections, you
+see how it's starting to get very, very complicated.
+And when you scale up to a size like Facebook,
+you might start to run into some bugs.
+And so one thing that happened with Facebook
+is that the complexity manifested itself into some bugs, and namely
+a pretty famous one that has to do with unread chat notifications.
+And so what basically happened was Facebook
+started to add more and more different views for how you access their chat.
+And so at first it was a little pop-up box that happened in the bottom.
+But then they added a separate page for chats,
+and then they added something in the nav bar that drops down with some chats.
+And then they started adding other applications that handle chats.
+And all of a sudden, there's a lot of different places
+where a chat could be updated or vise versa.
+And so they had a big bug where users would log in,
+and it would have a notification that says you have an unread message.
+But that wasn't necessarily always the case.
+And so this bugged a lot of users, and Facebook
+had to take a step back and figure out a better way
+to handle this large complexity that they're
+starting to have in their application.
+And so what they did is they re-architected everything
+into a single-direction data flow.
+And so data only comes in from one direction,
+and there's only one way to update that data.
+And how did they do that?
+Well, they created-- well, if you want to see
+additional background into this problem, you
+can watch this YouTube video by Jing Chen.
+And they talk about exactly what the bug was
+and why they created this new architecture.
+And so this new architecture was called Flux.
+And what is Flux.
+Well, it's a new application architecture for React
+that utilizes a unidirectional data flow.
+What the heck does that mean?
+Well, views react in changes to some number of stores.
+And what it stores, it stores the data.
+And the only thing that can update this data is this thing called a dispatcher,
+and we'll talk about it a little more in a sec.
+And how do we trigger this dispatcher?
+Well, you invoke an action.
+And what is the way you invoke an action?
+Well, actions are triggered from views.
+And so let's draw this picture out.
+
+So you have a central store that stores all of your information,
+or maybe some number of stores.
+
+And these stores will store all of the data
+that you need for that application.
+And how do you update that store?
+Well, it's through this thing called a dispatcher.
+
+And so this dispatcher will actually send information to these stores.
+And these stores will update.
+And that's the only possible way to update these stores.
+And how do you trigger the dispatcher?
+Well, it's through this thing called an action.
+
+And what happens when you have all this information in your store.
+You use that store to render a bunch of views.
+And so maybe this view listens from this store and that store.
+And maybe a view here listens to all three stores.
+And the view here only listens to that store.
+And so we have a large number of arrows here, potentially.
+But one thing to note is that the arrows all
+go this direction, which means that there is no bi-directional flow.
+And so multiple views don't necessarily update,
+or they can't update, multiple stores.
+Which is a good thing because a view can just say,
+hey, give me the information from here and here.
+But I'm not going to worry about having to go update those back.
+What I do is I dispatch an action.
+And so these views are the ways to trigger an action,
+and the only ways to trigger an action.
+And so you see what is looking like a large number of arrows,
+but you see that they're all going in a singular direction.
+So you have this unidirectional data flow.
+So to repeat myself, the only way to update
+the information, the data that's stored in an application,
+is through this thing called a dispatcher.
+And we don't really control this dispatcher.
+We only tell the dispatcher to start by dispatching an action.
+And how do we trigger an action?
+Well, we interact with the views.
+And by we, I mean our users.
+And how do these views know what they should render?
+Well, they get that information from stores.
+And as stores are updated, the views are automatically
+notified that they should re-render.
+And so there's no arrows that are going back and forth here,
+so the complexity is an order of magnitude
+smaller, because the views only care about the information
+that they're getting from the stores.
+And they're automatically notified when that information changes.
+
+So Flux is a general architecture.
+And there are actually many implementations.
+Facebook has written one.
+There's also this thing called Redux.
+So whether or not Redux is actually an implementation of Flux
+is an opinion that can be argued either way.
+But what's unarguable is that Redux was inspired by Flux.
+So Redux is a data management library, and it takes a lot of the paradigms
+that Flux created and implements them for itself.
+And so there are three big pillars of Redux.
+One is that there is a single source of truth for all of the data.
+So in the Flux architecture, there might be multiple stores.
+But in Redux, there's just one, one big object
+that keeps track of all the application state.
+The only way that you can update the state
+is by an action that triggers a re-computation of the state.
+And so it's very similar to the Flux in that the only way that you can update
+a store is by dispatching an action.
+And Redux is very similar in that the only way
+to update the centralized data--
+so you can think of the store as one big thing in Redux.
+And the only way to update that is by dispatching an action.
+
+And lastly, updates are made using a pure function.
+And so by pure function, I mean a function that takes in arguments
+and will always return the same thing for those arguments.
+So it's fully deterministic, meaning given the same arguments,
+it will always return the same answer.
+And also, it doesn't look anywhere else other
+than those arguments for the computation that it gives.
+So you're not using things like the current time
+or anything in the environment to calculate things,
+only a function of the input.
+And lastly, there are no side effects.
+So I take input, and I give output.
+And I don't do anything else.
+I don't print.
+I don't change variables outside my scope, nothing like that.
+
+And so we have this thing.
+We have an action, goes to a reducer, which then updates the store.
+And so to draw that--
+if you remember this from Flux, we have actions
+go through a dispatcher, which updates some number of stores,
+which then update some number of views.
+And in Reduxland, we have an action, gets dispatched,
+and updates some central store.
+
+And that will update any of its views.
+
+And those views, with user interaction, can trigger more actions.
+And so it's a very similar diagram to Flux.
+And it's the exact same in that it's a unidirectional flow of data.
+But the main difference is here where you
+have a singular store, rather than a potentially large number of stores
+like in Flux.
+
+And if you want to read about Redux and its background,
+you can go to this URL, which is ITS Docs.
+
+So let's do something fun this lecture and actually implement
+something like Redux ourselves.
+And so where do we start?
+Let's go ahead and just create a directory
+into which we'll start creating these files.
+
+So what's first?
+So there's this thing called a reducer, which
+is what calculates the next state.
+And so it takes a previous state, and it takes some information
+on how it should update.
+And it goes ahead and applies the update and returns some new state.
+So some constraints, it should be a pure function.
+So in other words, the result is deterministic.
+So given the same input, it'll always give the same output.
+And it's determined exclusively by those arguments.
+And there are no side effects, so no logging, no changing variables,
+no doing anything like that--
+no changing variables outside of its own scope that should.
+Should be immutable.
+And so we've talked about immutability in previous lectures.
+So it should always return a new object.
+So the keys in the object might not change,
+but the object reference itself should change.
+
+And let's actually go ahead and start implementing a reducer.
+
+And so we said a reducer takes the previous state and some sort of update
+and returns some new state.
+And let's go ahead and implement that.
+
+So some function that takes a previous state and an update
+and it returns some sort of new state.
+And so how it calculates that state is completely up to us.
+And so let's make the simplest reducer possible.
+Well, the simplest reducer possible would actually be this,
+where we take the previous date, we take an update,
+and we just completely ignore the update and return the previous state.
+But let's actually do something.
+So rather than just returning the state blindly, let's apply some update.
+And so let's assume the state isn't an object,
+and let's assume the update is also an object.
+And let's just merge those objects.
+And so we could do something like this.
+
+So this would be a very, very simple reducer.
+So given a state and an update, where they're both objects,
+just merge those objects.
+And so take all of the keys and states of-- you
+don't remember what the syntax is.
+It's object spread by which you take all of the key and value
+pairs of an object, and you add them to this new object that we're creating.
+And then do the same thing with update.
+Take all of its keys and value pairs, and then apply them to the same object.
+And so if there are any duplicate keys, they'll
+get overwritten by this second update.
+And so this is an example of an extremely simple reducer.
+And so let's actually play with our reducer a little bit.
+We can do something like let state start as an empty object.
+We can do state is now--
+invoke the reducer on the old state, and that it's passing something like foo
+gets foo.
+And then now let's update the state again.
+And so that's passed into our reducer--
+the old states, and maybe bar gets bar.
+
+And lastly, let's update the state again, passes into the reducer,
+and give it now foo gets baz.
+
+And so what do we expect to see back here?
+So we have state initialises an empty object.
+And then first we invoke it and passing this object that
+has a key value pair of foo and foo.
+And so when we invoke that, we have an empty object here and foo here.
+And so after line 7, our state is just foo, foo.
+How about line 8?
+Now we pass foo foo into the reducer, and also pass an update called bar bar.
+And so state is foo foo.
+Update is bar bar.
+And so we now are ended up with an object with a key of foo
+and a value of foo, a key of bar and a value of bar.
+And then lastly, we pass that object into the reducer again,
+this time with a key value pair of foo and baz.
+And so what we expect to see out of that is an object with a key of foo,
+value of baz, and a key bar with a value of bar.
+So let's go ahead and run this.
+But first, since object spread is not yet supported by node,
+let's just replace it with something like a helper function called
+merge, where it'll take a bunch of arguments-- some number of arguments.
+Let's actually just to prev and next.
+And it will do this thing called object, dot, assign,
+which is the way that we used to merge objects before.
+This object spread became a syntax.
+And so let's just assign a new object, the key value pairs of previous,
+and then the key value pairs of next.
+And then rather than doing this manually here,
+let's just merge state and update.
+So let's run this and see what we get.
+I guess nothing will happen when you run that, so let's
+just console log the state at the end.
+
+And so we get what we expected.
+So we expect it to get this thing with foo baz and bar bar.
+And that's exactly what we got.
+And so to recap, all a reducer is is something
+that takes some previous state and something that we want to update it
+with and then returns a new state.
+So in our particular reducer, we chose to just merge the update into states.
+But what happens here doesn't matter, as long
+as it's returning a new state object.
+And so like I alluded to earlier, we can make our reducer even simpler
+by just doing this.
+
+So if we did this, and ran it, we just get
+an empty object, which is as expected.
+Because all we're doing is we're just passing the old state backward
+and completely ignoring the update and passing an old state.
+So this is a completely valid reducer.
+It just happened to be that it doesn't do anything.
+And so instead, we made it do something by merging these objects.
+
+Cool.
+So let's make our Redux model a little bit more advanced.
+So how was it responsible for invoking the reducer?
+And how do we actually manage the state?
+Because currently, it's not very good that the way
+that we're managing the state is just this state object that we're mutating.
+Why not try to wrap this up in something self-contained, like a class?
+And that's exactly what Redux does with this concept of a store.
+So what is a store?
+So as we talked about earlier, a store is
+responsible for maintaining some sort of state.
+
+It does a bunch of other stuff.
+But at its core, it's just responsible for remembering what the state is.
+The way that you access that state is through this [INAUDIBLE] method
+called getState.
+And so you can invoke this method called getState,
+and it'll return the current state.
+And how do you update that state?
+Well, as we talked about earlier, the only way
+to do it is by using this thing called dispatch-- by dispatching an action
+to update the state.
+And lastly, you can add listeners that get invoked when the state changes.
+And so it wouldn't be super great of a reactive model
+if the store just updated itself and didn't tell anybody,
+because the whole point of React is that the UI will react
+to updates in the application state.
+And so what Redux does is when the application state gets updated,
+it'll run some callbacks.
+But let's not include that in our implementation for now.
+
+So currently, we have this very simple reducer.
+And now let's turn it into a store.
+And so what does a store need?
+Well, it should maintain the state within itself.
+It should expose some sort of getter method called getState.
+And it should expose this method called dispatch,
+which is the way that you update these actions.
+And so let's start to do that.
+And so let's create this class called Store.
+And how do you create a store?
+Well, let's just say you pass it, maybe a reducer.
+So how does a store know how to update itself?
+And you also pass it, maybe some initial state.
+
+And what should it do in the constructor?
+Well, it should remember these things.
+And so maybe it'll say this.reducer--
+is that reducer that you passed it.
+And maybe the initial state, or the state, is that initial state.
+
+Cool.
+So now we have a store.
+It's kind of useless because all it does is create this class instance,
+and you can't actually interface with it at all.
+And so let's start to add these methods by which you can interface with it.
+So first, we said you should be able to get the state by invoking
+this thing called getState.
+And so let's create this method called getState, which is pretty simple.
+
+All it does is return this.state.
+And so now we're starting to make our simple store.
+We can test it a little bit.
+
+Let's just pass our simple reducer, and then you'll
+see the initial state of empty.
+And then let's see what the initial state is.
+And so we can do store, dot, get the State.
+
+So if we run that, we just get an empty object back, which is as expected.
+All store is currently a constructor that
+takes the reducer in an initial state, initializes
+the state to the initial state.
+And then we have no way of updating the state.
+And so when you call this.state, it just returns an empty object.
+And if we add instead past its arbitrary object like foo foo, and then ran it,
+we'll get that same object back.
+Cool.
+So not very useful yet, and so let's start to add some features to it.
+So first, and most importantly, we should have some sort of way
+to update that state.
+And the way that we do this in Redux is by dispatching an action
+or by just invoking this method called dispatch with some way of updating.
+And so the way that we've been doing this thus far
+is by just passing an object that we want merged into a state.
+And so let's do that.
+So let's have this thing called dispatch.
+We pass it.
+Well, we pass it some sort of update.
+And what does it do?
+Well, it should update the current state to be what?
+We want to run this reducer function.
+
+And which reducer function?
+Well, whichever one that we passed in the original constructor
+and stored as this.reducer.
+So let's invoke that with the current state, and then any update
+that we want to pass it.
+And that's pretty much it.
+And so now down here, rather than having to handle this ourselves--
+and by this I mean replacing the old state with the reducer,
+with value after passing it through the reducer--
+that's now abstracted away from us using this thing called a store.
+And so now we can just do store, dot, dispatch this object.
+And the same goes to here.
+
+And so now, we're doing things a little bit differently.
+So rather than creating the state ourselves
+and manually going through and replacing state with the output of the reducer
+and passing in the old state, now that's handled for us by this thing
+called a store.
+And how is it handled for us?
+Well, the store is actually storing the state as part of its class.
+And so the state gets initialized to some initial state.
+And every time we dispatch an action or dispatch an update,
+it handles that for us.
+It remembers what the reducer is.
+It knows how it should update its own state by just doing this,
+dot, state, equals the old state, applying an update through the reducer.
+But we don't care about that.
+We don't need to know the implementation details.
+We don't really care.
+All we care is that we just pass this store.dispatch function,
+some update that we want to apply.
+And it goes ahead and does the rest of it.
+We don't even care that state is stored as an object.
+That's all just abstracted away.
+All that we care about is we update the state
+by passing something into dispatch.
+And we get the state back by invoking this thing called getState.
+We don't care that the state is just stored on the constructor.
+For all we know, maybe it's a tree, or maybe it's
+some weird data structure for performance.
+It doesn't matter.
+All that we care about is the API for this store.
+And this API is just getting the state and dispatching state updates.
+And so let's make sure it works.
+
+So we create a new store down here by saying, give me a new store.
+I'm going to pass it, the reducer function that we defined up here.
+So let's actually just move this down.
+And maybe this as well.
+
+So now, let's just not care about the implementation details of store.
+All that we care about is we define this thing called merge,
+which merges objects.
+We define a reducer which takes some states and some update,
+and applies the update by merging it in.
+And then we create that new store with that reducer and some initial value
+called foo foo.
+And let's, for now, actually just not pass an initial value at all.
+And let's see what happens.
+And so we dispatch a few updates, and then now let's
+log some initials, or the state after those dispatches.
+And so we get back what we wanted.
+We get back foo baz, bar bar, which is the same thing as up here.
+And what's the main difference?
+Well, the main difference is that in reducer, we
+had to handle the updates ourselves.
+We had to handle passing in to reducer the old state and the new updates.
+And in this new file called Store, we no longer care about those things.
+We just care that we have a new store, and we're passing a new reducer.
+And we're just dispatching some additional changes.
+
+Cool.
+And so this is not really super helpful for us right now.
+All it does is merge some objects.
+But let's actually modify this such that it will help us.
+And so in previous weeks, what we've been working on is this contacts app.
+And so I changed a few things from last week, or couple weeks ago to this week,
+namely that the login screen is gone and the asynchronous request
+for fetching the contacts is gone.
+And so I just reverted the app to where it
+was before we add asynchronous actions.
+And so what do we care about in this simple application?
+Well, we care about the context, obviously.
+We care about maybe adding new contacts by using this Add button in the top.
+And we kind of care about the user.
+And so before we had this login page where a user would log in--
+and presumably we should be storing some sort of token
+or store the fact that the users logged in--
+and so we need to care about the contacts,
+and we need to care about some concept of having a user-user app,
+so we can tell if they're logged in or not.
+And so let's use what we've implemented in Redux thus far
+to actually keep track of that information
+in Redux, rather than having to do it ourself scattered throughout our app.
+
+So currently our store takes a reducer in an initial state.
+It stores those things.
+It gives us this thing called getState, which returns our state,
+and gives us a method called dispatch which applies any updates that we
+pass it to our state.
+And so we don't have to change anything there
+for the context of our contacts app.
+Though we do have to change this reducer.
+So presumably, if we want to update--
+maybe we want to add a contact.
+The way that we would do that would be appending that to an array.
+And so there's not really a convenient way
+to do this with our current reducers, since it's just merging objects.
+So let's actually implement a reducer that will.
+So say we-- let's call it the contacts reducer.
+And the contacts reducer, or contact reducer, takes the state
+and presumably the state is all the old contacts,
+and rather than passing an update, let's just pass it a new contact.
+
+And what should this do?
+So state, presumably, is just a list of old contacts.
+And so let's just spread those old contacts,
+and then add a new content at the end.
+And there's our reducer for our contacts.
+How about four-hour user?
+So maybe we should have--
+how should we keep track of our user?
+Or more importantly, what is important to know about our user?
+Maybe something about their username, maybe whether they are logged in
+or not, maybe some other keys which have values.
+And so what's the way that we generally store key value pairs in JavaScript?
+It's usually just a simple array.
+I mean a simple object.
+So let's have this thing called a userReducer, which takes
+an old state and maybe an update again.
+And how are we going to handle this?
+Well, we'll just apply the update to this state.
+So it's basically the same as our reducer from before.
+We'll just merge into the old state that update.
+Cool.
+So now we have two separate reducers.
+One handles any updates for contacts.
+One handles any updates for a user.
+And so how are we going to apply that for our store as implemented?
+Because the store right now only takes a single reducer.
+It doesn't expect a reducer for contacts, a reducer for users,
+a reducer for metadata, a reducer for any other stuff that we want to store.
+It only expects one.
+And so we actually have to combine our reducers into just a singular reducer.
+And so if you remember, when we were talking about the pillars of Redux,
+everything is stored in one singular store, so one big object.
+But right now, we have two separate things
+that track our application state, one for contacts and one for users.
+And so how might we go about combining those reducers such
+that we have just one reducer or one source of truth for our app?
+Well, the reducer is going to just take a state and some update,
+just like all of our other reducers.
+And it's going to have to return some new state.
+And so we have to somehow tell, via this update, what we should be changing.
+So we're starting to run into a little bit of trouble here.
+In our last iteration, we were just passing an object to this dispatch.
+So its object just gets blindly merged into our state in our store.
+But now our store is a little bit complicated.
+As soon as we're hitting a real world use case,
+now we have multiple different keys in our store.
+And it's nontrivial how we're going to know exactly what we should update.
+If we just pass something like foo foo into our new store,
+how do we know whether that foo foo is an update for user,
+or foo foo is a new contact?
+We're starting to run into the limitations of how
+we've implemented our current reducer.
+And so how does Redux?
+Actually solve this?
+Well, through these things called actions.
+So an action is basically just a piece of data
+that contains all of the information required to make a state update.
+And so in our previous store implementation,
+this is true about our current update.
+Everything that we needed to update our state is passed as an argument
+to dispatch.
+So this could be considered an action, because it has everything that we
+need to update our state appropriately.
+But now we're starting to hit a limitation when
+we have a more complex store like this.
+We can't just pass an object like foo foo,
+because there's no longer enough information
+to make that full-state update.
+And so how are we going to do that?
+Well, generally actions are objects with the type key.
+That didn't necessarily have to be true in our naive implementation of store.
+But now it makes more sense to have an object,
+because we need more key value pairs.
+Usually, this object has a key called type.
+Or in other words, what are we doing here?
+Like, what update are we making?
+What should we be updating?
+And so there actually is a loose spec for what
+is considered an action in Flux.
+And so let's go ahead and open that up.
+And we see here a general guideline to this thing called a standard action,
+or an action that we should be using universally for all
+of our Flux or Redux applications.
+And so the motivation behind that is that it's
+a lot easier to work with actions if we can make certain assumptions about how
+they are shaped.
+Because it wouldn't really make sense if in one application
+we have our actions as objects, and maybe in a separate application
+we have a raise.
+In a separate application, it's a number.
+And maybe in another application it's a string.
+And so as we scale up, we want to have some sort of uniformity
+across our applications.
+And so no matter what application we go to maintain, we know, hey,
+our application actions should all look the same.
+They should have some sort of key that tells me the type of update
+that we're doing here.
+And so the goal of these actions is that they should be human-friendly,
+so Flux standard actions should be easy to read, easy to write.
+They should be useful.
+Presumably, we're not just creating these arbitrary things
+for the sake of it.
+We want them to actually have a use case, to be useful for application.
+And lastly, we want them to be simple.
+There's no reason to add additional complexity when we don't need to.
+And so a basic action might look like this.
+So we have a type that designates what exactly should this action be doing.
+We have a payload, or in other words, like, OK,
+I know I should be updating this.
+What should I actually update it with?
+And so, generally, actions are objects with the type key,
+and maybe they have other things like an air property, payload, or meta.
+And for our particular implementation, we'll
+be creating objects with a type and a payload.
+And so let's go ahead and do that now.
+
+All right.
+So now we know that when we pass in this argument to dispatch,
+we need to include a little bit more information.
+It's not enough just to have an object with foo foo.
+So let's actually pass a more complex object
+where the payload ends up being foo foo, but that's passing a type,
+so that we know exactly what we should be doing here.
+And maybe the type is something like update the user.
+And maybe down here, we do the same thing.
+
+We want to update that user with a payload of that bar bar,
+and the same thing done here.
+
+So now it looks a little bit more complicated.
+Our actions are no longer simple objects.
+Now they are a nested object where they have
+a type that is letting us know that we should be updating the user.
+And it has a payload, which is just letting us know
+how we should be updating that user.
+And there's a syntax error here.
+
+And so now let's actually look for that type in our reducer.
+And so now, rather than passing a state and update to a user,
+now we're passing a state and an action.
+And so now we have some sort of signal about what part of the state
+we should be updating.
+And so let's do if action, dot, type is this thing called
+Update User, what should we do here?
+
+Well, we know exactly how we want to update the user.
+It's dictated by this userReducer.
+And we know how we want to update the contact.
+We don't.
+And so let's actually return here an object that maintains the old shape.
+So the old state is intact.
+And now we want to update the user key.
+And the user key, how do we update it?
+Well, we pass it into the userReducer.
+
+And what do we pass into the userReducer?
+So right now, the userReducer expects a state in update,
+and it's going to merge the update into the old state.
+And so what states are we passing onto user-reducer here?
+Is it the state here?
+Not really, right?
+Because the state here is responding to what state?
+It's responding to the entire application
+state, that includes all of the contacts that we have and the user.
+And the userReducer really doesn't care about any contacts.
+It only cares about the user itself.
+And so rather than passing the entire application state there,
+we only care about the user state.
+And so we can just do state, dot, user here.
+And how do you want to update it?
+Well, it's just that actions payload.
+
+And then if the action type isn't update user, just return the old state.
+
+So there's going to be invalid syntax here.
+So let's just use our merge helper function here,
+where we're merging this new object into state.
+So it's basically the same thing that we had written before, just
+in different syntax.
+So can we all follow what happened here?
+So we create a store, and we pass in a reducer.
+What is the reducer?
+Well, the reducer, it takes a state, and it takes an action.
+And what's the logic behind the way that we update the state?
+Well, if the action has a type called Update User,
+we're going to update the user.
+And we don't care about any other types.
+If it passes any other type, then we're just going to return the state as is.
+But what exactly happens when you passed in something
+where the type is update user?
+Well, we call that userReducer with the payload.
+What is the payload?
+Well, it's just any update that we want to do.
+Why are we calling it payload?
+Well, that's just the convention as dictated by Flux [INAUDIBLE]
+And so what happens in this userReducer?
+Well, we pass it the old state of the user.
+And we pass it the update that we want to make.
+And we don't really care what happens there.
+It just happens to be the case that it merges.
+And so what do we expect to happen after we dispatch these three actions?
+We update the user with foo foo.
+We update the user with bar bar.
+We update the user again with foo baz.
+And we expect to see exactly what we saw before.
+That is an object with a key foo with the value baz,
+and a key bar with the value bar.
+Is that what we actually get back, when we call store, dot, getState?
+
+I don't think that's going to be the case, because there's a syntax error.
+
+This error here is because state, right now, is undefined.
+And so there's no such thing as state, dot, user.
+And so we should probably pass in some sort of default user or default
+application state.
+And so let's just say the default state is--
+let's create a const called Default State.
+
+And let's say the user is just an empty object,
+and the contacts are an empty array.
+
+And let's pass that in when we create our new store.
+
+So now we've passed in some default states.
+So when we do state, dot, user, we're not getting an error there.
+
+And what do we get back?
+We don't get back what we were getting back earlier.
+And what we're getting back earlier was just
+this, an object with a couple of key values where it's foo baz and bar bar.
+Now we're getting back this thing.
+We see that object within our state, but that's not our entire state.
+That object is contained within a part of our state called User.
+And there's also a separate part of our state called
+Contacts, which is an empty array--
+which makes sense when you think about what we just did.
+
+Our application is no longer just a single object.
+It's now an object that looks like this.
+We have a key that corresponds to our user information.
+You have a key that corresponds to all of the contacts that we have.
+And so when we're dispatching actions that update the user,
+they're updating the user.
+But there's still a whole separate part of our application state
+that corresponds to those contacts.
+
+And so now let's strengthen our store by allowing us to add contacts.
+How might we want to do that?
+
+Maybe we should add a new type.
+So remember, at the core of Redux is the reducer,
+which handles the logic between receiving the action
+and updating the state of our application.
+And so in our reducer here, we're going to add more logic
+for when we want to add a contact.
+And how do we know when we're trying to add a contact?
+Well, it's dictated by the type of action that we're receiving.
+So if we get a new action type, and let's call this Update Contact,
+now we want to do something different.
+Now, we don't really care about any update with the user.
+Now, we only care about updating our contacts.
+And so what might we want to do?
+Well, let's return a new state.
+
+And what does that new state look like?
+Well, let's update the old state, so merge in old state
+this new thing where contacts are updated.
+And so how are you going to update contacts?
+What logic dictates how we want to update our contact?
+We could just do, give me the old contacts and add a new contacts.
+And where is the new contact action, dot, payload?
+
+But this logic is already written somewhere in our app.
+We already declared this thing called a contactReducer, which
+does this exact thing.
+What it does is it expects the state of the old contacts and a new contact.
+And so we abstracted that information away into this thing
+called the contactReducer, which expects the old state of contacts.
+And so we don't want to pass just the entire application state.
+We only care about the contacts portion of it.
+
+And then we pass the payload.
+
+So very similar to what we did up here, up here
+when we receive an action called update our user,
+we go ahead and invoke the userReducer on that user.
+And when we receive an action to update the contact,
+now we just do the same thing but for the contacts instead.
+
+So now let's test this out.
+So now let's call store, dot, dispatch, this thing
+with a type of Update Contact, and a payload of name--
+
+my name-- and number of some arbitrary string.
+
+So now we just sent a separate action.
+And so now, if you notice, this action has the same shape as the action
+up here.
+It's a type and a payload.
+Now the type is Update Contact, and the payload--
+rather than being the update for a user-- is actually the contact itself.
+And then our reducer knows exactly what to do with all of these things.
+And so now let's just run this and see what happens.
+
+So now our state got updated.
+So our user still has the information that we expect the user to have.
+But now we have some contacts.
+Now it's an array that includes me and my phone number.
+Don't call it, because it's not actually my phone number.
+And so what happens when you try to add a separate user?
+Maybe our contact has two friends of the exact same name and the same phone
+number.
+
+So now our application has two contacts in the contacts.
+And they just happen to be the same people because I cut and paste.
+Cool.
+So now we have some sort of store that's maintaining
+all of our application information.
+But admittedly, it's not super clean.
+
+So let's clean it up a little bit.
+So right now, we have our action types hardcoded.
+We can keep them hardcoded, but let's actually
+create a variable for our actions.
+That way we can easily keep track of our available actions.
+
+So let's just create this thing called Update User and call it Update User.
+And same thing, let's create a const for our action called Update Contact.
+
+And now, rather than hardcoding this string here, we can use that constant.
+
+And then same here.
+So what this does is it protects us against typos.
+So say I had accidentally typed this in as Update Users plural,
+now it's never going to match.
+And it might be difficult when we're trying to debug.
+Like, hey, what's going wrong?
+I'm passing this action called Update User, and it's not updating our user.
+Why?
+Because we're actually looking for an action type called Update Users plural.
+And so to save us from that, we just create a constant called Update User.
+And the way that we enforce that our action types are the same
+is by using JavaScript itself.
+If we made a typo here called Update Users, what's going to happen?
+
+We get an error, because this constant called Update Users is not defined.
+And so by storing our actions as constants,
+we can ensure that we don't have any weird bugs due to typos.
+So let's actually move this to the top of the file, that way we can use it
+in our reducers.
+
+And we'll leave a little comment for ourself,
+and let's call these Action Types.
+
+Cool.
+So a little bit cleaner now.
+We no longer have those hardcoded strings.
+But now, every single time we want to dispatch an action,
+we have to type that entire action out.
+And so maybe it might be better to create a function that
+creates our actions for us.
+And so let's just create a function called Update User.
+And what does it do?
+Well, it takes some new user--
+
+let's just update.
+So it takes some sort of update, and what does it do?
+Well, it returns a new object, because, as we remember,
+actions are just objects of a certain type.
+And the reason that we create those is because of the standard
+called Flux standard action.
+And so each of them have a type key.
+And what is the type every time you want to update the user?
+Well, it's just going to be Update User.
+And what is the payload here?
+
+Well, it depends what we're invoking Update User on.
+And so let's just pass the updated in.
+
+So now, rather than typing this whole thing out, we can just do Update User
+and pass the update that we want to make.
+And what happens here?
+Well, Update User up here gets invoked.
+We pass the update that we want to make, and it returns an action.
+And the action gets passed to dispatch as if we had done this.
+It's just a little bit cleaner because we don't
+have to type this whole string out.
+
+So now let's do the same thing here, and here.
+
+Cool.
+Looking cleaner already.
+This also looks a little bit gross, so let's create a creator for that
+as well.
+And let's call this Add Contact.
+And we're going to pass it to newContact.
+And how is this going to look?
+
+Well, just like our other action creator,
+it's going to return an action.
+What does an action look like?
+Well, it has a type attribute.
+And what type is it?
+It's going to be Update Contact.
+And it's also going to have a payload.
+And what is the payload here?
+Well, it's going to be that NewContact.
+
+And so now we can do the same thing by calling Add Contact here and on here as
+well.
+
+Cool.
+And now it's looking a lot more readable.
+So let's just label these as are action creators, because they're
+creating actions.
+We have our store--
+our reducer.
+We have our specific reducers for each key.
+And then we pass those to our store, and we go ahead and dispatch foo actions.
+And what actions are we dispatching?
+Well, it seems a lot easier to read now.
+First we say, hey store, go ahead and update the user.
+And what are we updating it with?
+Well, we're just passing foo foo.
+Go ahead and update the user again with this.
+Update user again with this.
+Now add a contact that looks like this.
+Add a contact that looks like this.
+And now, all of a sudden, it's very readable.
+We create a new store.
+We pass it in the reducer in the default state.
+We dispatch a few actions.
+And then we go ahead and get the store, get the state
+and see what it looks like.
+And if I didn't make any typos--
+
+oh, I made some typos.
+I never fixed the typo that I made intentionally, so let's fix that.
+
+Now we get back exactly what we wanted.
+Great.
+So now our homemade simpleRedux is looking pretty good.
+We've implemented most of what is core to Redux.
+There is a single source of truth for our data.
+It's in our store.
+The state can only be updated by actions.
+So remember, we're dispatching actions down there,
+and there's really no other way to update.
+And how are we doing the update ourselves?
+Well, it's a pure function that takes the old state,
+and some sort of payload or update--
+or action, I should say--
+and then goes ahead and does it.
+Did it do anything else?
+Did it console log?
+Did it change any variables outside its scope?
+Did it use anything outside of the arguments that it was passed?
+No, it didn't.
+It was just a pure function of the old state and the updates.
+And it has this pattern, right?
+We're sending actions that pass through the reducer and it updates our store.
+And so now, we've pretty much implemented a simpleRedux.
+
+There's just one scalability problem with our current Redux.
+
+So what happens when we want to update a user?
+We also-- or maybe we want to update a contact, and maybe, in our userReducer,
+we want to keep track of the number of contacts in our user metadata.
+We're going to have to change a lot of lines of code in order to do that.
+And so as we start to add more reducers, start to add more things to our state,
+in our current implementation of our reducer, it's non-trivial to do that.
+And so let's actually figure out a better way to do that.
+Right now, what we're doing is our reducer is taking an action,
+consuming it, and sending it to one of the smaller reducers
+that we've created.
+But there's really no reason that we need to do that.
+Maybe a better way would be to take an action
+and pass it to every single reducer.
+That way, it's up to the smaller reducer to decide, hey,
+I want to listen to this action.
+Or maybe I'm just going to ignore this action and return my type.
+So again, why are we doing that?
+It's because we run into scalability issues
+if we want multiple actions, or multiple of these smaller reducers,
+to react to multiple of the types.
+So what exactly would that look like?
+So now, rather than our main reducer here deciding which of these reducers
+to pass to, we should just pass the action to all of them.
+And so let's actually redefine our reducer down here.
+
+So right now, our reducer is taking a state in action.
+And maybe what it should be doing is passing back
+a function where we know we want users, our user,
+and we know we want our contacts.
+
+And what is responsible for keeping track
+of our user part of our global state?
+Well, it's the reducer that's specific to the user.
+And so maybe here we want to invoke the userReducer with some values.
+And maybe here, we want to invoke the contacts reducer with some value.
+So now it's starting to look a lot simpler.
+And what values does the userReducer care about?
+Well, just the part of the state that it cares about, so the state, dot, user.
+And same thing with the contactReducer.
+We only care about the part of state that's useful to the contactReducer.
+And how does it know what it should do?
+Well, we just passed the action.
+
+So that there is our new reducer.
+And so let's now modify our userReducer and contactReducer
+to only respond to the action types that they care about.
+So let's get rid of this, because now we need additional logic here,
+and maybe some additional logic here.
+
+So currently, what cares about Update User?
+Well, it's just the userReducer.
+So if the action type is Update User in the userReducer,
+let's go ahead and return that update.
+Otherwise, let's just return the state as it was before.
+And now we can get rid of all of that logic here.
+And now let's do a similar thing with the logic for contactReducer.
+So if the action type is Update Contact, the contactReducer cares about that.
+And we should return just this.
+
+Else we'll return the basic state.
+So let me just finish deleting all the code that we don't need.
+
+All right.
+Almost there.
+There are still a couple of bugs.
+So for the conductReducer, what is action?
+Action, dot, type doesn't exist currently,
+so we're no longer passing it the newContact.
+Now, we're passing it the action.
+And so we check the action, dot, type.
+And newContact no longer exists.
+Where are we storing the newContact?
+Well, it's just action, dot, payload.
+
+And we do the same thing here.
+We're no longer just passing the update.
+We're passing the whole action, and then we can do action, dot, payload.
+
+And now we're done.
+So we can make this a little bit more concise,
+if it's easier to read this way.
+
+And now it all fits on one page.
+So we have our contactReducer, which cares about the state.
+And when we say state, it's local only to the contacts part of the state.
+It received actions.
+And if the action is that it should update
+the contact, returning a new state.
+And what is the new state?
+Well, it's the old state, and we append to the end whatever the payload is.
+And in this case, the action, dot, payload is the new user.
+Does contactReducer care about Update User?
+No, it doesn't.
+
+So if the action, dot, type is an Update Contact,
+we just return whatever the state was before, no big deal.
+And the same thing is true for userReducer.
+It's taking a state.
+What state does it care about?
+Well, it's only the user part of our application state.
+It takes an action as well.
+And if the action type is that it should update the user,
+then it goes ahead and does that.
+It returns the old state.
+And into that, we merge the new action, dot, payload.
+And if the action type is in Update User,
+just return whatever the user information was before.
+And one key difference here is that for every single action,
+every single one of these reducers is called.
+This reducer is called and passes that action along with the subset of state
+that each one of these reducers cares about to them.
+And then these reducers only do something
+if the type is something that they care about.
+Otherwise, they just return the state blindly as it was.
+
+So now everything is a lot more concise.
+And now if we wanted to respond to changes
+in other types in the userReducer, we can.
+So if we wanted to store something in the user part of the state
+every single time we add a contact, we can do that now.
+So maybe if we add a new user, or a NewContact--
+maybe want to store that most recently added contact in the user information--
+we could do that by doing state.
+And what are we merging into state?
+Well, let's just do recently added or prevContact
+is whatever that contact is, so action, dot, payload.
+
+And now when we add new contacts, the previous contact is saved in the user.
+And so now, every single reducer can respond to every single action.
+
+And let's just make sure it works by adding
+the contact that wasn't the same as before, as soon
+as my computer unfreezes.
+
+Let's just kill.
+
+So let's, again, go into our simpleRedux and ensure that we
+don't pass the same user in again.
+So we can just sanity check to make sure you're saving the most recent user.
+We can add David here.
+
+And now we can confirm that the previous contacts stored in the user
+is indeed the most recently-added contact.
+And so now we have pretty much a full implementation of Redux.
+So it's a data-management utility that we've created.
+There is a single source of truth for all of our data.
+It's stored in our store.
+The state can only be updated by our actions.
+And updates are made using our peer functions or our reducers.
+And we've created a reducer.
+We've created a store that maintains the state.
+We can get the state using getState.
+And we've created some actions.
+
+So let's go ahead and take a short break.
+And then when we come back, we can add Redux to our actual application.
+All right, hello and welcome back.
+Before the break, we actually implemented our own small simpleRedux.
+And now, let's actually start moving from our simpleRedux,
+to the actual Redux implementation.
+Our Redux implementation already has a pretty similar API.
+What we're missing is just a way to notify that the state is updated.
+And so let's actually install Redux and start to convert
+what we have into actual Redux.
+So one good place to start would be to NPM install Redux.
+And so, as we talked about in previous lectures,
+NPM install will install some NPM package
+and add it automatically to our package, dot, json file.
+And so if we now look at our package, dot, json,
+we see that Redux has been added down here.
+
+So let's now go ahead and start moving what we have into actual Redux.
+
+So I just copied exactly what we had from our simple implementation
+into this new directory called Redux.
+And here, we're going to start actually using Redux.
+And so first thing we need to do is add this thing called createReducer,
+or createStore rather.
+So if we import createStore from Redux, now we
+have Redux's implementation of a store.
+And so previously we had our class store,
+which took a reducer, and maybe some initial state,
+and implemented all of the things that we thought we needed ourselves.
+But now, we're actually going to use this function called createStore
+from Redux.
+And so now, we can actually just delete that implementation ourselves.
+And so now when we do new store down here, now instead of doing new store,
+we'll just invoke that thing called createStore from Redux.
+
+And since I read that documentation, I know that it
+takes a reducer and some default state.
+And then we can dispatch some actions.
+And other than that, I think that's it.
+So that one line change there actually took us
+from our simple implementation of Redux to actual implementation of Redux.
+Unfortunately, if we want to run this in node,
+it doesn't support that import statement.
+So I'm just going to do this real quick, which does effectively the same thing,
+just so that we can test it.
+
+So let's run this.
+And what do you know?
+We got back exactly what we had before.
+So it turns out the simple implementation of Redux
+that we actually wrote pretty much adheres to the same API
+that Redux itself has.
+And so it didn't really take much for us to move from our simple implementation
+to actual Redux.
+Redux actually, also, gives us a few other goodies.
+
+So right now, the way that we create a reducer that dispatches
+or that passes actions on to their relevant reducers
+is by combining them using a function that we defined here.
+But it turns out Redux also gives us a function called combineReducer, which
+does effectively the same thing for us.
+Rather than us writing a function that combines the reducers,
+we can actually invoke this thing called createReducer,
+or combineReducers from Redux.
+That just takes an object that maps the key in the actual store
+with the reducer that controls that key.
+And so it can do user gets userReducer and contacts gets contactReducer.
+
+And now, we've basically taken a little bit more complexity
+out of our application and maintain the same functionality.
+So again, if we test this, we don't have the initial state.
+
+So one difference here is that--
+did we not pass the initial state in?
+
+Let's actually-- just to safeguard real quick, that if this is null, or empty,
+we'll go ahead and just create in Default
+State for each individual reducer.
+So for the user, let's have an empty object.
+And for the contacts, let's have an empty array like that, and now run it.
+Now we get back exactly what we had before, as expected.
+The one minor difference is that rather than having a default state app-wide,
+we can actually just define the Default State in the reducers themselves.
+And so the Default State for the contacts in our contactReducer
+is just an empty array.
+And the Default State for our user, if the userReducer
+is invoked with no current state, we'll go ahead and initialize it
+to some empty object.
+And so now, I see even more complexity gone
+that just goes into the Redux library, rather than
+our own implementation in this file.
+Great.
+So now we have a working store.
+It's just a lot of stuff in a single file.
+There's no reason that our store, dot, js
+file should have our store, but also our action creators,
+also our reducers, and also all of our actions.
+And so let's start to split those out into separate files
+so that they're easier to maintain and find.
+So let's copy the store in to read this thing called reducer, dot, js--
+and also copy the store into this thing called actions, dot, js.
+
+So in reducer-- actually, let's do actions first.
+In actions, what do we care about in actions?
+We really only care about our action types and our action creators.
+CombineReducers, those things about stores,
+we really don't care about at all, so we can just delete that.
+We don't care about that.
+We don't care about any of these reducers.
+But we do, however, care about the action creators.
+So now, in our file called actions, dot, js,
+we define the things that have to do with our actions.
+So there are our action types and our action creators.
+Some people prefer to have action types and action creators in separate files.
+But since we only have two of each, let's just
+keep them in these files called actions, dot, js for now.
+And let's go ahead and export them.
+
+So now in our actions, dot, js file, we are just
+exporting the available action types.
+And we're also exporting the available action creators.
+And that's all that this file called actions cares about.
+Now let's move on to reducer.
+So does the reducer care about combineReducers and createStore?
+Well, half of it, it cares about combineReducers but not createStore.
+And let's actually move back to our ES6 import, syntax.
+
+Do we care about action types?
+Yes, we do, because the reducer is checking against action types.
+But there's no reason that we should define them in this file.
+We should actually just import them from our file called actions.
+
+And now we can go ahead and delete the lines here.
+
+And so now, what we have in this file is basically only the things
+that we need to define our reducers.
+And so we need this helper function called merge,
+which takes a couple of objects and merges them together.
+We define our Default State here, though we don't really need to.
+And then we have two separate reducers for two parts of our application.
+So for the part of our application that cares about contacts,
+we have this reducer, which takes state, which
+is initialized to an empty array-- so just an empty list of contacts.
+We take an action, and we match against the action to see what we should do.
+We have the reducer for users here.
+So we say, give me a starting state for our users.
+If there's no previous state, just initialize it to an empty object.
+And give me an action, and we'll go ahead and match against the action type
+to see what we should do.
+And then we have our actual reducer that we're
+going to pass to our store, which just combines those two reducers.
+So just to stay maintainable and scalable, what we're doing
+is rather than having one reducer check against all action types
+and maintain the entire state, we have separate reducers
+for the part of the state that cares about user and the part
+of the state that cares about contacts.
+And if we want to scale up to the point where
+our user is starting to be an object that
+is unmaintainable by a single reducer, what we can do
+is we can create one reducer for half of that user,
+and maybe another user for another half, or maybe a third reducer
+for a third key in there--
+and go ahead and do something here, where it's, like, combine reducers.
+And maybe we have something that cares about the user's meta
+data that's called userMetaReducer.
+And maybe we have something that cares about the user's logins.
+And so every time they have a login, we'll
+go ahead and add that to this part of the user's state.
+And so maybe that is the userLoginReducer.
+And I'm just making up examples that are somewhat arbitrary.
+But I'm just trying to show that as our application scales up,
+and as our application state gets larger and larger, what we can do
+is we can still take bite-sized pieces of that state
+and manage them by one small reducer.
+And we can compose these reducers into just one massive reducer
+that can take care of the entire state.
+And so this combineReducer, what it does is
+it allows us to split up one object into a bunch of separate object keys
+that are maintained by a separate reducer.
+And so since our application is pretty simple right now,
+we can do that all in one.
+But if we wanted to scale up, it is possible to start nesting reducers
+like that.
+Great.
+So let's actually export default, this reducer,
+because that's the only thing that we want to expose from this file.
+We don't ever want somebody to use contactReducer or userReducer alone.
+We just want them to interface with that through this big reducer
+that we have at the end.
+And if it's easier for you to follow like this,
+we can define this variable called reducer and export default
+at the end, which is exactly the same as what we did before.
+But now, we have a handy variable name to let us know
+exactly what this combineReducer is.
+Great.
+So that's the reducer.
+
+And now, lastly, let's clean out this store file.
+So we no longer care about that combineReducer function.
+Now we only care about createStore.
+Do we care about action types in our store file?
+No, we don't.
+So let me delete that.
+Do we care about merge and those two reducers?
+No, we don't.
+We can delete that.
+Do we care about our main reducer?
+Yes, we do, but not in the context of this file.
+We can just import it from our other file.
+And so rather than implementing it here, we
+can just import reducer from that file and delete the declaration here.
+Do we care about action creators?
+Not in this file.
+
+Do we care about store?
+Yes, we do.
+So let's have const store be this thing that
+creates the store from the reducer.
+And we don't really need the Default State
+since we declared it in each one of the reducers themselves.
+So the Default State is basically this, where an empty contacts key just
+becomes an empty array.
+And an empty user becomes an empty object.
+
+And so we're still dispatching a bunch of actions.
+Let's comment those out for now and export this store.
+
+Great.
+So now, everything is in its own separate file.
+Everything is very readable.
+I believe every single file can basically be read without scrolling.
+Oh, I lied.
+But very close to that, which is pretty impressive since we're
+only showing fewer than 20 lines at a time.
+So it's very easy to now navigate through our application
+and know exactly where we need to update something if we need to do so.
+So if we need to add a new action, where are we going to do that?
+Well, in our actions file, we can add any action types up here
+and any action creators down here.
+If we want to change any logic in our reducer, we know exactly where that is.
+It's right here.
+If we want to change how we handle contacts, we can do that here.
+If we want to do so with four users, we can do that here.
+And I immediately see a way that we can make this more readable.
+Right now, what we're doing is we're doing if action, dot,
+type is Update User, do this.
+If action, dot, type is this, do this.
+If action, dot, type is this, do this.
+So we keep matching against this string called action, dot, type.
+There's actually something built into JavaScript
+that allows us to more easily match against a single string.
+And that's the switch statement.
+So we could do switch based on action, dot, type here.
+And if you're new to the syntax, basically what it does
+is it allows us to check a particular variable
+and match it against a bunch of different possible values.
+And so if the action, dot, type--
+it's the case where it's Update User, then we're going to do something.
+And that something is to do this.
+
+If it's Update Contact, instead we're going to do this.
+
+Otherwise, just return the old state.
+
+And now it's a lot easier to read.
+So there is no longer a bunch of if-statements.
+We just know that what we care about is action, dot, type.
+And if the case is a Update User, then we return this.
+If the case is Update Contact, we return this.
+And if it doesn't match any of those things, by default
+we should just return to the original state.
+And then again, we combine the reducers and export it at the end.
+And then we import it into our file in store, dot, js,
+which just creates a store out of that reducer and exports it.
+So again, we didn't really change any of the logic there.
+We just split things into smaller, bite-sized pieces.
+And so a lot of a recurring theme that we see in this class
+is take a big problem and split it into smaller pieces that are
+bite-size and maybe easier to digest.
+So we went ahead and did that with our store here.
+And so now, let's talk about it in the context of React.
+So far, we've only really talked about Redux
+as a standalone library that tracks some data.
+But what we really care about is having that data update some views.
+And so we want to respond to, or React to rather,
+changes in data in our application or UI.
+And so now we have a few questions to answer.
+How do we get the info from our store into our components?
+Because right now, we've been using our store as just a standalone module
+and accessing effectively the command line.
+But now, how do you get this to run in an application?
+Well, it turns out our store has a handy method for getting the info.
+It's called store, dot, getState.
+And so in our application, what we can do
+is we can actually access our state from our store directly.
+So we can do store, dot, getState to receive that.
+And so now let's start integrating Redux into our application.
+So we already have this thing called store.
+Let's uncomment our mode of adding contacts.
+And so right now, I can't run this at the command line,
+because we're using this import syntax.
+But our application state should be some contacts where the three contacts are
+myself twice and David once.
+And now we can go ahead and read from our store in our React application.
+So if you remember what our application looks like is
+we just have a bunch of contacts.
+And these contacts can be toggleable, but they just really
+just show on this simple list page.
+And so to dive back into the code from the past few lectures,
+where do we actually get those contacts?
+Is it in the contact list file?
+No, everything is in our app, dot, js file.
+
+Right now, we're just implementing our contacts
+from our random-contact generator file that we wrote a few weeks ago.
+But ultimately, we're setting states in our application class and passing that
+through our navigation via screen props, and then
+accessing it in our relevant page by doing, like, this, dot, props, dot,
+navigator, dot, getParam, dot, whatever.
+And so it's a lot of work just to get our single key there.
+But there's actually more to that.
+We're also passing our contacts to every single other page in our application,
+even the ones that don't care about it.
+And so now what's nice about Redux is we can only
+listen to that information in the pages that we actively
+care about the information.
+And so we don't really care about contacts in all of our pages, right?
+We only care about it in the page that displays them.
+And so let's delete this code that passes the contacts as a screen
+prop to every single page.
+So if you remember, back a few weeks ago,
+Brent was saying that there's a better way than passing
+screen props to every page.
+And he used that word Redux, which we didn't know what that
+meant a few weeks ago, but now we do.
+Now there's actually a way where we can say,
+oh, this information is only relevant to this particular component.
+And so now in that particular component, we
+can just have it listen directly to the state
+without having to pass that state to every single component.
+And again, how are we going to get that information
+from the store to our components?
+Well, we can use store, dot, getState.
+And so let's do that.
+
+So our screen called ContactListScreen is where
+we're getting that information, right?
+Now, what we're doing is this, dot, props, dot, screenProps, dot, contacts.
+And so let's actually do something different.
+So rather than looking at our screenProps,
+let's do import store for Redux, slash, store.
+So now that's our store.
+How do we get our information?
+Well, we can just do const contacts is store, dot, getState--
+which is how we get the state from our store--
+dot, contacts.
+Because getState returns the entire state of our application.
+And if you remember, what that looks like is user with some user information
+and contacts with our list of contacts.
+We only care about the dot contacts part.
+And so we can grab that and just pass that directly to here.
+
+And so now, hopefully--
+
+so AddContact.
+Oh, I uncommented something without importing what it needed.
+So let's just go back to Redux.
+
+So I ended up using addContact here without importing it.
+And so if I wanted to use that addContact action creator,
+I need to first import addContact from our actions file.
+
+And so now, we can see that we're creating our--
+people are showing up, however their phone numbers are not--
+let's see why that's happening.
+
+So we're creating people with name and numbers.
+And I assume that row is actually looking at a different--
+I think it's looking for a prop called phone,
+so let's actually just change number to phone.
+
+And so now, we should be getting those phone numbers.
+So basically we had a bug where I thought contacts were name and number,
+but we actually defined a contact to be name and phone.
+And so by storing the correct data, we then get it back in our application
+here.
+Cool.
+So this is awesome because if you ignore the keys that we didn't add, now
+we're getting that data in only the list that cares about it.
+So the separate screens that don't care about the contacts
+don't get access to our contacts.
+The scope of that information is limited only
+to the component that cares about it, which is a good thing.
+So now, how are we going to update that store?
+So if you remember back to the drawing of Redux,
+what's the only way to update a store?
+Well, it's by dispatching an action.
+And how do we dispatch an action?
+Well, we do it from a view.
+And so we can go ahead and add that action to our view.
+
+So we need to use store, dot, dispatch in order
+to send that action to our store.
+We need to do store, dot, dispatch in order
+to send that information to our store.
+And so let's actually do that.
+
+So in our previous iteration of the app--
+
+earlier what we were doing is we were passing
+this function called Add Contact to every single one of our screens
+via this thing called screen prompts.
+But now, we can do better by only passing the Add Contact function
+to the screen that cares about it.
+And what screen is that?
+Well, it's the one called Add ContactScreen.
+And if you remember right now, the way that we're handling the Submit
+is by doing this dot props, dot, screenProps, dot addContact,
+and then we pass form state.
+But we have a better way to do that now.
+We can actually just directly dispatch an action.
+And so let's do that.
+So first, we need to import store from our store.
+
+And we also need our action that we care about.
+So let's import Add Contact from Redux actions.
+
+And so now, what do we want to do for handleSubmit?
+So rather than this, we can actually just do store, dot, dispatch.
+And what are we dispatching?
+Well, it's the same thing that we were dispatching before.
+It's an action called addContact, or action creator
+I should say-- called addContact.
+And what is our action?
+Well, it's just our form state.
+
+And that's it.
+Actually, our form state has more information than we care about.
+So if we really want to be succinct, we can
+say the name is formState, dot, name.
+
+And our phone is formState, dot, phone.
+
+And now, presumably we did what we wanted to do.
+So let's go and check.
+We can add a new contact.
+Let's add Yowon Y, and give a phone number.
+What do you know?
+He has the same phone number as I do.
+And submit-- oh, wait a second.
+Yowon didn't show up.
+
+But if we toggle contacts and reappear, look, there-- oh, I spelled name wrong.
+But there is what should be Yowon.
+So why didn't he show up the first time?
+So there's one thing that we're missing as we've added Redux to our app.
+It's that we're not getting the application
+to update when the store changes.
+And this is a bug that we've seen before, but this time it's different.
+And so how might we get our application to automatically re-render
+every single time our store changes?
+
+Well, presumably, we would want to use the other part of Redux that
+calls a callback every single time it adds,
+which is a lot of extra work for us.
+I wonder if there's a way that we could do that better.
+So we've talked about this thing in a few lectures
+before, this thing called a HOC, or in other words a higher-order component.
+What a higher-order component is it takes a component as an argument,
+or it returns a component as a result of a function.
+And so we could actually create a HOC that
+does a lot of what we've just done manually for us.
+What if we created a HOC that is the following?
+It checks for state updates automatically,
+or it subscribes to them, and then it passes new props to when that happens.
+And wouldn't it be also cool if rather than having to go bind
+our action creators ourselves, like we did here--
+or here, this line--
+what if we instead did that automatically?
+What if our HOC for us automatically bound our action creators
+to our dispatch function for us?
+That would be really cool.
+Then we wouldn't need to subscribe to store updates.
+Our higher-order component can do that for us.
+And when I say our higher-order component,
+I mean the one that React conveniently implemented for us.
+And so if we check this thing called React Redux,
+we see some official React bindings for Redux,
+which gives us a few cool things.
+And by a few, I mean two.
+We have this thing called a provider and this thing called connect.
+And if we look at what this is, a provider--
+it basically handles the binding for us.
+It listens to a store, and it'll see when it updates.
+And then this thing called connect is a higher-order component,
+so it takes a component as an argument.
+Or actually it takes some configuration as an argument, returns a function
+that's now expecting a component as an argument.
+We'll see exactly what that means in a second.
+But basically it does a lot of things for us.
+It passes only the relevant props that we care about.
+So this function-- the first argument we pass
+it is this thing called mapStateToProps, which is actually a function that
+takes our entire application state and will return an object of props
+that we care about, meaning for this particular component,
+it doesn't care about our entire application state.
+It only cares about a subset of it.
+And for a particular example, our ContactListScreen
+doesn't care about our entire state of our component.
+We only care about this one key called contacts.
+And so it would be great if we had in higher-order function--
+which handles this for us.
+It listens to the store.
+It grabs the state, and it only passes contacts down.
+And the way it does it is a prop.
+And so this connect function implements that behavior for us.
+We pass a function that maps our application
+state to own the props that we care about,
+and then it passes those down as props for us.
+And so let's go ahead and first install this library so that we can use it.
+And if you haven't, install React, Redux.
+
+And as you remember, this will also add it to our package, dot, json.
+So if I look at our package, dot, json, I can see React, Redux got added.
+And now, we can go ahead and use that connect function.
+So in our ContactListScreen, rather than importing the store itself,
+let's actually only import connect.
+
+So we now have access to this higher-order component called connect,
+which we can now use.
+So rather than default exporting this entire class,
+let's actually wrap it in a higher-order component.
+So let's down here do export, default, connect.
+We're going to pass it something.
+And then we're going to pass the class that we created,
+so this thing called ContactListScreen.
+
+And what do we pass it?
+Well, we pass it a function that maps our application state to our props.
+And so we can do const mapStateToProps.
+I can really call this whatever I want.
+Let's have it take our entire application state
+and only return the subset that we care about, or in other words, the contacts.
+And so a prop called contacts will get mapped to sate,
+dot, contacts, and then of course pass that function into connect.
+
+So again, the first argument to connect is just a function,
+which I happen to call mapStateToProps.
+We can call it whatever you want.
+We can call it getState--
+or PropsFromState.
+
+But I'll just follow convention and call it mapStateToProps,
+which takes the entire application state and returns
+a subset that we care about, or in other words,
+the prop contacts, which maps to state, dot, contacts.
+And then in here, we no longer have to do that.
+Now we just do this, dot, props, dot, contacts.
+Because what this higher-order function does is it
+listens to our application state.
+It will automatically update as the state updates,
+and it will pass down some number of props.
+And the props are just contacts for now.
+And what is contacts?
+Well, it's whatever the state value of contacts is.
+
+And so that is done.
+Unfortunately, it doesn't quite work, because it
+doesn't know what our store is.
+And so now we also have to use the other part of React Redux
+and let our application know what our store is.
+And that is through that component called Provider.
+So if we import Provider from React, Redux, what that does
+is it provides our app with a concept of what our Redux store is.
+So we can just wrap our entire application in this provider
+and let it know what our store is.
+
+And this component will provide any of its children with our store.
+And so our store, we should just import from Redux, or the reduction
+implementation that we wrote.
+And now, the store is passed to any of the connect functions that we have.
+And the connect function, which we wrote in ContactListScreen,
+it can now listen to the store and map any changes in the application state
+to props that it passes to this ContactListScreen, which we then
+listen to to fill our list.
+And so now we see that it's been sent here, which is cool.
+Lastly, real quick.
+What it also does is we can automatically
+bind our action creators to dispatch.
+And so a quick example of that is in our addContact screen.
+Currently we're not doing any binding at all.
+We're just passing addContact, the return value of that,
+straight to store, dot, dispatch.
+And it turns out, rather than doing that manually, we can just
+import connect from React, Redux.
+And rather than default exporting this entire class,
+we can just export a wrapped version of this.
+So we'll pass connect, some configuration,
+and then pass it our addContact screen.
+
+And connect takes a couple of arguments.
+The first one is mapStateToProps.
+Our addContacts screen doesn't care about any of our application states.
+So let's just pass some null value there.
+But it does care about our actions.
+And so we can pass an object into our second argument here,
+and it will automatically bind our action creators with dispatch.
+And so if I did something like addContact,
+so we're going to get a prop called addContact.
+What's its value going to be?
+Well, it's going to be addContact, which is the function that we
+imported from our Redux actions.
+And then it'll actually just pass as a prop to our component.
+So we can do this, dot, props, dot, addContact,
+which will automatically dispatch that up for us, because it
+gets automatically bound by connect.
+And if you want to read more about how that happens,
+the documentation is linked in the slide.
+And now, just to ensure this works, we can go ahead and add Yowon Y here
+with a phone number like so.
+Submit.
+And look at that.
+Our application automatically updated due to a update in our application
+state.
+So this was a quick example of how we use Redux and React.
+And next week, we'll dive even farther into Redux
+and show how we handle stuff like asynchronous actions
+once we do some data-fetching.
+So thanks, I'll see you next week.

@@ -1,0 +1,1562 @@
+[MUSIC PLAYING]
+
+SPEAKER: Hello and welcome back for lecture 6.
+So in the previous lecture we covered a few things--
+user input and how to use text input.
+We covered some simple input validation to just make sure
+that the input that we receive is the input that we want.
+We talked about keyboard avoiding view, which
+is built into React Native, which allows us to move inputs out
+of the way as the keyboard, the virtual keyboard appears.
+We talked about some various debugging strategies,
+how to log errors and warnings.
+We talked about Chrome Developer Tools, and how
+to send our JavaScript to be executed there rather than on the device itself.
+We talked about the React Native Inspector and react-devtools
+to other ways of viewing the UI, and to solve
+bugs that have to do with UI things.
+And finally, we talked about installing external libraries with npm.
+And there I alluded to the library that we're going
+to start using called React Navigation.
+And today we're joined by Eric and Brent here,
+who were co-authors of this library called React Navigation.
+Brent, right here, works at Expo, and he helped write React Navigation.
+And Eric, over here, was on the React Native team at Facebook,
+and also helped write the React Navigation library.
+So I'll turn it over to them for React Navigation.
+BRENT: Great.
+Thank you.
+
+All right.
+So I think the first question we need to answer here
+is, what is navigation exactly?
+So navigation is a pretty broad term.
+It covers pretty much any topic related to moving between screens in your app,
+or moving between different locations in your app.
+Web navigation you might be familiar with already,
+which is very oriented around URLs.
+You enter something into the URL bar, and as a result
+of that changing you change the screen that you're on, or potentially just
+an entirely different website.
+Mobile apps don't really use URLs so much, at least not
+for navigating within the app.
+Usually in mobile apps, URLs are used for something called deep linking.
+We won't be talking about that too much today,
+so I've just added a link here to the slide.
+So if you want to learn more about deep linking, you can follow that.
+So the navigation APIs are very different between iOS and Android.
+They could not be really more different at all.
+There's almost no similarities, honestly.
+And so it's quite a challenge to do what React Native is
+trying to do in many regards in the realm of navigation.
+And try and bring these together and make a kind of platform-agnostic API
+for how to use these different platform-specific patterns
+for navigation, while also making the API for interfacing with that
+very similar across platforms.
+And so there are several libraries that attempt to solve this problem.
+We're going to talk about React Navigation today.
+
+So again, just to give you a gut feeling of what we're talking about,
+on the web with the desktop web browser, this
+is typically what you would consider navigation.
+You scroll somewhere, you click a link, it brings you
+to another URL, the page changes.
+There is a Back button, a Refresh button, Forward button,
+and an address bar.
+On mobile, with a mobile browser it's very similar.
+The main distinction that you'll see on mobile
+is that there is some UI that you get for free, actually,
+with a mobile web browser, where you can swipe back on your screen
+or swipe forward on your screen, and that
+will allow you to navigate between different pages
+that you visited in your history.
+The tradeoff here with having these gestures
+is that you actually have very little control over them.
+So they're there whether you want to use the gesture
+for something else on your page or not.
+You're just kind of stuck with them.
+And the same thing is true for the navigation
+bar on the bottom of the screen with the Back button and various other options.
+That does interfere with putting content near the bottom of the screen.
+So when it is hidden and you attempt to tap something
+on the bottom of the screen, it shows up.
+And you have to tap again.
+So you get a lot, but there are some costs to it.
+Mobile navigation feels more like this, where maybe you have a Tab
+bar on the bottom like this one.
+You move between various screens.
+When you tap on some link to go to another screen within the app,
+it might slide in over top, and you can swipe back from there.
+And really the key thing here is that you kind of control
+the entire experience as an app developer.
+It's almost like you have your own sort of browser implementation,
+but the only content that you're browsing is the content of your app.
+And the actual behavior that you get out of navigation in your app
+is entirely up to you.
+So React Navigation is distinguished from some other libraries in the React
+Native ecosystem in terms of how it approaches implementing navigation.
+So there's two distinct approaches.
+The first one is to mainly implement the logic and the views in JavaScript.
+And so the majority of your implementation
+is just plain React all the way down in the stack.
+A second alternative approach is to write
+a wrapper for the existing native APIs that exist on iOS and Android,
+and try to smooth those differences out using
+just basically an alternative front-end API for how
+you interact with these APIs.
+React Navigation takes the first approach.
+I won't go into too many details here.
+There are some things that are self-evident from just looking
+at the characterizing feature of the approach in that, if it's mainly
+in JavaScript and you are a JavaScript developer,
+you will know how to work with any part of the tool.
+Whereas if you wrap a native API, you suddenly,
+when you want to extend it or change something or debug a problem,
+you have to become familiar with Swift or Objective-C or Java Kotlin
+or something like that.
+So we chose the first approach here.
+And there's more information in the docs which
+I've linked to here, as well as some information on alternative libraries
+if this isn't your preferred approach.
+So first thing we're going to do here is install React Navigation.
+So as you saw last lecture, npm install, library name, dash dash
+save, depending on the version of npm that you're using.
+Newer versions that's not necessary.
+One thing that's a little bit different here
+is that we've specified a version number explicitly.
+Typically, if you install with just the React Navigation package,
+it will get the latest stable version of the package.
+However, for the sake of this lecture, we
+are just about to release a new version of React Navigation.
+Currently the stable version is 1.5 or so.
+And React Navigation 2 has some significant differences.
+So we wanted to make sure that the things that you're learning today
+don't go out of date next week.
+
+So if you're referring to this in the future, keep in mind
+you should use a 2.x series of releases.
+So some key concepts before we really get into the code here.
+I think it's worth clarifying these three big terms in React Navigation.
+You're going to see these a lot.
+The first one is navigator, the second one
+is routes, and then screen components.
+So a navigator is a component that implements a navigation pattern.
+So an example would be in the mobile app that we saw in that video
+just moments ago, the tabs are a certain navigation pattern,
+and you would have a navigator that is associated with that pattern.
+We'll see in more detail, of course, what that means shortly.
+Another type is a stack navigator.
+So when you tap on something and it pushes a new screen onto the stack,
+and so on and so on as you add more screens.
+And it gives you the swipe-back behavior.
+So each navigator has one or more routes.
+A navigator is a parent of a route, and a route is a child of a navigator.
+Don't worry too much about this right now.
+It will become more clear very shortly.
+I just want to make sure we're clear up front on exactly what these are.
+So each route must have a name and a screen component.
+So the name is usually unique across the app.
+That's a safe assumption to make, at least for now and the near future.
+When you get in some more complicated use cases it may not be true.
+But you will hopefully have the intuition at that point
+to understand why that is the case.
+The screen component is a React component that
+is rendered when the route is active.
+So in the tab, for example, that we saw, there
+is a screen associated with the Feed tab,
+and there is a screen associated with the Settings tab, and Search tab,
+and so on.
+And so those, in React Navigation, are React components.
+Now another thing that Eric will speak about a bit
+later is that a screen component can also be another navigator.
+And this is a powerful concept that would be
+very difficult to build apps without.
+And so we will discuss that once we have a bit more foundational knowledge.
+So we're going to start off with the easiest, most simple navigator, and one
+that translates directly from the example that
+was being worked on last class, the Contacts List example.
+So the Switch Navigator is a navigator that
+is capable of displaying one screen at a time.
+When a screen goes inactive, it is unmounted,
+and the only action the user can take is to say I want to go from this screen
+to this other screen.
+So it's very straightforward.
+It kind of looks like this.
+You have screen one, and we have a button, let's say, go to screen two.
+If I press Go to Screen Two, it simply does this.
+The other one's gone.
+The second one appears.
+Basically, as you tap on these buttons, you're
+just switching between the screens.
+All right.
+And so to create this navigator, we import createSwitchNavigator
+from react-navigation.
+We call it with a map where the keys are the names of the routes,
+and the values are the screen components.
+When we actually want to render it, we just
+take the return value of the createSwitchNavigator function,
+and we render it inside of our app component.
+Usually this is at the root of our app.
+And we'll see why that is, again, when we talk about composition.
+So this is kind of a new concept here, the idea
+of createSwitchNavigator as being a function that returns a component.
+So I just wanted to take a moment to explain what that is exactly.
+So a createSwitchNavigator is a higher order component,
+in that it is a function that returns a React component.
+So a higher order component, as defined in the React documentation,
+is an advanced technique for reusing component logic.
+And so the component logic we're reusing in this case
+is the behavior of how a Switch Navigator works.
+And we're saying, we want you to be a Switch Navigator that has
+these screens and these route names.
+And the logic for how it operates given those parameters
+is built into the underlying Switch Navigator.
+This is pretty similar to the idea of higher order functions,
+if you've ever used those before.
+So if you've used something like forEach or mapFilter,
+those sorts of functions, which are functions that take functions.
+Also functions that return functions, those are higher order functions.
+And the same thing applies for higher order components.
+
+So when we want to go from one screen to another screen,
+we simply call this.props.navigation.navigate,
+and we pass in the route name.
+So going back here to the definition, you can see the route name corresponds
+to the screen component.
+And when we call Navigate, we give the route name,
+and it simply switches to show the component corresponding to that route
+name.
+
+The navigation prop is passed into every screen component automatically.
+So it's available on this.props.navigation.
+And it has a variety of useful methods available on it.
+We're looking at navigate here.
+We'll see a little bit more later about goBack and setParams and getParam.
+And we won't cover some of these other more advanced ones.
+But again, it's worth looking in the documentation for when you want
+to learn some more advanced use cases.
+All right.
+So let's put this to use.
+We're going to start our first example.
+So the first thing I'm going to do, is I'm going to just open up a new tab
+while I run exp start dash dash ios.
+So exp is the command line equivalent of xd, which you've been using so far.
+I'll make that a little bit bigger for you.
+Hopefully that works.
+So it's essentially the same thing.
+And running exp start ios is just like opening a project in xd
+and hitting Open on Device with iOS.
+I'm just going to open that here.
+While that's going on, I'm going to open up Visual Studio Code.
+And we're right inside of our app.
+Let's wait for this to start.
+
+OK.
+So we have our app up there.
+So this is essentially the app that you finished last class.
+And we're going to continue on this shortly, but first
+let's just build this abstract example of using a Switch Navigator.
+And then we'll see how we can integrate that into what we've already built.
+So to do that, I'm actually going to go back here and make an examples
+directory.
+And I'm just going to create a file called examples.
+Let's just call it Switch.
+0 dash Switch.
+And go back in here.
+All right.
+First thing we're going to do is import React from React.
+Let's make that a bit bigger for you, as well.
+And as we saw before, createSwitchNavigator
+from react-navigation.
+OK.
+
+And do class.
+
+OK.
+So we know we need to return something here.
+
+We created our app navigator like this, calling SwitchNavigator
+and passing in a map of route names and screen components.
+So first route name, we'll just go with the example we've been using so far,
+and just call it RouteNameOne.
+We could call it CS 50, you could call it whatever you want.
+But for the sake of demonstration, we'll just call it that.
+And now we've run into a situation where we need a screen component.
+So let's create one here.
+It's just any old React component will do.
+I will call it ScreenComponentOne.
+
+Let's import a couple of things from React Native.
+Let's do a button and a view.
+Just to give some contents to the screen,
+so we can actually do something with it.
+And render a view.
+Let's make it take up the full screen.
+Align everything in the middle, justify to the middle.
+
+And let's give it a border, just so we can
+see easily the differences between screen one and screen two.
+I'm going to say border width is 25, and border color--
+I'll just make it teal here.
+
+Let's add a button.
+And we'll do something with that in a moment.
+
+And I'll just format that.
+It appears we have an error somewhere.
+Ah, perfect.
+OK.
+So this is some invalid syntax, because we
+need to drop in the actual name of the screen component.
+So now what we have here is an app navigator which has a single route,
+and the route renders the ScreenComponentOne component, which
+is simply a button that does absolutely nothing,
+but it's centered in the middle of the screen.
+Now, to actually have this display in our app,
+we need to render the navigator somewhere.
+And going back here, we're just going to comment all that out for now.
+And import example from examples 0 dash switch.
+And render that there.
+So if I go back here--
+oh, looks like we have a typo.
+Ah, of course.
+We missed out on a very important step.
+We missed out on actually installing React Navigation,
+as I mentioned earlier on.
+So to do this, in the slides I said you can use npm.
+There's an alternative to npm called Yarn.
+I personally prefer it.
+It's really up to personal preference here ultimately.
+It's fast and it has, in my opinion, some nicer tooling associated with it.
+So I'm going to run Yarn add here.
+And yarn add react-navigation at 2.0.0-beta.3.
+And once that's done, as you can see, it's quite fast.
+We can refresh this.
+
+And so we have something here.
+We have essentially a pretty useless thing.
+But it is being rendered by the Switch Navigator.
+Now, to demonstrate actually some useful behavior here,
+let's just copy and paste this screen component
+and create ScreenComponentTwo.
+I'm going to give it a different border color.
+And I'm going to make it say, "Go to screen one."
+Lastly, I'm going to add an onPress function here,
+so that when you press on the button, we're
+going to navigate to the second screen from the first screen.
+And then I'll add the same thing to the second screen,
+so that when we press on it, we go back to the first screen.
+So you might might remember from the previous slide,
+we do navigation.navigate.
+And we currently haven't defined a route for this,
+but we'll just call it RouteNameTwo.
+And this similar thing can be done down here.
+
+Except as per the title, "Go to screen one,"
+we're going to send it to RouteNameOne.
+Now I can just change these.
+
+And you can see, when we press on these buttons,
+we are switching from one screen to the other.
+So this is the most simplistic navigator possible, essentially.
+Only show one screen at a time, and we can switch between the various screens
+that we have in the Navigator.
+This might look kind of familiar to you, because this is essentially
+what is happening in the Contact List example.
+When you press Add Contact, we're setting some state on the app component
+to say, we are now showing the form.
+So we toggle showForm from false to true.
+And we stop rendering the list of contacts,
+and we start rendering the Contact Form.
+And this is the same sort of pattern, but in a more structured sort
+of approach.
+That hopefully as we continue, you'll start
+to see the benefits of what may seem like a little bit more complexity
+up front.
+But let's go ahead and convert the example that we have--
+let's see where we are here.
+Yeah, let's convert the example to use a Switch Navigator.
+Right?
+So we have that right now.
+We're going to keep it to look exactly the same,
+but the only difference is the underlying implementation,
+we use a Switch Navigator.
+So let's go back here.
+We don't need this anymore.
+I'm going to uncomment the whole app.
+And current implementation, right.
+setState.
+And we want to toggle contacts in that showForm.
+So that's state showForm true.
+So we're not going to need that anymore.
+But there are a few things we need to do first to get prepared for this.
+I'm going to pull out these components, that are implicitly
+sort of screens inside of the app, into separate components that I'm just
+going to add a suffix of screen to.
+And that's just the convention that is very common
+when structuring these applications.
+So I'm going to make a screens directory,
+and then I'm going to create a--
+let's see.
+Yeah.
+AddContactScreen, and-- that actually has to be in the screens directory.
+And I'm going to create a Contact List screen.
+Screens, Contact.
+
+So this is just a matter of shuffling stuff around now.
+We no longer need showForm.
+We'll leave showContacts there for now, but it's days are numbered.
+And we're going to rip this out.
+So AddContactForm.
+I'll start with this one.
+Go into screens, AddContactScreen, and AddContactForm.
+Put that one in here, as well.
+And in fact, why don't I just copy this from an already completed version
+of that.
+There we go.
+So, all I did there was import the AddContactForm,
+and then move some behavior here, which we'll explain this line in a moment.
+So I'll comment that out.
+But essentially just render the form and pass some sort of submit function
+through.
+I'm going to do the same thing now with the list screen.
+I'm going to go over here, just copy that in.
+
+So ContactListScreen is essentially just all of the logic
+that we had inside of the app component previously of toggleContacts.
+Some state about whether we're showing the contacts.
+We have a SectionListContacts component that is rendered down here.
+We just don't maintain the showForm state anymore.
+Instead, when you press showForm, we navigate to the AddContact route.
+
+So let's go back to the app.
+We have a good amount of stuff we can delete here.
+This all now lives outside of the app component.
+It's inside of the ContactListScreen.
+So we can remove that.
+And we can remove various other things. toggleContacts is now
+in the other component.
+sort is unused.
+showForm is not used here.
+Instead, we need to render something here.
+Rather, return something here.
+
+And that needs to be our Switch Navigator.
+So let's add a createSwitchNavigator from react-navigation.
+And it was-- let's check the name of that.
+It was AddContact, was the name of our route.
+And it was AddContactScreen.
+
+And then there was--
+what was that referred to as here?
+
+ContactList will be ContactListScreen.
+
+And we want the app to start off as being on the Contact List screen,
+and not on the Add Contact screen.
+So I'm just going to have this other parameter here, initialRouteName,
+and say ContactList.
+Now, if we, just like that, scroll right down, and render AppNavigator.
+
+We have a missing import.
+Of course, we need to import AddContactScreen
+from screens, AddContactScreen.
+And we need to import ContactListScreen from ContactListScreen.
+
+OK.
+That's good.
+So let's pop right in here.
+Screen, props-- I'm just going to render an empty view here for now,
+so we at least have something showing up.
+And the problem here is that currently, the way that it worked
+is, when it all lived inside one component,
+it was very clear where our contacts state lived.
+It was simply a state inside of the app, which we passed in as a prop
+to our Contact List, and that we updated by calling addContact on the app, which
+then updated the state.
+It's a little bit different when we have something
+like this, where we're returning an AppNavigator component, which
+in turn then renders our Contact List screen.
+So we need some way to say, pass this prop through
+to the screens inside of the application.
+And for that, there's something called screen props.
+So, if you specify screen props, you're able to pass in an object
+where that object is passed into every screen component in the navigator.
+So it's a little caveat there.
+It's very good for prototyping, and for examples like this.
+However, as you will learn in the performance lecture later on,
+there are better ways to do this.
+And you'll talk a little bit about Redux later on.
+And so this is just generally a potentially useful escape
+hatch that you can use in prototypes and such.
+But I wouldn't count on it in a large application.
+It's perfectly fine here, though.
+So the way this works is that we pass in some screen props
+to the top level navigator.
+And then inside of our screen components,
+we say this.props.screenProps dot whatever
+the thing is that we want to access.
+So here what we want to access is, we want contacts, which is here.
+
+All right.
+So let's go back to Contact List.
+So as you can see, we're passing in the SectionListContacts based off
+of this.props.screenProps.contacts.
+So unless there's a typo that should work.
+And there we go.
+And we can navigate to this screen.
+However, we currently don't have any way of actually updating the contact.
+Because previously, we were able to call directly into addContact from the form,
+but we're not passing in this prop anymore to the addContact form.
+And so we need to use screenProps again to pass this function through.
+So we can say, addContact is this.addContact.
+And let's format that.
+And on AddContactScreen, if I just uncomment that line,
+now that should do what we need.
+So, let's say, Eric V., 1, 2, 3, 4, 5.
+And I hit Submit.
+All right.
+So that now updates here.
+So certainly there are some costs here, in terms
+of a little bit of added complexity.
+But we have added some structure that now at least
+we can continue to grow in our application.
+We were quite limited in what we were able to do in the Contact List before,
+when it all lived inside of this one component.
+Now we have a clear way to add on new screens and jump between those screens
+without having to depend on adding some new state every time we
+want to add another screen.
+
+All right.
+Let's move on then to the next topic.
+Next topic is Stack Navigator.
+So the Switch Navigator is very primitive in what it can accomplish,
+switch from one screen to another.
+But typically potentially the most common navigation in mobile apps,
+depending on the app, is to tap on some button,
+and then have it push some screen on top.
+Or, on Android, it kind of fades in from the bottom.
+And then there's some Back button available to you,
+where you press it in the header and it goes back to the other screen.
+And that kind of flow is extremely common.
+And of course, we have to provide a solution
+for that with React Navigation.
+And the way that that works is with something called Stack Navigator.
+So it provides the platform-specific layout animations and gestures
+that you'd expect from this kind of navigation pattern.
+So we get the screen sliding in from right to left.
+You can dismiss by swiping.
+There are modals that go from bottom to top,
+and you can swipe down, and that sort of thing.
+You can push items from the stack, you can pop from the stack,
+replace the current item, et cetera.
+And so it's called Stack, of course, because of its relationship
+to the stack data structure.
+So if you are curious about conceptually how this data manipulation works,
+and you're not familiar with the stack data structure yet,
+that's just worth checking out so you get some good mental model for it.
+So the Stack Navigator looks something like this.
+You press Go to Two, in this case.
+The two-screen slides on.
+You say Go to Three, third screen slides on.
+If you press Back, it goes back.
+Swipes, or rather animates, away.
+And similar for that one.
+So let's push these back on.
+And let's see what it looks like actually behind the scenes right now.
+Because we knew that, with the Switch Navigator,
+when we switch from one screen to another,
+we unmount the screen that we switched away from.
+It is now no longer rendered.
+It is not in memory.
+It does not exist as far as our application is concerned.
+But in a Stack Navigator, we keep all of these previous routes,
+and previous screens, mounted and in memory.
+Because we need to have them there.
+We need to know when we're three screens deep into the app,
+we still need to maintain the scroll position
+that we had, for example, in the feed on the first screen.
+And we need to be able to show the screen immediately
+when we start swiping back from one screen to the other screen.
+And so these all need to stay there, and they need to maintain their state.
+There can be exceptions that you can customize,
+but this is the generic expected behavior.
+
+Creating a Stack Navigator is very similar to Switch.
+We simply swap out the word Switch for Stack.
+And we have something working.
+To go from one screen to another, similarly, we
+use the Navigate function.
+
+There is a small difference here in that Stack actually
+supports a tracking history.
+So when you call goBack, it will pop the topmost screen
+from the stack and transition back to the screen before it.
+So let's look at how to implement this inside of our example.
+We're going to go back to the app, and once again comment all this out.
+And I'm just going to add another example here.
+This one, of course, will be called Stack touch examples, 1-stack.js.
+
+And it's very similar to our Switch, so I'm just
+going to paste in our example to start with.
+And switch out the word Switch for Stack.
+And let's see what we get.
+So now when I press Go to Screen Two, it transitions to the second screen.
+When I swipe back like this, we get this kind of gesture.
+Or if I press that button, it goes back.
+Another way to do it is by just pressing Go to Screen One.
+And it just knows that we already have screen one here in our route stack.
+And so in order to get to it, we have to pop the top screen and transition back.
+
+So another thing that is very necessary in Stack Navigators
+is the ability to customize the UI that surrounds the Stack Navigator.
+For example, as you can see here, there's this header.
+It has a title.
+The title changes depending on the screen that you're on.
+You may want to style it in some certain way to say that the color for the title
+is a certain color, the bar is a certain color, et cetera.
+And so to do that, we have this static property
+that we can use on screen components called Navigation Options.
+Every navigator has a set of navigation options
+that screens can use to configure it.
+And you can see the full list for the Stack Navigator
+in the documentation linked here.
+For now we're just going to look at a few of them.
+We're going to start with Header Title, and dig into some styling
+there, as well.
+So let's go up to ScreenComponentOne, and let's
+set a navigationOptions title.
+We'll call this one, I think I said "First screen" on the example before.
+Let's give it a header title.
+And for ScreenComponentTwo, I'll just say "Screen the second."
+OK.
+So now we see the title, First screen, and as we
+go to screen two, Screen the second.
+And it's a small device, so it has gone ahead and truncated and ellipsized
+the title for us in that case.
+And if you go back, it does that.
+Similarly, the Back button in this case says
+Back, and not the title of the previous screen,
+because there's no space to render the full title.
+So it takes care of a lot of this nuanced behavior for you,
+that users really expect from navigation on iOS and on Android.
+Let's style it a bit.
+Let's say the tint color here, we'll just make it match the border.
+So if I set the tint color, what that impacts is the button color.
+So if I had a Back button on the screen, it would become teal.
+It also impacts the title and any other thing
+that is sort of an element that's rendered on top of the header.
+We could set a header background color through headerStyle.
+So if I wanted to make this--
+well, it's already quite white.
+Let's just say it needs to be a bit more gray for some reason.
+Let's do that.
+OK.
+So that's a bit gray.
+It's kind of boring.
+We can make it green.
+It's not so legible, but you get the idea.
+
+So let's get rid of that.
+All right.
+Let's continue on then.
+Pop right back in.
+Another thing that's really important with Stack Navigators
+is the ability to pass parameters between routes.
+Typically when you render a component in React, you would pass in some data
+through props.
+But as we've seen already with rendering the navigator at the root of the app,
+we have to use some other kind of construct,
+because the navigator itself handles rendering the components for us.
+And so, because we don't have the capacity here
+to even say pass in some screen props to this next screen,
+there is this concept of passing parameters to different routes.
+This is very similar, if you've used the web before,
+to the idea of query parameters on a route.
+So you can add a question mark to the end of a URL,
+and say this value is this, and this is that.
+It's the same sort of idea.
+And so there are several approaches for how
+you can manage passing parameters in.
+
+The first one is to pass in a second argument
+to the Navigate function, which is an object where
+the key is the name of the param, and the value is the value of the param.
+You can also update the params for a given route
+by calling setParams, and the same sort of syntax for that.
+And when you actually want to read the param,
+you call getParam, and pass in the name of it.
+And optionally, you can pass in a default value.
+So if it isn't provided, you fall back to some other value.
+So we'll take a look at what this looks like here.
+There we go.
+And I'm going to just make a third screen, where the third screen is going
+to just take a random number, and we're going
+to show the random number in our title, and inside of the screen.
+So we can demonstrate how you can use the param
+in various places in your app.
+So this one, I'm just going to mark this as TODO, because we haven't quite
+seen how to do that yet.
+I'll make a different color here, let's say purple.
+And we will just leave this, let's say, let's just make this one "Go back."
+So goBack.
+
+And let's register the route.
+So let's say Three.
+
+OK.
+So we have ScreenComponentThree.
+It has a title Todo, and it doesn't do too much inside of it.
+Now we're going to look at the ScreenComponentTwo,
+and we're going to change it to pass in, let's say, number is randomNumber.
+
+Of course, there is no function called randomNumber.
+Let's just quickly define that.
+
+That can just be--
+
+so that's a random number between 1 and 10.
+
+So now we've made it so on--
+let's change this one actually.
+So the second screen goes to screen three instead of one.
+And we navigate to the third screen, and we pass in a param called Number.
+So when we want to actually use this param now,
+we will add a Text element here, and say this.props.navigation.getParam, number.
+
+And let's make it stand out a bit, and give it a big font size.
+And lastly, we know we have to import this component.
+
+Right.
+So we have the number 9 there.
+If we go back, now we've unmounted that component,
+and so if we go back again, as well-- oh, it happened to be 9
+this time, also.
+There we go.
+2.
+And so we're passing in random numbers every time we go to that screen.
+We can also change this, so we can add another button that says setParams.
+And we'll say we're setting the number to another random number.
+This one we'll say "New number."
+
+And if you go to screen two and three, you see a 3.
+Now we can update that param while we're here.
+This isn't particularly useful for changing the param
+when we're using it just in the render function of the component.
+But it does get very useful, because it's
+a very important way for how you can pass
+data between the header of your component
+and the actual screen component itself.
+So there's an alternative way to define navigation options, which
+is as a function.
+And the function takes in some object with various properties.
+The one that's the most important is the navigation object.
+So this is the same as the navigation object
+that is available inside of the component itself,
+when we say this.props.navigation.
+And so we know that, since we have that, we can say navigation getParam,
+and get the parameter that's passed in, and use it inside of our title.
+So I'm going to change this.
+So the function has to return an object still.
+Before it was an object, now it's a function that returns an object.
+And React Navigation just knows.
+It says, if this is a function, let's call it and pass these values into it,
+and then take the return value, and that will be
+the navigation options for this route.
+So I'm just going to say number is navigation.getParam number.
+And go to screen three.
+So you can see that now the number is in the header.
+You can imagine this is useful in many cases.
+For example, you navigate to a profile screen,
+and you might want to have the name of the user whose profile you're
+visiting up in the header.
+There are really numerous use cases for why you might want to apply this.
+All right.
+So I think we're in a pretty good spot there with params.
+Why don't we go ahead and add a button to the header, as well.
+So to do this, we can look back here.
+See that there's these two navigation options called
+headerLeft and headerRight.
+So let's go up there.
+And I don't know.
+We can add it to screen two.
+
+Let's add-- so we have a title.
+Then let's say headerRight, let's just give it a button.
+
+So on the second screen now, we have a button
+on the top right that says Press Me.
+And when we press it, it just says "pressed."
+But we also have access the navigation object.
+So if we want to, we could make this say navigation.navigate RouteNameThree.
+And let's pass in a not so random number.
+Let's pass in 11, which is impossible to get otherwise.
+Right?
+And now we have 11 there.
+And so you can use this to essentially do anything
+you can do inside of your Render function.
+It's just that the header is a separate component
+from the contents that are rendered inside of the actual screen itself.
+And so to be able to manipulate those contents,
+you need to use the navigation options to specify what the behavior should be.
+And also to add components to the various positions in the header,
+such as the right or left, which I didn't include here.
+By default it's the Back button.
+And header title we've specified as a string,
+but that can also be a component.
+If we wanted to use an image component as the title,
+we could just swap out the string there for an image.
+We could swap it out for a button, as well.
+
+It doesn't render so pretty there.
+It's not measuring it properly, but it's working out well, right?
+You can render it in that case.
+So you have to be a little bit careful in those situations, but there you go.
+Great.
+Let's see where we are now.
+All right.
+Let's take a few minute break, and we'll continue after the break
+with integrating the Stack Navigator into the Contact List example.
+And then with some other pretty fun stuff around
+tabs, and composing navigators together.
+We'll end up with--
+hopefully we'll get to the point where we
+have a switch with a stack inside of it, or rather
+a switch with a tab inside of it with stacks inside of the tab.
+So some exciting stuff.
+Thanks.
+ERIC: All right, welcome back.
+And thank you, Brent, for introducing everybody to React Navigation,
+covering the Switch Navigator, and teaching
+a little bit about the Stack Navigator.
+And now I'd like to go dive into the code, straight into the examples,
+and we're going to take a look at how we can
+put the Stack Navigator to good use.
+And hopefully our example app is going to start to feel a little bit more
+like an app as we continue hacking on it.
+So here's where we we're left with.
+We've got our App.js, and we've added a couple of screens.
+We've got our App Navigator, which is a Switch Navigator.
+And as you can see, we can switch to Add Contact,
+and it's just instantly switches over to the form.
+But what we'd really like is we'd like more
+of a nice, more traditional transition, where it pushes in from the side.
+So we can use the Stack Navigator for that.
+And the API for the Stack Navigator, as you've already seen,
+is really similar to the Switch Navigator.
+So we can actually start by just swapping out
+the creators for these navigators.
+So here where we go into, we're calling createSwitchNavigator,
+it's our higher order component that sets up our top level
+navigator that we're going to render inside of our app out right here.
+But instead of calling that, we're going to just call createStackNavigator
+instead.
+So I'm actually just going to kind of rename it right here.
+And let's see what it looks like inside of our app.
+You can see the header appears.
+And when we tap Add Contact, it pushes a screen.
+And it pushes this form screen that we've got.
+Now, it still is not looking super great.
+We're going to want to have some things in the header here,
+and we're also going to want to add--
+the Add Contact button should actually be in the header,
+because that feels a little bit nicer.
+So first, let's go ahead and jump into our Contact List
+screen and our Add Contact screen, and set up the header.
+So our Contact List screen right here, it
+doesn't have any navigation options set on it.
+But we can go ahead and set up some static navigation options.
+And we're going to go ahead and just put on a normal header, which
+is via headerTitle of Contacts.
+And we're going to want to do the same thing in our Add Contact screen.
+We're going to want to have roughly the same sort of navigation options
+with Add Contact.
+Let's take a look.
+Here it says Contacts.
+Nice-- Add Contact.
+And the Back button is just working out of the box.
+All right.
+Now let's move this Add Contact button up into the header.
+So that would be in the Contact List screen,
+because this is where we're going to want it.
+So first, of course, we just put a headerRight.
+
+And this is one of these special navigation options
+that you can put inside of a stack.
+And you can see this link for more details about what else
+you can have there.
+But our headerRight, in this case, let's just
+put a button, which we're going to want to import from React Native.
+Or we already are, actually.
+
+So Add.
+And let's just have an empty onPress handler right now.
+
+There we go.
+So it doesn't do anything.
+And remember, we're going to want to call navigation.navigate
+to the AddContact route.
+It's the route name that we have defined here in the Stack Navigator.
+Now, over here, we don't have access to the navigation prop.
+And that's because this is a static property
+that we're putting on our component.
+So we can upgrade that by turning this into a dynamic navigation options,
+which is to say that it's a function.
+And that function is given an object of things, right?
+And we can access things.navigation, which
+is what we're doing here by destructuring it.
+And what we can do is, we can put parentheses around here
+to signify that this is a function that's returning
+this object of navigation options.
+So now hopefully, our button should have access to navigation.navigate,
+and indeed it does.
+We can now navigate to our form.
+Let's go and delete some of these old buttons that we don't really
+need from our Contact List screen.
+
+OK.
+Nice.
+So now let's make it so that when you click on a contact,
+you can actually go into a new Contact Details screen.
+That would be really nice.
+
+I'm going to review that in just a second.
+So let's go and add a brand new screen here
+in our Stack Navigator called ContactDetails.
+
+And we're going to want to import this screen.
+We haven't made it yet, but we'll import it from the screens place,
+from the screens folder.
+
+OK.
+So the ContactDetailsScreen, I'm just going
+to jump over here and create that new screen right here.
+
+And I'm going to want to do a little bit of copy/paste
+just so that we can kind of get up and running a little faster here.
+But this is nothing that you haven't seen before.
+All it's going to be is a empty screen.
+
+OK.
+Let's take a look.
+Well, we actually aren't linking to our Contact Details screen,
+even though we've registered the route in the Navigator.
+So let's go ahead and do that.
+And to do that, you can see here is the Row component
+is where we're actually rendering the contact row.
+But here we don't have access to this.props.navigation.
+But we do have it up here in the ContactListScreen, where we're
+rendering the SectionListContacts.
+So here we're providing all of the contacts
+that we are getting in through our screen props.
+And what we can do here is we can add a new handler
+for when a contact gets pressed.
+So let's say, onSelectContact, we're going to want to do something.
+And probably going to want to do something with this.props.navigation.
+But first we need to implement this onSelectContact prop inside
+of SectionListContacts.
+So I'm just going to open that on up.
+The Section List is using renderItem to render each row.
+And this row renderer here is being declared
+outside of our functional component, SectionListContacts.
+So we're going to want to access the props that are
+being passed into SectionListContacts.
+So in this case what we can do is, we're actually going to take this renderItem,
+and we're going to bring it inside of our component.
+So this way we can define it based on the props.
+So what we're going to want to do is, we're
+going to want to pass our new prop--
+waht was it called--
+onSelectContact to the row.
+So props.onSelectContact.
+
+OK.
+So we're rendering the row with the contact item.
+We've provided the handler.
+Now the row itself isn't currently touchable.
+This isn't a button or anything.
+And we can make it touchable by replacing
+this view with a touchable component.
+So I'm just going to use Toucable Opacity.
+It's kind of the easiest to use.
+
+And this basically means that you can press this thing,
+even though it's still basically a view.
+
+So when the press happens, what we're going to want to do
+is, we're going to want to call this.props.onSelectContact.
+
+But we need to specify which contact is being rendered,
+or which is being selected and pressed.
+And we have that coming in through props.
+We have a lot of information coming in through props
+about our current contact.
+So let's just pass that in over here, and we'll see how we can use that.
+OK.
+So finally here, we expect that we're going to have a contact coming in
+through here.
+And now we have the opportunity to access this.props.navigation.navigate,
+so we can navigate to our Contact Details screen.
+I'm just going to copy over the call to navigate from there.
+Contact Details.
+Let's see what happens.
+We can tap it.
+Oops.
+We haven't defined the prop all the way down.
+And I think that's probably inside of Row.
+And so we're referring to this.props, and there is no this.props.
+Because it's a stateless functional component,
+props is just coming in through the function.
+OK.
+Now we're not getting any behavior at all.
+And that's because we haven't actually really gotten to this point.
+Let's throw in a debugger right here.
+This is a quick trick that you can use to figure out
+where you arrive in your code.
+
+When we tap our contact, we're not reaching our debugger.
+Otherwise, I expect we would have gotten here in Chrome.
+And Chrome has jumped over here.
+So what we can do is, we can put a debugger earlier on.
+For example, our SectionListContacts.
+We're passing through the props.onSelectContact.
+Here we've got the Touchable Opacity.
+We're passing through props.onSelectContact.
+First, I'll put a debugger statement here
+to make sure that we are in fact reaching our button.
+Tap here.
+Aha.
+OK.
+And we can see that props is in fact our contact.
+So let's jump up to the direct parent of Row.
+
+And I'm just going to wrap a little shim here, throw the debugger in,
+and hopefully we'll be able to observe, at this point,
+whether or not we're reaching here.
+So we're still running the old code, because we were stopped in the Row.
+We didn't reach onSelectContact of our list.
+So here, SectionListContacts, when we're rendering it,
+I definitely do expect it to be reaching the debugger of our Contacts List
+screen.
+onSelectContact, SectionListContacts, I'm
+going to double check that we're getting it from the right place here.
+
+OK.
+Well this does look like the right thing.
+So I've got my debugger statement here.
+And I'm hoping to reach this top level breakpoint.
+
+OK.
+So here we're reaching it.
+And now we can see that we have made it here.
+We've got this.props.navigation.
+And we're calling dot navigate with Contact Details.
+Let's double check to make sure that we've registered this correctly.
+And I can see now that I haven't saved my App file.
+That seems to have been the issue that was preventing us from navigating.
+So now we tap it, we reach our breakpoint, I hit Play,
+and it's gone and navigated to our new screen.
+So this is a little bit of a live debugging adventure, when we figure out
+how to avoid these things.
+Step one is to save your files.
+OK.
+So we're navigating getting to our Contact screen.
+But unfortunately, the header is not looking very good,
+and we actually aren't even passing any information about the contact
+that we've navigated to.
+So the way we can do that is by passing params.
+So when we pass params here, we can pass an arbitrary object
+of various pieces of information, like contact dot phone number.
+
+And we can also provide the name.
+
+And then inside of our Contact Details screen,
+we can get the param by calling this.props.navigation.getParam.
+
+And we're going to want to get the number here, so phone.
+Or do I call it number?
+Let's call it phone.
+
+OK.
+So it's displaying the number of our contact.
+And the other thing is, up in the header we want to be able to get the param,
+as well.
+That's the header of our Contact List screen.
+But we can also share the header of our Details
+screen that we haven't really configured.
+So we're going to create a static navigation options,
+and we're going to need access to the navigation prop.
+So this is going to be a dynamic navigation options,
+where we get access to navigation.
+And we're going to want to return an object of options, including
+headerRight.
+Or, sorry, in this case, it's just the headerTitle,
+which we're going to want to grab from navigation.getParam name.
+
+So we tap here, and we're able to see our contact.
+Now we also have this button that says "Go to random contact."
+And the idea here is, you might want to be able to link to other contacts,
+maybe to see the contact's sister or parents.
+So in this case, what we can do is we can implement our goToRandom method.
+It should be pretty straightforward.
+Now, goToRandom, the first thing we're going to need to do
+is actually get access to a random contact.
+Now, we have our contacts coming in through
+this.props.screenProps.contacts.
+
+So I'm going to go ahead and grab a little bit of logic
+that we're going to use to find a random contact.
+You don't have to look at this too closely, because it's kind of ugly
+code, actually.
+So we're just going to grab the contacts from this.props.screenProps.contacts.
+
+And the phone is going to be coming from the param
+as you can see what we do up here.
+I'm just going to copy that right here.
+Except here we're accessing navigation.
+OK.
+So this.props.navigation.getParam for the phone number.
+And then what we can do here is, we're going to have access to random contact.
+I'm just going to put a debugger statement here,
+just so that we can see what happens when we get to this point.
+Hit "Go to random contact," and hopefully we
+get stopped in the debugger.
+
+No contacts.
+AUDIENCE: [INAUDIBLE]
+ERIC: That's right.
+So it's a little bit confusing, because we're actually stalling in this
+While loop right now.
+That's why I was saying this code is kind of bad.
+So we have this Contacts file, which generates our content, in this case,
+we're only getting one contact.
+So when we try to get another random one, it's not going so smoothly.
+OK.
+Now we've got multiple contacts.
+And when we tap "Go to random contact," we get here to our debugger.
+And let's take a look at randomContact.
+It's probably an object with name and phone number.
+Great.
+So let's go ahead and navigate to another Contact
+screen on Contact Details.
+So this.props.navigation.navigate to ContactDetails.
+And we're going to want to pass the same information in.
+So we have the name, which is the randomContact.name.
+And we're also going to have the phone number.
+
+OK.
+So let's see what happens here.
+We're going to tap on our first contact.
+We're going to tap "Go to random contact."
+Oh, that's strange.
+I expected to navigate to a new screen.
+Well, it turns out that we don't actually
+need to navigate to a new screen, because we're already
+on Contact Details.
+So we called navigate to Contact Details with setting params,
+we provided these additional params.
+But what we're actually doing is, we're just
+setting the params on the current route, which
+is not exactly what we were going for.
+So instead, we can use this other prop that's
+on the navigation prop, called Push.
+Now, Push is always going to push a new screen,
+and you can also provide params to Push.
+So Navigate is going to navigate to your current route
+as identified by your route name.
+All right.
+So let's go ahead and change this Navigate to Push.
+
+OK.
+So we tap on one contact.
+We see it.
+We go to another contact.
+And we go to all of our random contacts.
+This is great.
+Now, the Push is only available inside of a Stack Navigator.
+And there are a few other things that are specific to a Stack Navigator.
+Don't mind me while I rearrange this screen.
+
+So there's other things like Push, which adds a new screen.
+Pop takes you to the previous screen inside of the stack.
+PopToTop takes you to the top screen inside the stack.
+And Replace is like what we were just doing by accident with the Navigate
+functionality.
+Now, let's talk about composing navigators.
+This is a pretty powerful technique that allows
+you to put one whole navigator visually inside of another.
+Now, you'll get a better intuition for this
+as we move forward, about when you want to be
+putting a navigator inside of another.
+But generally, if you see a header on the screen,
+but you also see a bar on the screen at the same time,
+then that's a case when one of these navigators
+is actually inside of the other.
+And you'll notice that by switching tabs,
+you'll often move away from the whole header.
+Or, it could be composed the other direction.
+Now, the way that we do this is, we actually
+register a navigator as the screen component of another navigator.
+And you should always be careful to make sure that your app only
+has one top-level navigator.
+And the really great thing about composing navigators
+is that you can navigate pretty effortlessly between all of them.
+So if you just use the Navigate functionality,
+and you refer to a route name that's inside of another navigator,
+you'll automatically get over there.
+And goBack also works between different navigators,
+and that's really essential for supporting the Android Back
+button so that the user can always get back,
+even if they're inside of a deeper navigator in the app.
+Cool.
+So this is what it looks like to compose a navigator.
+You can see that, in this case, we're creating a stack navigator as per usual
+with two screen components.
+But then down here when we're creating a Switch Navigator--
+it's our top-level navigator as you can see,
+because it's an App Navigator-- we're registering the Stack Navigator
+inside of it as the main route.
+
+All right.
+So like I said earlier, just one gotcha you should really be careful about
+is to never render a navigator inside of a screen like this.
+You only ever want to render a navigator by itself at the top level.
+And you always want to make sure that the navigators are linked together
+inside the higher order components like you see here.
+
+Cool.
+So let's go ahead and put our Stack Navigator that we just
+made inside of a new navigator.
+All right.
+So we can create a brand new navigator here.
+Instead of this App Navigator, let's call it the Main Navigator.
+
+And that's a Stack Navigator.
+Now let's create a new App Navigator.
+
+And the reason we're going to create these navigators inside of each other
+is because sometimes, you might not even want to see the stack at all.
+Here we've got a Stack Navigator, but how about let's
+create an example where you want to log in to the app
+before you even see the main stack.
+So in that case, you're going to be switched away from it,
+and you're only going to see a login screen up
+until you're ready to see the actual stack.
+So that's why we're using a switch on the outside of our Stack Navigator.
+Let's go ahead and register the first route, which would be the Main route.
+That's just a name.
+We can call it whatever we want, but I'm going
+to call it Main, because it's our Main Navigator once you're logged in.
+And I'm also going to create Login, which
+is going to be a login screen that we haven't created yet.
+
+I'm going to set the initial route name to be the Login
+screen, because we're going to want you to be logged out at the beginning.
+OK.
+So I'm going to get the Switch Navigator from React Navigation.
+And I'm going to get the Screen Navigator
+from not yet implemented area.
+
+OK.
+So let's go ahead and create our screen.
+
+And I'm going to copy and paste a super simple Login screen.
+
+And our Login screen is going to have a couple of styles.
+
+OK.
+
+So let's see, what does our app look like.
+I think I might not have saved the App file.
+OK.
+So this is the Login screen.
+This warning here is because we're currently debugging,
+and we're kind of done with that right now.
+OK.
+So now we've got our Login screen.
+We have that, because the App Navigator that we're
+rendering down here inside of the app, it is just a Switch Navigator.
+And the initial route is Login.
+So all we see is the Login screen.
+When we press to log in, well, we haven't actually
+implemented the Login functionality.
+So let's pretend that we have a bunch of Login logic right here.
+And instead of actually doing that, we're
+just going to jump straight to the navigation part.
+So let's see this.props.navigation.
+
+And we're going to navigate to the Main screen when you tap Log in.
+OK.
+And it switches us over to our stack that we've already implemented.
+Now, what's great about the Navigate function,
+and what's great about composing navigators,
+is that you can actually refer to several different route names here.
+So here, of course, we're referring to the route name for the other navigator.
+So it's just telling us to switch to this navigator, whatever state that
+navigator currently is.
+The initial route named for that navigator is the ContactList,
+so that's why we see that.
+But we could also explicitly navigate to the Contact List.
+Let's try that.
+Press to Log in, you jump to the Contact List.
+OK.
+What if you want to explicitly navigate to something else?
+Like let's explicitly navigate to Add Contact.
+Just as an example.
+It wouldn't really make sense in our app.
+But maybe Add Contact is the first thing that you want somebody
+to do once they log in.
+OK?
+And it jumps you deep inside the stack, but it still
+is normal stack navigation.
+You still go back inside of the stack.
+So here, that's a very simple example of navigator composition.
+
+So now, we've seen Switch Navigator, which allows
+us to switch between several screens.
+But Tab Navigator is a little bit more special,
+because it actually has a tab bar that's useful for switching
+between the different screens.
+And also, it'll keep the previous screens that had been available,
+it'll keep their state around.
+So it doesn't actually unmount the components that go away.
+And that's handy, because when you want to switch back to the screen
+it's really fast, and the state is still there.
+If you had scrolled down inside of a certain tab,
+and you switched tabs and switched back, it's still going to be there.
+Now, there are several Tab Navigators that now ship with React Navigation,
+including two of these Material Themes Navigators,
+and a simple Tab Navigator, which is Create Bottom Tab Navigator.
+And as per the other navigators, the Navigate function
+and the goBack function still work.
+So Navigate is how you switch to different tabs,
+and goBack actually does have behavior on Tab Navigator.
+It takes you back to the first tab.
+And this is relevant usually on the Android Back button,
+because you want to be able to jump somebody back to the first tab.
+But you don't want this in every case exactly.
+So the Tab Navigator's goBack behavior can be configured.
+It doesn't necessarily have to take you back to the first tab.
+So with Tab Navigators you can switch between two tabs, but keep in mind
+that the previous tab is still there.
+It's just not visible.
+All right.
+And the way that you create a Tab Navigator is much like the way
+that you create any other navigator.
+You're going to register a couple of routes by their route name,
+and you're going to provide a screen component.
+OK.
+Maybe we should just go jump into our application
+now and implement some of these tabs.
+
+OK.
+So this is where we are right now.
+Can press to log in.
+OK.
+The other thing that I'm going to do that I missed before, actually
+with Stack Navigation, we're going to go ahead and theme it.
+We're just going to give it a little bit of a color.
+We've got these navigation options that, in this case,
+we're configuring the header.
+So this is available inside of a Stack Navigator.
+So I'm going to go here to our stack.
+In addition to specifying the initial route name,
+I'm going to specify some navigation options that
+are going to identify the tint color.
+Ooh.
+OK.
+This button we had rendered by hand, which
+is why it's not actually lining up.
+So let's go ahead and fix that really quickly.
+
+That would be on the Contact List screen.
+
+We can just provide a color right here.
+
+OK.
+The other thing is, of course, our Login screen was deep linking here.
+Let's just make it go to the Main Navigator.
+
+OK.
+So now let's actually go and jump into adding our Tab Navigator.
+
+So I'm going to go into our app.
+And instead of the Main Navigator, let's just
+go ahead and call this the Contacts Tab.
+Because we're going to want to make it so that this whole stack of navigation
+happens inside of a particular tab.
+And you'll notice that it's a pretty common pattern, especially on iOS apps.
+So let's call this the Contacts Tab.
+
+And we're going to want to create a new navigator for the--
+what did we call it-- the Main Navigator.
+So that can be our tabs.
+So the Main Navigator is createTabNavigator.
+
+And we're going to want to set up a couple of routes here,
+including, of course, the Contacts Tab.
+And let's create a new tab.
+And that's going to be under Contacts.
+Let's create a new tab for a different area of your application
+that really has nothing to do with the contacts.
+I think a pretty simple example that's somewhat common
+is like a Settings Tab, where you can go and change
+some other configuration about the app.
+
+Settings screen.
+So Settings screen, we're going to go import from here.
+Which we haven't quite created it yet, but we're going
+to go ahead and do that right now.
+
+And the Settings screen, I'm going to do a little bit of copy/paste once again.
+
+And all we're going to be doing is just saying, This is a Settings screen.
+It doesn't even need a navigation link or anything right now,
+because the tabs will be visible.
+So I haven't saved the app.
+Oh.
+I need to import createTabNavigator from React Navigation.
+
+OK.
+We're going to press to log in, switching
+to our Main Navigator, which is tabs.
+OK.
+It seems that in the copied/pasted content that I had, I had a slight bug.
+I'm going to go ahead and just fix that by changing
+the scroll view to a normal view.
+It's going to be little simpler.
+But now you can see that we have tabs at the bottom of the screen.
+And the first tab that's selected is the Contacts Tab.
+The second tab doesn't even have a header or anything inside of it.
+And that's because we've switched entirely away from the other navigator,
+and the header was provided by the Stack Navigator.
+So these tabs are looking kind of ugly.
+Let's go ahead and theme them a little bit.
+
+So one trick that we have for theming tabs
+is by setting these tab bar options.
+We can set the active tint color, which is the color of the active tab.
+
+So let's jump into there.
+
+Here where we're creating our Tab Navigator,
+we can set Tab Bar Options and Active Tab Color.
+I'm going to copy that from right here so that we
+have a nice cohesive theme for our app.
+
+Press to log in.
+Oops.
+
+My guess is I had a nice typo here.
+So let me go ahead and find my--
+I see.
+I said-- it's Active Tint Color and not Active Tab Color.
+OK.
+So now our tint color matches.
+Now generally, when we have tabs at the bottom on an iOS app,
+you really want to have icons, because this just looks bizarre if you don't.
+So let's introduce a new concept of adding vector icons to our application.
+Now this is how you can specify the Tab Bar Icon.
+But first we're going to need to install a new library.
+So we're going to go to do npm install dash save, react-native-vector-icons.
+In my case, I'm going to use Yarn.
+I'm going to go right here and say, yarn add react-native-vector-icons.
+
+All right.
+While that's installing, I'm going to go start using it.
+As you can see, you can import it like this,
+and render it with a couple of conventions like that.
+
+So I'm going to grab my snippet here.
+So here you can see that we're manually applying
+navigation options onto the main stack.
+Or rather, instead of the main stack, in this case
+we've called it the Contacts Tab.
+So we're going to set the options for the Contacts Tab.
+And here we are using a pretty fun trick where we've got a string template.
+And the Tab Bar Icon is a pretty special navigation
+option that is defined as a function.
+And it's told both what the tint color is,
+and whether or not the tab is currently focused.
+And the reason we need to know whether or not the tab is focused
+is because, generally, we're going to render a different style of icon.
+
+So if it's focused, we're going to just render iOS Contacts.
+And if it's not focused, then we're going to render iOS Contacts Outline.
+So that's what this trick is doing inside of this--
+you know, we've got a ternary inside of our string template.
+So let's see if that works.
+I need to import Ionicons from react-native-vector-icons.
+
+OK.
+
+I'm going to press to log in, and our icon is showing up here.
+You can see that when we blur it, it switches to a different icon.
+So that's why we have that kind of crazy template string
+that we're using to select the current icon.
+So let's go ahead and do something similar for the Settings screen.
+
+But here we're going to actually put it on the screen static navigation
+options.
+So here, the static navigation options are empty.
+I'm going to want to provide a Tab Bar Icon.
+And here we're going to provide just the same one for now,
+just to make sure that it works.
+
+OK.
+That looks a little weird.
+So I think it's going to be iOS options.
+
+Ooh, options.
+Looking nice.
+
+Great.
+So here, just to do a quick recap of all the navigation features
+that we've added to the app in a relatively short period of time,
+I'm just going to open up the App file.
+And we're going to start at the bottom, where
+we're rendering our App Navigator.
+Now our App Navigator can be given access
+to screen props, which are various properties that are going
+to be available on every single screen.
+Of course, in larger applications, you might not
+want to use screen props, because it will
+it'll cause every screen to re-render when any of these screen props changes.
+So you might want to use a different technique to deal with that.
+But here you can see we're just rendering our App Navigator.
+Our App Navigator is a higher order function,
+is the result of a higher order function call.
+It's a higher order component.
+It's that we're creating a Switch Navigator.
+And that's why, at the very beginning, it covers up the whole screen,
+because it's our top-level navigator that's
+switching away from the Tab Navigator.
+And that's what we have in here.
+Inside of our Main Navigator, this is a Tab Navigator,
+where we've got two tabs.
+You've got the Contacts Tab and the Settings Tab.
+So first, we need to navigate on the outer navigator, which is the switch,
+and now we can access the inner navigators.
+In this case, the next inner navigator is allowing us
+to switch between these different tabs.
+
+Of course, inside of the main tab, inside of the Contacts Tab
+we have a whole stack.
+So that's what we're setting up up here with createStackNavigator.
+We're registering three screens inside of our stack.
+And inside of each of our screens we're setting various navigation options.
+And the default navigation options are the ones that are provided down here.
+
+The navigation options are what's setting up the button in the header
+and the title, as well as the color.
+And each of these screens are able to navigate
+between each other using the Navigate functionality in this dot props dot
+navigation.
+So I think that's a quick introduction to what it's
+like to use React Navigation inside of a fresh React Native app.
+And I hope you enjoyed it.
+And if you've got any questions, feel free to take
+a look at some of these additional resources
+that we have available for you, and get in touch with me
+and Brent on Twitter and GitHub.
+Thanks.

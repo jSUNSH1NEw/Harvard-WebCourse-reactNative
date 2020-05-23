@@ -1,0 +1,1530 @@
+[MUSIC PLAYING]
+
+JORDAN HAYASHI: Hello, and welcome for lecture 12, deploying and testing.
+So last week, we talked about performance.
+We talked about the trade-offs that you get
+when you do some performance optimization, that
+just being additional complexity.
+We talked about a couple of different ways to test against performance, one
+being the React Native perf monitors.
+So it's built into your phone, and it allows
+you to see how many frames per second you run.
+We talked about the Chrome Performance Profiler,
+which actually runs your JavaScript code within Chrome
+and shows you a flame chart of all of the components that are rendering.
+We talked about a few different common inefficiencies that we see in React.
+One would be re-rendering too often, another
+being unnecessarily changing props, which may actually
+contribute to re-rendering too often.
+And then lastly, just unnecessary logic.
+And then we ended the lecture with a demo
+of this animated API, which allows us to run
+some calculations on the native side of things rather than within JavaScript.
+So this week, we'll give a high-level talk about deploying apps.
+So the way that you deploy in Expo is by building the app locally, and then
+uploading it to the store.
+Before you do that, you have to make sure to set the correct metadata
+in your app.json file.
+And you can find out exactly what those are at this Expo documentation link
+here.
+Then you go ahead and build the app using
+this command-line utility called exp.
+It's basically just an alternative to the XDE
+because the XDE does not allow you to build the app within that GUI.
+The way to do this is to install the script.
+So you do npm install global exp, just like how
+you install a bunch of other libraries.
+You then build it by doing either build colon iOS or exp build android.
+What that does is it actually sends your JavaScript--
+your whole bundle, actually-- over to Expo's servers,
+where it does the entire build.
+And then Expo uploads that build to S3.
+The way that you get that build onto your computer is to run this [? ex ?]
+[? build ?] [? status, ?] which if you run it while it's building,
+it will let you know it's still building.
+But once it's done, it will spit out a URL for you,
+which is the link to your app in Amazon's S3 storage system.
+And then you can just cut and paste that into a browser
+and go ahead and download that file.
+Then you can upload it to the appropriate store.
+So the way that you do that depends on whether you're doing iOS or Android.
+And here's a couple of documentation links
+that talk you through that process.
+
+One great thing that you can do with Expo
+is to deploy new JavaScript by republishing.
+And that's called over-the-air update.
+So you actually upload a new bundle because the way that your app works,
+it's really just a shell that's running JavaScript code.
+And so you can go ahead and download some new JavaScript from the web
+and run that as your application.
+And so by republishing from the XDE or using that exp script,
+you can deploy a new JavaScript bundle and push it
+over the air to your clients without having them redownload
+the app from the app store itself.
+Though if you want to change any application metadata,
+like the name of it, then you're going to have to resubmit it to the store.
+So doing this over-the-air update thing is very, very powerful,
+but also slightly dangerous because you can actually upload JavaScript
+that crashes your app and doesn't work.
+And it won't actually be caught by their respective app store people
+because they never see it.
+It just goes straight to the cloud.
+And then your users go ahead and download that.
+And so how do we ensure that everything works as expected before deploying?
+So you do that by testing.
+And so when we use the word "testing," we generally
+are referring to automated testing as opposed
+to manual testing or doing quality assurance,
+whereby you just open up your app manually and play
+with all of the features that you have to make sure
+that they work appropriately.
+And so why might we want to do this?
+Well, as your application grows in size, manual testing
+gets more and more difficult. And more complexity
+means there are more points of failure.
+And so if you imagine if every single week,
+you add 10 more features, that's growing linearly every week.
+And so even though you keep adding the same number of features every week,
+the amount that you have to test every week actually
+goes up by the integral of that.
+So you have a linear growth in the number of features
+that you have to test every single week.
+So by adding a test suite, you can ensure that you catch all of your bugs
+before they get shipped.
+Because the last thing that you want to do
+is actually upload some broken code, because then all of your users
+will get a broken app.
+But how do we know which parts of our app to test?
+There's this theoretical structure called the test pyramid.
+And it determines a methodology for determining test scale or granularity.
+So at the very bottom of the pyramid is what's called a unit test.
+And this tests an individual unit of code.
+And generally, that's either a function or a class or a method.
+Then you have integration or service tests,
+which allow you to test the integration of multiple of these pieces of code
+and how they work together.
+And this is completely independent of the UI.
+Which brings us to the last one, the UI tests, or end to end.
+And this allows us to test a feature thoroughly,
+including the UI and network calls and everything.
+So it's basically from one end of your code all the way to the other,
+basically what a user would be doing themselves.
+
+So how are we going to write some unit tests?
+And so as we talked about in the last slide,
+this is testing an individual unit of code,
+like a function or a class or a method.
+One great thing about unit tests is they're very, very granular.
+So you know exactly where your code is breaking.
+And that makes it very easy to tell what you need to go fix.
+And so the very most basic unit test is just
+a function that lets you know when any behavior is unexpected.
+And so let's go ahead and write our first unit test.
+
+So I'm going to make a new directory called testing.
+And inside that, we're going to go ahead and write our first test.
+And so let's write a very simple function, maybe something like sum.
+And what sum does is it's just a function that
+takes a couple of numbers.
+Let's do function sum.
+That takes an x and a y.
+And let's just return the sum of those two numbers.
+So return x plus y.
+So pretty simple.
+I'm pretty confident that this code does what I think it does.
+Let's go ahead and write some tests anyway.
+And so how might we go about doing that?
+Well, we could write a function that does that.
+Or we could just do console.assert, which is basically saying,
+I'm going to assert that this thing is true, and if it's not true,
+then throw an error.
+And so let's just assert that sum of 1 and 1 gives us 2.
+And if it doesn't, then we can throw an error that says error summing 1 and 1.
+So we can save this and run it using Node.
+And we get no output, which is a good thing because if there's no error,
+it means our assert passed.
+And so let's see what this looks like if we had written
+assert that doesn't pass.
+And so say we asserted that 1 and 1 was actually 3.
+And let me go ahead and quiet this ESLint.
+
+So if my now assert that sum of 1 and 1 is 3, then when we run this,
+we get an assertion error.
+It says assertion error.
+Error summing 1 and 1.
+And so we just effectively wrote our very first test.
+So let's first fix this and make sure it passes and maybe write a couple
+other tests.
+We can do console.assert that summing 0 and 0 gives us 0.
+
+And maybe a last one that summing 20 and 30 gives us 50.
+
+20 and 30.
+And we can just sanity check to make sure this actually works.
+And it does.
+Great.
+So we just wrote our first simple test.
+And so one thing that you may notice is that we have our tests directly
+in the same file as our actual function.
+And so if we were to write something like add with an x and y--
+or not add, but maybe multiply, now if we want to add a test to this,
+we're going to have to add some console.asserts.
+And suddenly, this single file starts to get a little bit noisy.
+And so just like we've done in other examples,
+we might want to start breaking out things into separate files.
+And so maybe the test should not be in the same exact file as the functions.
+Maybe we should add it to its own test file.
+And so let's go ahead and do that here.
+
+So let's save that, and then create a new file called sum.test.js.
+
+And let's just move all of our asserts over to this file.
+
+And you may notice that if I try to run that sum.test.js file,
+it's going to error because sum is not actually defined.
+And so we're going to have to bring that function called sum
+from sum.js into its test file.
+
+And since we're working in Node, we'll go ahead
+and use that require statement.
+So const sum equals require ./sum.js.
+
+And then just make sure that in test.js or in sum.js,
+we need to just make sure that we set our module's exports to be sum.
+And so this is basically the same way of doing export default in ES6
+is just the way of writing it in Node, since Node doesn't yet
+support import and export syntax.
+So let's just do module.exports equals sum.
+And then now we can try to do node sum.test.js, and no errors.
+Great.
+So what happens if we change sum.js?
+Maybe we actually add a bug where rather than doing x plus y,
+we do x plus y plus y.
+Now if we run our tests, we see that we get an error summing 1 and 1.
+But it doesn't run the rest of our tests.
+It just stops at the first error.
+And so that's a little bit of a downside of the way
+that we've currently been implementing our tests.
+And so there are these things called testing frameworks
+that give you additional benefits.
+One of them is that they run all of the tests
+instead of just failing on the first error, like we just saw.
+Another great thing is it gives you pretty output because currently, we
+just get this assertion error, which is informative,
+but it doesn't really look all that great.
+It also has this cool benefit where it can automatically watch
+for any changes in our application.
+So as we change our logic, the test can run automatically
+without us having to remember to run them before even checking them
+in or sending them in a new deploy.
+And lastly, they give you these things called mock functions, which we'll
+take a look at it in a little bit.
+
+So the testing framework that we're going to be looking at this lecture
+is called Jest.
+And so if you look up Jest, what you see is
+this thing called Delightful JavaScript Testing, which is a bold claim.
+But we'll see that it is pretty great to work with.
+So this is a testing framework written by our friends at Facebook,
+so the same people who wrote React Native.
+And the way to install it is doing npm install --save-dev jest.
+And so just to do that here, we can do npm install dev jest.
+So there's a shorthand to just do npm i -d rather than npm install --save-dev.
+And so this goes ahead and installs Jest.
+And as it's installing, the way to run it is doing npx jest.
+Make sure if you want to use the npx command, it's built into NPM 5
+and above.
+And I believe can install it otherwise.
+But in NPM version 5 and above, it's automatically bundled.
+But the easier way to run it is just by adding a script to your package.json.
+And so just like in earlier examples, we added something
+to package.json, which might be, like, linting.
+We can also add something like test, where we say if we run npm run test,
+it's just going to run Jest.
+Jest.
+
+And so now we can run npx jest, and we see that it does run.
+
+It actually ran our sum.test.js file because it's
+smart enough to know that anything something.test.js, it should just run.
+Or we could run npm run test, and it will do the exact same thing.
+There's actually shorthand for this.
+We can do npm test.
+Or even shorter hand, we can do npm t.
+So all of those four commands all do the same exact thing.
+
+So the way that this works is it will automatically find and run any files
+that end in .test.js or any other regex expression that you specify.
+But for now, we're just going to be using that .test.js.
+And so now let's rewrite our sum.test.js.
+Rather than using console.assert, let's go ahead and use Jest.
+
+So the way that we do this is we just replace that console.assert with jest.
+And so the syntax for that is to define a test.
+So you just do test, and then a string of what you're actually testing here.
+And so let's do--
+let's test that sums 1 and 1.
+And now we have a test for summing 1 and 1.
+We can do the same thing for sums 0 and 0, and lastly, 20 and 30.
+
+And if we now run this, we see that it will find the tests.
+And it just skips all of them because we didn't actually
+specify what they were supposed to do.
+But it went ahead and found all three of the tests.
+And so now let's go ahead and define what those tests should actually do.
+
+So how are we going to define this test summing 1 and 1?
+So first, let me go ahead and let ESLint know that there
+are a few global functions called test.
+
+So now we can say, how are we going to test that we correctly sum 1 and 1?
+And so the way to do that is to pass a callback.
+
+And we can say we're going to expect that if we sum 1 and 1, it should be 2.
+And so the syntax for doing that in Jest is
+you can do expect something-- so the expression here is 1 and 1.toBe,
+and then whatever we expect it to be.
+So in this case, it will just be 2.
+So we can save that, and then let ESLint know that there are
+a couple other globals called expect.
+
+And then now if we run this, we can see that it finds it, and it runs here.
+We expected it to be 2.
+We got 3.
+Why is that?
+Because a while back, in order to show that we can fail a test,
+we actually changed our implementation of sum.
+And so we should probably fix that to make it correct.
+
+So great.
+Our test caught an illogical bug.
+So now let's go ahead and run npm test again,
+and we'll see that now it passes.
+And it gives us a nice little green check mark next to our sums
+1 and 1 test.
+So let's go ahead and add the rest of our tests.
+
+So here, we expect this to have a value, as well.
+So we can say expect sum 0 and 0 to be 0.
+And lastly, summing 20 and 30, we expect that if we sum 20 and 30,
+we expect that to be 50.
+And so now our tests are actually a little bit more readable.
+You can basically just read the code, and you have the tests.
+So test that it sums 1 and 1.
+How do we do that?
+Well, we expect the sum of 1 and 1 to be 2.
+So it reads almost like English.
+So let's go ahead and run all of these.
+
+And we see that all three pass here.
+And so I talked about how Jest can automatically watch all these files.
+But I haven't been doing it.
+I've been quitting my file, then rerunning npm test.
+And so let's also add a script that allows us to watch the files.
+So the way to do that is we can just do npm test,
+and then pass it a command-line flag called watch.
+And we'll go ahead and run jest watch for us.
+And now it'll run it.
+
+Let me first quit and create a separate pane.
+
+So if I do npm test and tell it to watch, then it will start watching.
+And then I can flip over into a new pane, open up sum.test.js.
+
+And if I add a new test--
+let's do 20 and 22.
+And we expect that to be 42.
+I'll save, and I'll hop over to the new frame.
+And we see that it already ran that test for us automatically.
+And so it's watching all of our files, and anytime one of them changes,
+it will run that associated test file.
+And maybe we don't want to have to run npm test --watch
+every single time we want to do that.
+We can just add another script to our package.json.
+So if I add a new script here that is test watch--
+I can name this whatever I want.
+I'm just going to call it test watch.
+We can just run jest --watch.
+And it'll do that for me.
+And so you see here that we have jest with a single flag, --watch.
+The reason that we had to do two flags above like this was this
+would let us let NPM know that it should pass the next flag to whatever script
+it ends up running.
+But now we can just run npm run test watch.
+And it does that for us.
+
+Great.
+So let's forge ahead and actually test some things
+that we've been using thus far.
+So let's go ahead and test our Redux actions.
+And so we can replace any of our tests that we
+have prior, which we don't have any yet, with expect to be and to equal.
+And so let's go ahead and write some tests for our Redux actions.
+
+So rather than writing in a dummy sum file,
+let's actually open up our Redux, our actual actions,
+and start writing tests for these actions.
+And so if you remember from prior weeks, we
+have a couple action creators that are functions that take an update
+and return a type and a payload in the case of update user.
+In the case of add contact, it takes a new contact
+and returns an object or an action with a type and a payload.
+And then lastly, we have an async action creator
+that does a bunch of additional things.
+So let's go ahead and write a few tests for our action creators.
+
+So let's first open actions.test.js file.
+And now let's write some tests for our Redux actions.
+And so what's the first one that we want to test?
+So let's just remember which exist.
+
+So the first one we're going to test is the simple update user.
+And so let's go ahead and first import.
+Let's just import all of our actions.
+
+So import everything as an object called actions from this file called actions.
+And then let's do some testing.
+So let's do test that update user returns the correct an action.
+And how are we going to do that?
+Well, it's just a function.
+
+Let's invoke update user.
+So let's expect that if we invoke update user, and what are we going to pass?
+Let's just pass the name should be updated to test name.
+
+And what do we expect that to be?
+Well, we expect it to be an object that has a type of actions.update user
+and a payload of name test name.
+
+And we're missing parentheses there.
+
+Great.
+So let's run this test and see what happens.
+
+So if we run it, it will let us know something interesting.
+Well, one, the updateUser's not defined because it
+should be actions.update user.
+
+So since we're importing all of the actions
+as an object called actions, if we want to use updateUser,
+we need to do actions.updateUser.
+And while we're at it, let's let ESLint know that there are
+a few globals called test and expect.
+
+And now let's rerun those tests.
+And now it will tell us something interesting.
+It says we expected the value to be this object.
+And instead, we received this object.
+And you might notice that these two objects are exactly the same, character
+for character.
+And so why might it have errored?
+So if you remember back to an early lecture,
+we talked about how to compare objects.
+And the way if you compare objects with triple equals, what does it do?
+It doesn't compare the key value, all of those values within the object.
+It actually just checks if the two objects
+are being referenced in the same location
+because anything that is a non-primitive is stored via reference.
+And so since we created a new object in our .toBe in our test file, we see, oh,
+object is equality.
+They're not referencing the exact same object.
+And it actually lets us know, hey, the compared
+values have no visual difference, meaning
+they're basically the same object here.
+Looks like you probably wanted to test for the object array
+equality, which is--
+we should probably use toEqual, which actually does that check
+and will check the key-value pairs rather
+than just checking the reference.
+And so let's go ahead and update our code so that it's actually correctly
+checking what we want it to check.
+So let's now do actions.test.js.
+And rather than using .toBe here, let's use toEqual.
+
+And now let's run npm test.
+And we should see that now it actually does indeed pass.
+
+Great.
+So let's add a few more tests.
+
+Maybe let's pass a different name here.
+Maybe we'll update a phone number.
+
+And let's make it some bogus phone number.
+And then we want to change the payload here to be that phone.
+
+And what do you notice that I'm doing right here?
+It's interesting because I'm almost reimplementing this action, right?
+My test is basically the exact same logic as the actual actions file.
+
+Because our updateUser takes an update and returns
+an object with that type and payload.
+And down here, we're doing almost the exact same thing.
+We're doing an action with this and checking against an object
+with a type and a payload.
+And so we're almost word for word just reimplementing that exact function,
+which isn't really great in terms of testing
+because if we're testing a function by running a function
+that we implemented in the exact same way,
+if there's a bug in the first function, of course there's
+going to be a bug in the test function.
+And so we won't actually catch any bugs that we might have intended to catch.
+And so what might be a better way to test this?
+Well, it turns out there's this thing called snapshots,
+which compares an output of a function in the past to what we get now,
+which is good because now we get notified if the output changes,
+which is really what we want when we test these action creators.
+Because since they're really simple and just returning a new object,
+we just want to make sure that it's returning what we expect it to return.
+And so then if we end up changing something later,
+we get notified that something changes, but we don't actually
+have to rewrite the test if that change was actually intended.
+And so let's actually refactor our test to rather than
+mirroring the logic in our actions, to, rather, use a snapshot.
+
+So currently, we're doing expect this to equal,
+and then hard coding exactly what we know is going to come out.
+But maybe instead, we should do toMatch the snapshot.
+
+And we can go ahead and delete that.
+
+And so if we now save that and run npm test,
+we see that the snapshot was saved.
+And now let's change it to see if the snapshot--
+if we're notified, as expected.
+
+So let's change our actions file.
+And maybe we'll send a type that's updateUser, a payload that's update,
+and also--
+we wouldn't want to do this in real life.
+But maybe we'll just add a debug flag that says false.
+So something completely useless, but it is in fact changing our implementation.
+And so now if we run npm test, we'll see, uh-oh.
+One of our snapshot tests failed.
+Let's see what happened.
+
+In our actions.test.js, we see that update in our test
+called updateUser returns an action.
+We see that the received value does not match the stored snapshot.
+And it'll actually tell us exactly what changed.
+It says that the snapshot received something new.
+That's what this plus received is.
+And what it received that was new was this debug false,
+which wasn't in the original snapshot, which is great because maybe we
+didn't want to change that.
+It's just letting us know that it changed.
+And so how do we let Jest know, hey, we meant for that to happen?
+Update your snapshot.
+Well, it tells us inspect your changes or run npm test --
+-u to update it.
+And so we can just run npm test --
+-u.
+And it will go ahead and update the snapshot in our test suite.
+And so let's go ahead and revert our change.
+
+And now again, if we test, what do we expect to happen?
+Well, we changed something.
+So the snapshot test should fail.
+If we go read what failed, it says, oh, now this is minus.
+It's gone.
+And we expected it to be there.
+We can that Jest know, oh, by the way, we meant for that to happen.
+So -u.
+Update your snapshots accordingly.
+And now if we run npm test after updating,
+everything passes, and all is good in the world.
+
+Great.
+So now let's add a few more tests just to make
+sure everything's working as expected.
+
+And so maybe we want to test the case where updateUser returns an action when
+passed empty object.
+
+And we can just cut and paste this.
+
+And rather than passing an object here, we can just pass an empty object.
+And we expect it to match whatever the snapshot was.
+And so maybe we also want to test a case where you pass an empty name.
+And so let's do name is empty.
+And so now you're starting to see a bunch of very similar tests.
+And maybe there's a better way to go ahead and group them together.
+And it turns out there is.
+You can describe a group of actions, and Jest
+will automatically group them for you.
+And so the way to do that is--
+let's first look at the output of this.
+
+It just lets us know that some tests are passing.
+But maybe let's add a logical group of tests together.
+So let's do actions.test.js and group these very similar tests together.
+And so now let's describe a group of tests.
+And so this one is updateUser returns actions.
+
+And it takes a callback, just like the other tests.
+
+And now we can group these things together.
+And rather than using test, we do it.
+
+And what does it do?
+It returns an action, or it handles an empty object
+or it handles an empty name.
+
+And now if we run these tests, we see that there--
+well, they have obsolete snapshots because we updated the tests.
+So we'll go ahead and first update all of these things.
+
+And now it works.
+
+But it's not giving me the pretty output.
+Let me see why not.
+Oh, we should run our watch mode.
+
+Hmm.
+It's not giving us the pretty output.
+And I will look into it at the break.
+But this is a way of joining very similar tests
+together in logical groups.
+And we should let ESLint know that we added a few more globally available
+variables, including describe and it.
+
+Great.
+So now let's take a look at trying to test a more complicated action.
+So what happens if we want to test this async action that we wrote?
+It's a lot more complicated than the simple actions
+that just took a single argument and immediately returned a new object.
+This one's doing a few different other things.
+And so how might we go ahead and do this?
+Well, one, it's async.
+So that might be a bit of a difficulty.
+So it turns out--
+oh, so which of these functions should we use?
+If you're using primitives, then you can use toBe
+because as we learned in an earlier lecture,
+you can just check primitives with triple equals.
+And it'll go ahead and see if those values are equivalent.
+If you're doing objects and you don't expect those objects to ever change,
+you might want to use toEqual like we did in the earlier example
+because it will do a deeper equality check.
+But that has the downside that it will actually error
+if we end up changing the objects.
+And we'll have to go back and rewrite those tests.
+If we have objects that might change in the future,
+that's when we should use something like a snapshot
+because then it will give us the benefits of knowing
+that we changed our function.
+But if that was a change that we were OK with or a change that we intended,
+then we don't have to go back and rewrite all of our tests
+like we would have if we were using that toEqual.
+
+So now let's take a look at some asynchronous actions.
+And so why might this be more difficult?
+Well, it adds a few different difficulties, it seems.
+So we have to wait for the results to come back
+before we check against the results.
+So that might be a little bit tricky.
+Our tests also might rely on libraries, other libraries that we go ahead
+and import.
+And lastly, what about external services?
+And so in our login user, we're actually awaiting
+login, which sends a fetch request to an external service.
+
+So how might we go ahead and combat these three difficulties?
+Well, for the first one, if we return a promise,
+Jest is smart enough to be able to wait for it to resolve
+before it checks against that value.
+Jest also supports async await, which is awesome
+because we can just await a value, and then go and check against it.
+And so let's go ahead and start to write a test for this asynchronous action
+created here.
+And so we're going to be using logInUser
+And let's describe a group of tests to see if logInUser
+returns the actions that we want it to.
+
+So first, logInUser should do what?
+It should dispatch an action that the login is sent.
+Then it's going to try to do something by awaiting a login.
+And then it's going to dispatch something else.
+And then if there's an error anywhere up there,
+it's going to dispatch something else again.
+And so it might be a little bit difficult to track what's going on.
+So let's first just write some dummy function dispatch
+that doesn't actually do anything.
+
+Then, if we wanted, we could await logInUser.
+But what happens then?
+If we run this, we'll see that--
+uh-oh.
+Await is a reserved word.
+So what do we have to do if we're ever going to use that await key word?
+
+Well, first we need to make sure to let JavaScript know that hey,
+this is not a normal function.
+This is an async function.
+
+And so now we can invoke logInUser with whatever we want--
+so the user name and password--
+and then also pass it dispatch.
+
+And then we expect it to error here.
+And I'm just going to wave my hand at that case for now.
+
+So right now, for this function called dispatch,
+we don't really know what to do with this.
+In our actual application, what happens in this particular action?
+Well, we have that Redux [? flunk ?] middleware,
+which handles passing that dispatch function in for us
+and will dispatch those actions to the store on our behalf.
+But in our particular unit test here, we don't really have access to that store.
+We don't want to rely on these external libraries
+in order to run this code here, which is that second difficulty here.
+And so how might we go about that?
+Right now, we just wrote a dummy function.
+But certainly there's a better way to do this.
+Well, it turns out Jest supports doing what are called mock functions, which
+is similar to what we're doing, but these mock functions actually
+do something.
+They will track what they're invoked with or invoked on.
+And so we can actually use this mock to be
+able to figure out exactly what actions are being dispatched because if you
+remember the way that this action works, first it'll
+dispatch an action that's letting the Redux store know that we
+have sent off this login request.
+Then it's going to go ahead and do it.
+And depending on what happens, it's going to dispatch other actions.
+And so if we mock this dispatch function,
+we can go ahead and check exactly what values the dispatch is invoked with.
+So how might we do that?
+
+So rather than-- oh, this should be actions.logInUser.
+Rather than just writing dispatch as a dummy function that we wrote here,
+let's actually use jest.function--
+
+.fn, I believe-- which creates one of those Jest mock functions.
+And so now we can go ahead and use that to track exactly what happens.
+So let's do it.
+
+So let's test that it dispatches the login sent action correctly.
+And how are we going to test for that?
+Well, first we're going to create that dummy function,
+that mock function by Jest.
+Then let's go ahead and kick off the action here.
+And so let's just write mockDispatch so that we can remember what that is.
+
+So great.
+We created a mock dispatch function.
+We go ahead and pass it in as the mock dispatch in our login actions.
+And how are we going to check to see exactly what happened?
+Well, it turns out attached to mock dispatch, we can see all of the things
+that it was invoked on.
+So first let me fix this.
+This should be an async function.
+And this no longer needs to be an async function.
+
+So how might we want to check to see what the mock dispatch was called on?
+Well, it turns out we can check.
+We can see mockDispatch--
+
+let me check the documentation really quick--
+.mock.calls.
+And what that does is it's all of the calls
+that the mock function was invoked on.
+
+So that's really helpful.
+Why is that helpful?
+Well, we can just see if that dispatch was invoked with the action
+that we were expecting it to be invoked with.
+So let's just console log that for now.
+
+And let's also let ESLint know that jest is globally available.
+
+So now let's run npm test.
+
+And we see what?
+We see that login was sent, which is great.
+We expected dispatch to be invoked with login sent.
+And then we also see that login is then later rejected because fetch is not
+defined, which is a problem.
+But for now, we're only focusing on whether or not
+the login sent was done successfully.
+So let's finish that test to actually check for that.
+
+So rather than console.logging the mockDispatch.mock.calls,
+we can actually expect it to be some value.
+So let's expect mockDispatch.mock.calls.
+
+We should probably look at the first time it was called,
+which is indexing into that first array.
+And let's also look at the first value or the first argument
+that it was invoked with.
+And so let's index into that.
+And we expect it to be something, right?
+We expect it to be an object that has a login sent value as the type.
+
+And what's going to happen when we run this?
+Does anybody know?
+
+We get that same error that we got earlier.
+We see that these two objects are the same.
+
+But the test is still failing.
+And it's the same reason why it failed earlier.
+The two values have no visual difference,
+but we are checking their reference.
+And since we just created that second object,
+obviously those references aren't going to match.
+And so rather than using toBe, what should we do instead?
+
+Well, we should probably use that .toEqual.
+
+And now we see that those do, in fact, pass.
+
+Great.
+But that wasn't really the difficult part, right?
+It's pretty easy to see in our code that that's exactly what's going to happen.
+
+Really, the hard part is to make sure that this does what we expect it to do.
+But since login is defined within the logInUser,
+that means we have to rely on that to work.
+And we don't really want our unit tests to rely
+on things that are way outside our control, in this case
+an API network request that's being sent out.
+So how might we get around that problem?
+It's actually not an easy one to solve.
+There's actually a strategy called dependency injection,
+which we can go ahead and use to get around this problem.
+And so what dependency injection is is that we
+pass functions on which other functions rely
+on as arguments to those functions.
+So we make these functions even more [? pure. ?]
+And so everything that they need, they receive as arguments.
+And how does that help us?
+Well, it allows us to mock the functions that rely on external services, which
+is pretty nifty.
+So rather than using login here, we can make
+this [? pure ?] by taking the login function
+as an argument in our logInUser.
+But what did we just do?
+We changed the-- well, we didn't actually change anything yet.
+If we use it here, now we've gone and changed
+the way that you're supposed to use the logInUser function, which
+means we broke backwards compatibility, which means every single time we use
+this logInUser function in our entire app, we now have to go and fix,
+which is not really fun.
+So how might we get around that?
+So what happens every time, currently in our app, we want to use logInUser?
+Right now, we pass two arguments, username and password.
+And in no places do we pass a third argument
+because we weren't supposed to.
+And so if we know that we're never going to pass a third argument,
+we can have some sort of default argument that it falls back on.
+And so one thing that we could do is we could
+do const login or const realLoginFn is either
+the login function if it's passed--
+so if so.
+Otherwise, the login that we imported at the top of the file here.
+Or if we want to use some more shorthand, we can do login or login.
+Or we can rely on a JavaScript feature called default function values.
+So if nothing is passed as the argument, a third argument here,
+we can have a default value be login, which
+means expect to get a username and a password in the login function.
+And if you receive undefined for this third value,
+then use this default value instead.
+
+And now we've added dependency injection,
+but we haven't actually changed our logInUser function.
+Because everywhere that we use it in our app, we pass two arguments.
+And this login function will always fall back
+to the default, which is the login function which we imported up here.
+And so that will always be used here.
+And so it does exactly what it did before.
+But now in our tests, we can go ahead and add a mock function for login.
+So let's go ahead and do that.
+
+So now we have a test.test to see if it dispatches login sent.
+We can add now a test with correct credentials.
+
+So now let's make sure that if we pass the correct credentials, we get in.
+We get the login fulfilled.
+So how are we going to do that?
+Well, we should probably have a mock dispatch.
+
+But we need another mock function.
+Or do we?
+So the special thing about the Jest mock functions
+here is that they can track whatever they were passed in.
+And we can reference that later.
+But does that really help us in our logInUser example?
+Let's check back to see what happened here.
+
+So for our login function down here, all that we're doing
+is we're extracting a token from it.
+And so either it works and we receive a token, or it doesn't work,
+and supposedly an error is thrown, which we then catch down here.
+And so we don't really need to mock a function using Jest here
+because we don't really care what username and password were passed in.
+And we don't care about the history going back.
+We really only care about whether this login function returns a token,
+or whether it throws an error.
+And so rather than using the jest.function,
+we don't need to use the mock function.
+Instead, we can actually just define a function ourselves.
+And so let's do that.
+Let's do const login is a function that takes a username and a password.
+And what happens?
+
+So if the username is username, or we can just--
+do whatever we want.
+We can say if the user name is u and the password
+is p, then what do we want to do?
+We want to return a token.
+So this is a test token.
+
+Otherwise, what do you want to do?
+Well, it should throw an error, right?
+So we can throw new error.
+
+Incorrect credentials.
+
+So let's clean this up.
+
+So now we have a mock dispatch function.
+And we also have now a mock login function.
+And when I say mock, it's not actually a Jest mock function.
+It's just a function that we defined.
+And so now we can actually test this.
+We can say const token is await login username and passwords.
+So rather than writing that out, let's just do expect that if we invoke
+the actions.logInUser--
+
+let's actually just do exactly what we did up here.
+
+So let's await actions.logInUser.
+Let's invoke with the username and password credentials
+that we know are correct, u and p.
+So let's do u here and p here.
+And then what do we also have to pass into this function?
+Well, we need to pass in the login function that it should be using.
+And so we just wrote it here.
+So let's also pass in the login.
+And let's just call it mock login so we know it's a mock.
+
+And then we also passing our mock dispatch.
+And then what do we do?
+Well, now what?
+We expect that the mock dispatch has now dispatched more than one things.
+One should be-- so mockDispatch.mock.calls.
+So if we do the first one, what's not going to be?
+What is the first thing that our logInUser action dispatches?
+Well, if we refer to our actions.js file,
+we see that always the first thing that gets dispatched is that login set.
+But now for this particular test, since we're
+testing that the login fulfilled action gets dispatched,
+now we're interested in what's dispatched second.
+And so let's go ahead and actually match against the second one.
+
+And we can do .toEqual that action.
+Or, what's better is we can just do to match the snapshot.
+
+Well, maybe we should do both because for the first time,
+we're not really guaranteed that it's actually
+going to be what we want it to be.
+
+So let's also expect that the first one is
+going to equal the type of login filled with a payload that contains
+a token, which is thisIsATestToken.
+
+And now, assuming there are no syntax errors,
+that should be what we expect it to be.
+So let's go ahead and just run these tests.
+
+And await is a reserved word.
+What does that mean?
+It means we forgot to use async.
+
+So let's go ahead and make the second test also a async.
+
+And now we can see whether or not our test passes.
+It does not because it can't read property two of undefined.
+Oh, we don't want two here.
+We want one.
+I was not zero indexing properly.
+
+Because if we want to get the second value in an array, which array index do
+we actually want to look into?
+Probably one, right?
+
+Great.
+So now-- oh, there's also a bug.
+
+We don't want the second.
+We don't want the third array index of this.
+We actually want array index zero.
+
+And so now, hopefully this passes.
+And we see an error.
+It might just be the wrong shape.
+Yeah, the payload is just the string rather
+than being an object with a token in the string, which might actually
+be a bug if we want to follow a very strict shape in our flux action.
+But let's actually just write the tests to fit the function for now,
+since we're already using that function successfully.
+But our test actually just kind of caught a bug for us, which is cool.
+
+So let's go ahead and just update our test so that it passes.
+
+So rather than having the payload be an object with a key called token,
+we just pass in the token as the payload.
+And now we'll see that the test passes correctly.
+Awesome.
+So let's quickly handle our last case.
+
+We want to ensure that we dispatch login rejected if we try to log in
+with the incorrect credentials.
+So we can move that mock login function outside so we can use it again.
+
+We can also delete this if we wanted to since we
+know that the snapshot is correct.
+But it's not that expensive to run.
+Let's just keep it in there for extra safety.
+And let's just do it dispatches login rejected.
+And let's just copy and paste the whole thing.
+
+So we want it to dispatch login rejected with incorrect credentials.
+
+And so now let's just pass in an empty string, an empty string.
+We expect now the call not to be type actions login fulfilled,
+but to be type login rejected.
+
+And we want it to match the snapshot.
+So let's just run the test.
+
+Maybe we're passing in the error string, as well.
+
+So the payload is incorrect creds because we're
+passing in the error string.
+So let's just update that really quick.
+
+Because right now, we're only checking to ensure
+that the first dispatch, or the array index one, or the second dispatch
+has a type actions login rejected.
+But it turns out we're also passing in the error message here as the payload.
+So let's make sure that this is whatever we called up here.
+
+And we can actually abstract that out.
+
+So let's ensure that the payload is the error message.
+And while we're at it, we can also not hard code the token here, but also
+abstract that out.
+
+So now we're guaranteed that whatever fake token
+we return from the mock login on successful
+is the exact string that we're checking against in the payload,
+eventually, in our test.
+So that's just abstracting it out so that we're not hard
+coding things everywhere.
+And so now let's run our tests.
+And hopefully, every single one will pass.
+Great.
+So let's take a short break.
+And when we come back, we'll see how to test some more complicated structures.
+Hello, and welcome back.
+So before the break, we were talking about testing
+and how to test things like simple Redux actions,
+and also things like asynchronous Redux actions.
+And a great question came up during break.
+And it was, hey, how come our tests look very similar to the functions
+that we've implemented?
+And is it really testing what it should be testing?
+Because it's basically just implementing the function that we're testing.
+And let me show you an explanation.
+So in our particular logInUser function here,
+there are really only two possible paths for our code to take.
+Either the login succeeds and we fulfill that login, or the login
+fails and the login is rejected.
+And so you can think of it as a tree of the possible different ways
+this code can happen, or just a tree of all of the possibilities.
+And so there were really just two code paths.
+Either first, you dispatch login sent, and then you dispatch login fulfilled.
+Or you dispatch login sent, and then you dispatch login rejected.
+So there are really only two branches.
+And so in our tests, we're actually testing three different things.
+We're testing first that we do what the first line here,
+where we test whether login is sent.
+And then we test both of the branches.
+So either this branch is taken, and we fulfill the login,
+or this branch is taken, and we reject the login.
+And in this particular test here, we're testing
+that bottom branch, whether or not we--
+oops.
+I need to scroll down a little bit.
+
+So first we either test that the login is sent.
+So we test the first line of code.
+And then we test both possible branches.
+We test either that login fulfilled is reached or login rejected is reached.
+And so if we want to dig in a little bit into that login rejected,
+we can see that although it's similar to the code that is written in login user,
+it's not really reimplementing anything.
+In login user what we're doing is we're first dispatching an action.
+And then we're checking the result of our login function.
+And so we're going to attempt to log in with the username and password.
+And depending on how that goes, we're either
+going to take the branch where we fulfill the login,
+or we take the branch where we reject the login.
+And so if you look at our logic in our test here,
+first we create a mock dispatch.
+We have already created a mock login.
+But the first thing that we do is we execute some logic
+where the code branches.
+And so we try to log in the user using an empty string for both the
+the username and the password.
+So we're sending bogus information, hoping that the login gets rejected.
+And so that's what we're testing down here.
+Were saying, hey, ensure that the action that gets dispatched is of type login
+rejected and has a payload of the error message.
+And just as a sanity check, we're also going to do a match snapshot here.
+And we can actually remove the first one once we know that the snapshot has
+the correct action.
+And so just to reiterate, even though the test
+looks very similar in the way it's laid out to the function,
+it actually does test it pretty well because we
+have one test to do the first line.
+Then we have two separate tests to test either branch of the possibility
+where really the only logic lies, whether we login successfully
+or unsuccessfully.
+So, yeah, hopefully that addresses the question that came up.
+And now let's forge ahead.
+One more thing to note--
+I was curious earlier why our tests weren't
+being enumerated when we run npm test.
+And it's because if you run npm test--
+or if you run Jest with a flag called verbose,
+that's what triggers all of the tests to be enumerated.
+And so if we run with that --verbose flag, we then see all of the groupings
+that we dictated in our test files.
+And so we see in actions.test.js, we see the first describe block,
+which describes the update user returning actions.
+And then for each it block, we see those strings being repeated here.
+And so the first it was it returns an action.
+And then it handles an empty object.
+And then it handles an empty name.
+And we see that they all executed correct with that green check mark
+there.
+We see the second group here.
+And we also see all of the tests that we specified in sum.test.js.
+And so these were not grouped using a describe block like these ones.
+They were just using that test function.
+And so they show just as separate tests here.
+And so if we wanted to show that entire enumeration of all the tests every time
+we run npm test, then we need to change our package.json
+to ensure that that flag is passed.
+And so tests.
+We should --verbose here and also here.
+
+So now when you run npm test, we'll see that all of the tests
+are enumerated for us.
+Cool.
+So we talked about a lot of different unit tests
+and how we would test our actions.
+And so now let's test something a little bit more involved.
+So let's test our Redux reducers.
+So just check our reducers the way that we implemented it before.
+
+Let's just remove this to shut up ESLint.
+So now there are no linting errors, we can
+see that we have two different reducers here.
+
+So one handles all of our contacts.
+And so our contacts reducer takes the previous state and an action,
+and depending on what the action does, it returns a new state.
+So if the action's type is update contact,
+we add a new contact into the state and return it.
+And the way that we do that is we use this array spread.
+So we basically clone the array from the state,
+and then tack on at the and the action.payload.
+If the action is not update contact, we just
+return to state unchanged because we don't really have anything to change.
+Our user reducer is a little more complicated
+because there are different types that we want to check against.
+If it's update user, then we merge the payload in.
+If it's update contact, we merge this new object
+where the previous contact is the payload.
+And similar thing for login fulfilled or login rejected.
+And if none of these match, then we just return the state unchanged.
+And how are these exposed to Redux?
+Well, we have our single reducer, which combines these two.
+And so the user reducer is responsible for any changes in the user key.
+And for any changes in the contacts key, it gets passed to that contact reducer.
+So let's go ahead and create a few tests to make sure
+that the reducer is doing what we want it to do.
+So we do this in a reducer.test.js file.
+The first thing that we want to do is let's disable ESLint
+so it's easier to read.
+
+And let's import the reducer.
+
+And let's also import our actions.
+
+Cool.
+So let's just pick a couple things at random to test for.
+In reality, we'd want to test all of our functionality in reducer.
+But since we don't have time for all that,
+let's just check a couple of things.
+Let's just check contact reducer.
+If we add a new contact, let's ensure that it makes it into our state.
+So let's do describe the contact reducer.
+
+And it successfully adds new user.
+And how are we going to check it for that?
+Well, first we should expect the result of passing
+in user reducer or the reducer--
+
+so the reducer takes a state and an action.
+So let's just create a default state for now.
+So let's have a default state just be--
+let's have the user be an empty object and contacts be an empty array.
+
+And I say we should pass the reducer in an initial state.
+So let's pass the default state here.
+And it should take an action, as well.
+And so let's just pull in an action creator from our actions file.
+And I believe it's called add user.
+And let's add a user with a name of test user and a phone of that
+and expect it to just match the snapshot--
+to match snapshot.
+
+This might actually be called add contact.
+
+And just to make it a little bit more readable, do that.
+
+And now let's also run our tests in watch mode
+so we can see what happens as we write them.
+
+And so we see that the test is written.
+One snapshot written in one test suite.
+So now let's change this to make sure the snapshot is what we want it to be.
+So let's test user, exclamation point.
+Save that.
+The snapshot test should fail.
+Let's go see why it failed.
+Because our object that was our state now contains the contacts
+where the array is test user with an exclamation point rather than without.
+But it looks fine the way it was before.
+So let's just revert.
+And so now we know that this snapshot is what we want it to be.
+Let's also describe the user reducer.
+
+And that successfully updates user.
+So let's expect the user, if we pass in the default state,
+let's try to update the user.
+Maybe that's called update user.
+
+And just change the name to test user.
+Let's see what the tests have to say.
+One snapshot written.
+We can see exactly what the snapshot is.
+We can open up the snapshot file.
+Or we can just change this really quick so that the diff shows.
+We can see that now the snapshot test fails, as expected,
+because now the user, the name is test user with an exclamation point.
+It was fine the way it was before.
+So let's just revert.
+
+And now our test should pass because the snapshot matches the snapshot
+that it was before.
+And it does indeed pass.
+Great.
+So now we've gone and tested our reducer.
+Obviously, there's a lot more to test.
+But since we're running low on time, we'll just leave that untested for now.
+
+So now we've basically tested everything in Redux.
+But we're yet to actually touch any React or React Native.
+And so now let's look at some integration tests.
+And so how might we want to go about testing React components?
+Well, we can use Jest snapshotting.
+Just like we were snapshotting and looking at any diffs
+between what changed in the output of the reducers or any of the actions,
+we can also use the snapshot feature to test the output of React component
+rendering.
+And so how are we going to render React outside
+of the context of our application?
+Well, it turns out React allows us to do that
+by using this React test renderer, which is maintained by the React team.
+It allows us to just render components outside the context of an application.
+And so the docs are here if you want to look at them.
+But we'll be using that in the demo.
+One additional thing is that now we're going
+to need to configure Jest a little bit more so that it worked with React.
+It turns out the Expo team has done this for us.
+Jest Expo has all the configuration we need.
+And we can just look at the docs here to see how to use that.
+So let's just take a quick peek.
+We can see that we need to run npm install jest expo and save dev.
+So let's go ahead and do that.
+
+And while it installs, we can also see that we
+need to add a little bit to our package.json.
+We already have a test script.
+But we need to add a Jest key that let's Jest know to use the configuration
+preset specified within Jest Expo.
+So let's just cut and paste this into our package.json.
+
+So we can now open up package.json and just add our Jest preset.
+
+So now in theory, we are all ready to try our integration tests.
+And so now let's actually try this thing called test-driven development.
+And so there's another question that came up during break that was,
+hey, it looks like we wrote our entire app.
+And now we're writing test after the fact.
+Is that what we should be doing?
+It turns out there's actually a strategy to writing tests and writing code.
+And it's called test-driven development, whereby the tests drive
+what you should be implementing.
+And as long as you know exactly what you want to be implementing,
+you can write the tests first, and then implement
+the components or whatever you're implementing such
+that it fulfills all of the tests.
+And so the tests are less tests and more the specification.
+Or in other words, what should this function,
+or what should this component, be doing?
+And so let's actually write a simple button component and use
+test-driven development to do so.
+So let's just make a components directory.
+
+And let's actually write the test file first.
+So let's do MyButton.test.js.
+
+And shut up ESLint for now.
+And first we're going to want to import MyButton from a file
+that we haven't yet written.
+But it'll be eventually written in MyButton.
+
+And what do you want to do?
+Well, first we should describe it.
+
+So let's see what happens in MyButton.
+Well, first, it should render.
+It should just appear.
+So let's just test that it renders.
+
+And so now we've run into a little bit of difficulty.
+How do we ensure that it's rendering?
+So this is actually what React test renderer does.
+It allows us to render these components outside the app
+to make sure they actually exist.
+So let's go ahead and do that.
+So let's do import render from react-test-render.
+
+And we can do const button is render.create.
+And what do we want to create?
+Well, we just want to do a MyButton.
+
+And maybe we should turn into JSON so it's easy to match against.
+Just do .toJSON.
+
+And then let's just make sure that it matches
+the snapshot that it was before.
+So let's do expect button to match the snapshot.
+
+And now let's run our tests in watch mode
+so we can actually implement the button as we go.
+
+So it looks like it's erroring.
+The test failed.
+Why did it fail?
+Well, obviously, it can't find my button because we haven't even
+written the file yet.
+So let's go ahead and do that.
+So let's open up MyButton.js.
+And let's just do export default empty.
+Just an empty function.
+We'll save that.
+We'll see what the tests have to say.
+OK.
+Now a different error.
+Renders, it failed.
+React isn't defined.
+Maybe we should import React from React.
+
+So in both these files, let's do import React from React.
+
+And now the tests run again.
+And another one fails.
+What happened here?
+
+Well, it didn't actually render.
+Invariant violation.
+We wanted a component, but nothing was returned from render.
+Well, great.
+Our tests caught an error.
+So it's not actually rendering anything.
+So now let's actually render a button.
+
+So let's import button from react-native.
+
+And now we can do just return a button.
+
+And now we're seeing a test failure.
+We can go up.
+And we can see, oh, this failed because we're not using button correctly.
+We need to pass a title to button.
+OK, so our test's still failing.
+Let's go back and fix that.
+So we can say the title should be, I don't know, test button.
+And maybe let's also get ahead and pass on press as some empty function
+because that's also something that's required.
+And now look it.
+It passed.
+Yay.
+Our first test, which is just saying the button should render, it now passed.
+The button did in fact render.
+And so now let's try to add one more feature.
+Let's it correctly overrides color, the default color.
+
+So what we want to happen is we want to be
+able to pass a button color as a prop to the button
+and make sure that it overwrites any default.
+So let's do const color is red.
+And const button is the render.create that.
+And rather than just immediately JSONifying it,
+let's actually grab the root component.
+Let's grab the button out of it.
+So let's just do .root.
+And so if you look at the React test render docs,
+it says you can get the instance of a class or a component by just doing
+.root.
+And you'll get the outer one.
+Now we want to check the props to make sure that the color matches
+the color that we specified.
+And so we can do expect button.props.color.toBe--
+
+and what do we want it to be?
+Well, the color that we specified.
+And maybe here we should pass in the color is the color.
+
+So now let's run this and expect it to fail, which it didn't.
+
+Interesting.
+Let me make sure I'm using it correctly.
+
+I'm surprised it worked because it shouldn't be.
+Let's see.
+My button color color.
+We passed color here.
+It doesn't get set.
+So this is supposedly undefined.
+Let me just console.log the button.
+
+Let me console.log the button's props and ensure that the color
+is what we expect it to be.
+
+So it's receiving color red, which is interesting.
+
+Oh, because we don't want the root.
+We actually want the button part of it.
+
+So the reason that it's failing is because we're not
+grabbing the correct part, the correct component here.
+But since we're running low on time, I will just write it up at home
+and post it.
+But let me just move on so that we can get to the rest of the lecture first.
+And so assuming that this code works, we can
+see that by writing the tests before we write the code,
+we can start to write a spec that allows us to then implement whatever component
+or function we want to implement the spec that we described.
+And so we can use integration tests like these snapshot tests here
+to ensure that our app retains all of its features
+and we don't break any features as we start to add new things.
+And so how do we then--
+how can we tell how much of our app is actually being tested?
+Because right now, we can kind of remember, oh, we tested Redux.
+We tested this button.
+We haven't really touched the app.
+We haven't touched any screens.
+So we can kind of keep track in our head.
+But there's no real way for us right now to know exactly how we do that.
+And it turns out there's actually a metric.
+It's called code coverage.
+And so this is a metric for tracking how well-tested an application is.
+And there is a few different numbers.
+One is statements, or in other words, how many statements in this program
+have been executed?
+Another is branches.
+And so just like we were discussing before
+with a couple of different possible code paths in our reducer or action,
+this is the metric for that.
+It's how many of the possible code paths in all of our application
+have been executed or have been tested?
+Another one is functions, meaning we have n functions in our app.
+How many of them are actually tested?
+And lastly, just straight lines of code.
+So out of all of the lines of code in our app, how many
+have actually been executed by our tests?
+And so how do we get this coverage report?
+Well, it turns out we just pass another flag to Jest.
+We can just pass --coverage, and it will let us know all of these numbers.
+And so we can do npm test --
+--coverage to pass that in.
+And it will run all of our tests and at the very end output a table.
+And if I zoom out so that it formats correctly,
+we can see all of the numbers here.
+So we can see all of the files that we've tested.
+And so we tested api.js.
+
+We tested MyButton.js.
+We tested actions.
+We tested reducer.
+And in here, it tells us exactly how many of each metric
+have we actually tested.
+And so in sum.js, if you remember, it was just
+a single function that returned with the sum of two numbers.
+It turns out with the tests that we wrote, we hit 100% of the statements,
+100% of the branches, 100% of the functions, and every single line,
+as well.
+But for the things less tested, like our reducer, just like I mentioned,
+oh, we're going to not test the sections of the reducer.
+We see that only 85.71% of the statements
+are tested, which equates to 78% of the branches.
+But every single function was tested because if you remember,
+there was just the user reducer, the context reducer, and the reducer,
+and maybe a merge function.
+But we ended up invoking every single function, so 100% of those are tested.
+But we only ended up touching 83.33% of the lines of code.
+We can see that lines 19, 20, and 21 were not actually tested.
+And then for the things that we really didn't test at all,
+we see some very low numbers.
+And so that is the code coverage report for the tests that we just wrote.
+
+And so we've talked about unit tests and we've talked about integration tests.
+But what about end-to-end tests?
+And so unfortunately, currently there's no real easy way
+to run automated end-to-end tests in React Native.
+But there's a great work in progress by Wix.
+And so the company Wix is writing this library
+called Detox which actually handles end-to-end testing in React Native.
+If you want to check it out, the github link is here.
+There's also a github link where Brent started putting together integration
+between Expo and Wix Detox tests.
+But right now, it really lacks Android support.
+And so it's not quite ready to test your apps.
+But I encourage you to follow along with this project
+just because it allows you to do really cool things like this.
+And so you see here it's automatically downloading a bunch of stuff.
+It's going to run the app.
+And it's going to just zip through the app testing all of your features,
+as if it were a user running the application.
+And so this is truly end-to-end because it basically
+simulates an end user lifting up the app and testing all of the functionality
+very deeply.
+And so everything, all the code that executes in order
+to do a certain feature is executed by this Detox application.
+And lastly, I just wanted to give some thanks
+to everybody who's been helping out with this course,
+to the CS50 team, including David, the production team,
+and everybody else who just made this possible.
+And then good luck on your final projects.
+I'm really excited to see what you all build.
+And thank you for joining us for this semester.

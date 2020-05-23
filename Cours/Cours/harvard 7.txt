@@ -1,0 +1,1743 @@
+[MUSIC PLAYING]
+
+SPEAKER 1: Hello, and welcome back for lecture seven.
+This week, we'll be talking about data.
+So in the previous lecture, we had a couple of guest
+lectures-- if you remember Brent and Eric from React Navigation.
+They talk through the libraries that they wrote.
+They talked through a few of the different navigators that they have.
+One was the switch navigator, which was very similar to a construct
+that we learned in the previous lecture before that, whereby
+you have one screen, and then it will completely switch to another screen,
+and the first screen would be completely unmounted.
+They talked about the navigation prop, which
+is a prop that's passed down to every single navigator.
+On it are things such as params that you can pass into each navigator, or maybe
+the navigate method, which allows you to navigate to a different screen.
+They talked about stack navigator, which was the navigator that
+allowed you to navigate to new screens.
+And new screens would actually get pushed
+onto a stack, which gives you the ability to pop or go back.
+We also talked about configuring navigators,
+which was allowing you to maybe change the header color
+or put some buttons at the top.
+They talked about a tab navigator, which was either a tab bar on the bottom
+or on the top, which allows you to swap between two screens.
+And then lastly, we talked about composing navigators,
+which was nesting navigators.
+So maybe having a stack navigator within a tab navigator, or the like.
+In this lecture, we'll be talking about data.
+Up into this point, all of the applications
+that we've been doing in class have been self-contained,
+where all of the data that we need for the app
+is either generated within the app or created during the time of the app.
+But not all apps are self-contained.
+Any app that wants to rely on information not computed within the app
+itself needs to get it from somewhere.
+And where can we get it from, or how do we go about getting that data?
+Well, we end up communicating with other resources using an API.
+And so how might we do that?
+This is similar to a problem that we faced so far.
+Maybe you have two components that need to talk to each other.
+And how might we get those components to talk to each other?
+So if you imagine what a application looks like, its a tree--
+a tree of React elements.
+So maybe you have your app, and maybe you
+have something over here that's maybe a form.
+And maybe we have an input, and another input.
+
+So what happens if we want these two inputs to talk to each other?
+Or maybe one input is dictated by the value of the other input.
+And so we want to somehow have these communicate with each other.
+It's not very React-like to have them directly talk to each other.
+In React world, the way we generally do that is by passing
+prompts down to things.
+And so where might we be able to put that logic in order
+for these two childs to talk to each other?
+Well, we need to look up the tree.
+We need to maybe do that in a shared parent.
+And so in order to have these two inputs talk to each other,
+or at least have them influenced by the value of the other input,
+we need to put that logic in a shared parent of the two.
+And so all that logic would go here within their shared parent.
+And so we can kind of draw an analogy if we want
+applications to talk to each other.
+So maybe I have an application on my phone,
+and David has an application on his phone.
+How are we going to get those to talk to each other?
+And so you imagine this tree exists, but also some other tree exists.
+And so maybe we have my phone and David's phone.
+
+So how are these things going to talk to each other?
+
+So in the React way, the way we did that, was we
+had these two components talk to each other via a shared parent.
+And the same thing could be true with these two phones.
+We need to have them talk to each other through some sort of shared parent.
+And maybe that shared parent is some server, or something up in the cloud.
+And the way we talk to that is via an API.
+And so if we want these two phones to talk to each other,
+we need to have them talk through some shared parent.
+And the way that we'll talk to that parent
+is through this thing called an API.
+
+And so what exactly is an API?
+Well, it stands for an Application Programming Interface.
+What the heck does that mean?
+Well, it's a defined set of ways with which a resource can be interacted.
+We've seen APIs thus far.
+So every single React component actually has an API.
+And how do you interact with these React components?
+Well, you pass them prompts.
+And what dictates the prompts that they want to see?
+Well, it's just the way that that component is implemented.
+What other sorts of things have we seen in class that have APIs?
+Well, class does.
+If you remember, when we write classes, these classes have methods.
+And how do we interact with that class?
+Well, we invoke those methods.
+And so those methods are actually an API with which
+you can interact with those classes.
+And just like these things have APIs, so do web services.
+And so say there's some server stuff in the cloud,
+and the way you want to talk to it would be using its API.
+And so how are APIs created?
+Well, oftentimes providers-- or in other words,
+the people who create those APIs--
+a lot of times, they get to decide what the API looks like.
+But that's not always true.
+Can anybody think of an example where an API is decided for you?
+I'll give a hint, we've been using it all class.
+JavaScript is actually an example of this.
+So the people who write JavaScript don't necessarily get
+to decide on what that API looks like.
+It's actually dictated for them by Ecma.
+So if you remember back to ECMAScript, and when we talked about things
+like ES6 and ES7, those are actually specifications for this language
+that JavaScript then implements.
+And so the JavaScript API is actually dictated for them
+by these ECMAScript proposals.
+
+And for US consumers, or the people who actually use
+those APIs, in order for us to know exactly what the APIs are,
+we actually need to look at the docs.
+And so we need to just read the docs in order to know how to use these APIs.
+And so let's actually look at an API that's running right now.
+And so this link here, randomuser.me, is an API
+that's free and runs up in the cloud.
+
+And so say we wanted to go use this thing, this API called randomuser.me.
+How do I know how to do it?
+Well, it turns out they have a pretty decent documentation page.
+And if you scroll down, you can see how to use.
+
+The way to use this random generator API is
+to use Ajax, which we talked about in the CS50.
+Asynchronous JavaScript and XML.
+So in other words, we can send fetches without refreshing the whole page.
+And so ignore this usage of that Ajax.
+We're going to use this thing called fetch in a little bit.
+But this will show you how to use this API.
+
+So say we want to get a bunch of random users.
+The way we do that is we visit this URL.
+So if we visit https://randomuser.me/api/?results=5000,
+we will actually get 5,000 results back.
+And so let's just visit that URL.
+So if I just copy that, open a new tab, and paste that,
+I get a bunch of this stuff called JSON.
+Or in other words, JavaScript Object Notation.
+And if you look closely, you see results.
+This first person's, their gender is female,
+their name is Miss Nicole Ramos, their location is at this address,
+they live in the city, and a bunch of other information
+about this particular user.
+And if we scroll down, we'll see 5,000 other randomly-generated users.
+And so what else can we do?
+Well, we can actually specify a gender.
+If we only wanted females, we can do gender=female.
+So if we rather than doing results-5000 did something like gender=female--
+and if I spelled female correctly--
+then we'll see we get a bunch of people, and every single one is female.
+Hmm, I wonder what else this API can do.
+We can dictate what these passwords look like.
+So every single user that comes back has a password.
+And we can actually decide what that password
+looks like by passing in some parameters to this API.
+What else can we do?
+We can do seeds.
+So if we want to get the same results back every time, we can pass in a seed,
+and we're guaranteed to get the same results.
+We can determine the format, so we can get JSON or CSV, YAML, XML.
+We'll stick with JSON.
+We can to use previous versions of the API, which we don't really care about.
+And lastly, we can determine nationalities.
+And so if you look through here, you might
+see some people that don't have American-formatted names,
+or maybe their date of births are not formatted in the same way,
+or maybe their phone numbers are formatted slightly differently.
+And I don't see one immediately scrolling-- oh, here we go.
+
+This is not English.
+And so it might mess up our app.
+And so we can dictate exactly what nationality we want by passing this
+in, nat=GB, or in our case, US.
+So if we do nat=US, then we're guaranteed to get back only people with
+nationalities from the United States.
+
+And so how do we actually go about making these network requests?
+Well, it turns out this thing called fetch
+is polyfilled for us in React Native.
+What does polyfilled mean?
+Well, it means that this method may not be natively part of JavaScript,
+but it's implemented to match the usage of the fetch method in the browser.
+And so fetch is a function that comes in all browsers,
+and it allows us to make network requests asynchronously.
+But it's not natively part of the JavaScript spec.
+And so what a polyfill is is basically a reimplementation
+of that same specification.
+And so the people who maintain React Native actually re-implemented
+fetch for us.
+And puts it in the global scope so that we are allowed
+to use it anywhere in our React Native.
+And so how do we use fetch?
+Well, it expects a URL, and optionally some configuration.
+So let's actually go and use it.
+So let me just open up a browser console,
+and I can do fetch, and then give it a URL.
+And so let's just use this URL here.
+
+Going to do fetch that URL, enter, and I see this thing promise pending.
+What does that mean?
+So fetch returns a promise, which is fulfilled with a response object.
+And if you want to look at the documentation for fetcher response,
+you can do it these links.
+But what is a promise, and how do you use promises?
+Well, this is something that we talked about in an earlier lecture.
+Promises allow us to write asynchronous and non-blocking code,
+and it allows us to change callbacks and/or error handlers.
+And how you do that?
+Well, there's this thing called .then, which executes the callback that is
+passed in as its argument after the previous promise block returns.
+Analogously if there's an error, then whatever we pass to .catch is executed
+with that error.
+
+And so let's actually go ahead and use that.
+And so if we wanted to do something like fetch and actually play with
+the response that comes back, we're going to have to put a .then following
+this.
+So we can do .then.
+We're going to get some sort of response.
+
+And let's just console.log that response.
+
+Well now, it goes ahead and does this fetch, returns a promise.
+And we see it console.log this response here.
+And if we inspect it, we see a bunch of stuff.
+We see body, bodyUsed false, headers, and in it
+are any headers, ok true, redirected false, status 200, type basic, URL.
+What the heck is all of this stuff?
+Well, if we were just to look at the documentation for response,
+we can see exactly what comes back as a response object.
+I happen to know exactly what this response object looks like,
+and I can do something with that response called response.json.
+
+And what that does is it actually unwraps the JSON that
+comes down in that response.
+And what does it return?
+Well, it returns another promise.
+And so we can chain another .then here with that.
+We can call it result, and go ahead and console.log the result.
+And now we see this console.logged.
+Results is in array one, and some info.
+And if we look at the results, we can see this one person.
+
+So what if we wanted to maybe get more users back?
+Well, we're going to have to go check the documentation
+and see how we get more users.
+And so if you remember at the very top, we
+could actually pass in a number of results and get that number of results
+back.
+And so if we are again to do random user, and instead of doing nat US--
+or in addition, we can do results=50.
+
+I'll put an and there to chain these, and then send that,
+and we get back now an array of 50 people.
+And if we look at the results, we can see each person
+and inspect that object.
+
+And if you want to look at more usage of promises,
+you can visit both documentation at that link.
+And as we talked about in an earlier lecture,
+there is actually an alternative to promises now.
+So rather than doing .then, .then, .then, .catch,
+which might be confusing if you're not used to thinking asynchronously,
+we can actually use this new thing called async and await.
+And what this allows us to do is to write asynchronous code
+as if it were synchronous.
+And it's important that I say, as if it were synchronous.
+Because that doesn't necessarily mean that it is in fact synchronous.
+This is still non-blocking.
+And so if we want to use this, then we can just mark a function as async,
+and it will return a promise.
+And within an async function, what we can do
+is we can await the value of another async function or promise.
+What does that look like?
+Well, rather than just doing this thing called fetch,
+let's write an async function called fetchUsers.
+
+And in that function, what are we going to do?
+
+Well, first we're going to send off this fetch.
+So we can do fetch this.
+
+And we're actually going to assign it to a variable.
+So let's call that results, or response.
+
+So we have this const response equals fetch this thing.
+But since fetch is a promise, we can actually
+tell JavaScript to wait for the value of that promise.
+So we can put await.
+And what that will do is it will wait for that promise to resolve, and then
+set this response variable to that result. And I put it in air quotes,
+because it's not actually waiting and halting the program.
+It's just doing that behind the hood.
+It's still all asynchronous and non-blocking.
+Well, now that we have a response, now we
+have to get the JSON out of that response.
+And so just like above, we did this thing called response.json.
+We can do const json or result equals response.json.
+And again, since response.json returns a promise,
+we just have to wait for that promise to fulfill.
+And so if we put that await keyword in there, then
+now result is going to get assigned the response.json when
+that returns from this promise.
+And now what?
+Now we have the actual result. And so now
+if we want to do the same exact thing as we did here, we can just
+do console.log that result. And now if we go ahead and invoke fetchUsers,
+we see that the promise has returned, and we see
+all of the results printed out here.
+And so these two things are functionally the same, this long fetch, .then,
+.then, and this async function fetchUsers.
+And if you notice, this one looks a lot like code that we've written thus far.
+It looks very synchronous in nature, but behind the hood,
+it's doing a bunch of asynchronous things.
+
+But what happens if an error occurs?
+So in promises, we do it with a .catch.
+But there's no .catch in this async thing.
+So in order to do that, we can actually use a try catch block.
+So if we wanted to add error handling to this fetchUsers, what we would do
+is wrap this all in a try catch block.
+So we could do try all of this.
+
+Try all of this.
+
+And if that works, great.
+But otherwise, catch.
+Or in other words, if an error happens in these three lines,
+don't halt the program and don't immediately crash with an error.
+Actually allow me to do something with that error.
+And so what are we going to do down here?
+Well, we can do whatever we want.
+Maybe we're just going to console.error this error and call it a day.
+And so now, if we call fetchUsers with error handling,
+even though there's no error, if there were an error, this would catch it.
+
+And so now let's actually go back to that contacts app
+that we've been writing over the past few weeks.
+Up to this point, the way that we're generating contacts
+is by invoking that function that generated random contacts.
+
+So if you remember from past weeks, we had this file called contacts.js.
+And within it, we hardcoded a bunch of names.
+And at the very bottom, we exported an array
+that just created a bunch of random contacts.
+But now rather than doing that within the app itself,
+we're actually going to hit an API for all that information.
+And so let's go ahead and use that API that we've been exploring thus far
+and generate those random users from their API
+rather than doing it within our app.
+And so in order to do that, we're going to have to do some data fetching.
+
+And so where might we want to do that?
+
+So currently, the place that we're doing all this is in app.js.
+And so if you look at the top of app.js, you
+see us import contacts from contacts.
+
+And that goes ahead and grabs all of those random contacts
+that we created and imports them into this app.
+And at the bottom of the file, we see in our class app,
+we initialise the state to be whatever those contacts were.
+But now, rather than using those contacts, let's start with no contacts.
+And let's actually go ahead and fetch those contacts.
+And so these contacts, rather than being generated from within the app,
+are going to be fetched from that API.
+So let's first do it with promises, just to practice.
+And so where might we want to do this?
+So we want our application to go ahead and fetch all of these random contacts
+as soon as it starts.
+But we don't want to hold up the application as it's fetching.
+And so how might we hook into this application
+and get it to send a request when it starts?
+Does anybody remember what we could use to do that?
+
+Yeah?
+AUDIENCE: componentDidMount.
+SPEAKER 1: Yeah, we can use componentDidMount,
+one of the React lifecycle hooks.
+And so we can do componentDidMount.
+
+And within componentDidMount, we're going to want to send out that request.
+And what does that request look like?
+Well, it looks something like this.
+Not exactly like this, but it's a good starting spot.
+So we're going to fetch from this URL.
+
+Then we're going to extract the JSON out of that response,
+and then we're going to console.log that result.
+But rather than console.logging that result, what should we actually
+do with the result?
+And let's rename result to contacts.
+
+Actually, let's first remember exactly what this looks like.
+
+And so if go ahead and execute that, we get back
+this object with the results key.
+Well, that results key has a bunch of random users.
+
+And so here we know that contacts is not actually the contacts that we want.
+It's a response object, or results object.
+But what do we actually care about?
+We really care about only that results key.
+And so let's go ahead and do this.setState
+and set our contacts to be equal to that results dot this key called results.
+
+And since we only really care about one key in this object,
+we can go ahead and use that object destructuring.
+So we can say we only care about the results key of this object,
+and assign a variable called results to that.
+And so now we have some shorthand to do exactly what we want.
+So if we go ahead and save this, we can watch what happens.
+So let me log in.
+Uh-oh, undefined is not an object.
+So what the heck is going on here?
+I thought that we were doing what we wanted.
+So let's actually first console.log what we're getting.
+So before we go ahead and set state.
+
+Let's console.log those results.
+
+So when we log in, we see a bunch of things.
+It's working.
+Our request is sent.
+And what does this look like?
+Well, we see there's an object, there's a cell, there's a date of birth,
+an email, gender, ID, location, log in.
+There's a bunch of stuff that we cared about.
+But we get this red screen, called undefined is not an object.
+What could be happening here?
+Well, we have a small hint, evaluating contact on name 0.2 uppercase.
+Where are we doing that?
+Well, we're actually-- we're assuming that the data that comes back
+is the same as the data that we had in our original application,
+but that's not necessarily true.
+
+So let's look at the row that we defined earlier.
+In this, we assumed that each person that came down
+had a key with the name in it and a key called phone.
+But that's not necessarily true with our new objects.
+The phone is still called phone.
+But name is actually now an object, where we have first, last, and title,
+and so props.name might not necessarily exist.
+
+So let's actually push this problem to a little bit
+later and forge ahead with the state of fetching that we're doing.
+So we know that the data fetching is working.
+And we're doing it in componentDidMount here.
+For right now, we're using this promise, this .then, .then notation.
+And we can actually modernize a little bit by using this async/await.
+So how might we want to do that?
+Well, in order to get from promised to async/await, all we need to do
+is await this and assign it to some variable.
+So if we did const repsonse equals this, now response
+is going to wait for the fetch to come back and wait for that promise
+to fulfill and then set itself as a variable.
+Then, what did we want to do with that response?
+Well, we wanted to do const--
+we'll just call it results right now equals that response.json.
+See how that's exactly the same as what we were doing before?
+But if you, again, remember, response.json actually
+returns of promise.
+And so what are we going to do with that?
+Well, we need to wait for that promise to fulfill, utnil we can do await.
+Or in other words, just wait for that response.json promise to be done.
+And then, assign that variable, the result, to this variable
+called results.
+So that does this.
+Lastly what, do we want to do?
+Well, we actually didn't care about that object--
+that entire object.
+We only cared about the key called results.
+So we can go ahead and do this destructuring here.
+So we say whatever object comes back from response.json after the promise is
+fulfilled, we just get the key called results and assign
+this variable called results to that.
+And lastly, what did we do?
+Well, we wanted to await--
+we wanted to console.log that.
+
+So again, the same thing here.
+And then, go ahead and set the state as so.
+So we're all good, right?
+This is good to go.
+Let's go right.
+Hm, syntax error.
+Await is a reserved word.
+What is going wrong here?
+Well, if you remember, the only time you can use
+await is within a async function.
+And componentDidNetMount is not an async function.
+
+So how are we going to go about and fix that?
+Well, we can just create a new method called--
+well, one quick way is to do this.
+We can create an anonymous function here.
+So we can say--
+if you remember back to an early, early lecture
+when we talked about IIFEs, of immediately-invoked function
+expressions, we can just create an anonymous function here.
+So we could have an async function that does this
+and then immediately invoke it, so again,
+an immediately-invoked function expression.
+And so we have an anonymous, asynchronous function here
+that does all these things.
+And then, we wrap it in parentheses and immediately invoke it.
+And that will immediately invoke that asynchronous function.
+And so if we go ahead and save that, then everything--
+
+we need to use an asynchronous arrow function.
+
+Just because if we use a normal function here,
+this binding down here does not make sense in the eventual state of the app.
+And so by using an arrow function where we bind the this to be the this,
+lexically here, like we want.
+And again, it all works, and we get that same error that we're seeing before.
+But this is a little bit messy and hard to read.
+And so what is a better way to structure this such that it's
+much more easy to maintain and read?
+Well, we can abstract all this out into its own function.
+So we can just delete all of this.
+
+Actually, let's just go back a few steps until we are here.
+So this is where we were, and this is what we want.
+But let's say rather than calling this componentDidMount,
+let's call this fetchUsers.
+
+So now, we have a method called fetchUsers,
+and it's actually a synchronous method.
+
+But we want to set it as an arrow function so that where sure
+that the-- this binding works.
+And then now, we just have to call fetchUsers.
+And so we're going to call that.
+Well, we can do that here.
+We can do componentDidMount and then immediately call fetchUsers.
+
+And if we do that--
+oop, fetchUsers doesn't exist because I mean to do this.fetchUsers.
+If we go ahead and do that, then, again, we
+get the same error, because it worked.
+And so now let's go ahead and fix this error.
+
+And so if you want to go ahead and read up about async and await,
+you can go ahead and follow those URLs.
+
+So let's talk about transforming data little bit.
+So something got messed up.
+The shape of the data that was returned from the API wasn't ideal.
+It wasn't the data that we were supposed-- that we thought it should be
+or that we originally wrote the app to be.
+And so where might we want to do this transformation?
+
+We can do it every single time we render a new row.
+So every single time we show a user's contact information, we can go ahead
+and say, oh, we know that the data that we got back from the API endpoint
+was not what we really wanted to.
+So let's go ahead and make sure that what we're actually showing
+is from the correct keys in the new API.
+But that doesn't seem very good, right?
+Every single time we re-render, we're going
+to have to redo that transformation.
+And so where might be a better way to do that?
+What if we did it right when that data came back?
+That's good in a few ways.
+One, it's more efficient.
+We only have to do it once.
+So as soon as the data comes back, we go ahead
+and transform the data to make it look like what we want it to look like.
+And then, we're done.
+Every single time the app re-renders, we already have the data that we want.
+But it also gives us this thing called an abstraction barrier.
+So we've talked about abstractions a little bit
+and how, by creating an abstraction, what
+we're doing is we're taking some aspect of a problem
+and breaking it off into its own small problem.
+But what is an abstraction barrier?
+It means you don't really care what this abstraction is.
+You only care what is outputted at the very end.
+And so by transforming the data outside of the component that cares about it,
+that component really never cares about how we got that data
+or where we got that data or how it was transformed.
+It only cares about what the data looks like when it receives that data.
+And so if we go ahead and do all this transformation
+as soon as we get that data, then the rest of our application
+doesn't really care what the API looks like.
+The API might change.
+And maybe we'll change the way that we've transformed the data in response
+to that.
+But the rest of our API-- the rest of our application doesn't care.
+There's an abstraction barrier between our application and that API.
+And so how might we do that?
+
+Well, right now fetchUsers is something that we created within our app.js.
+But our app.js doesn't really care where we're getting all these users from.
+So if this was randomuser.me or if this were randomuser.com or randomusers.og
+or anything like that, our application really doesn't care.
+It only cares that we're getting those users from somewhere.
+And so we might want to take all of this logic and move it somewhere else.
+And where might we want to move it?
+Well, let's go ahead and create this new file called API.js and open it up.
+And so now, we've gone ahead and created a separate file, just
+like the rest of our application.
+When we have a component that isn't necessarily--
+needs to be defined within a particular other component,
+we can go ahead and create a new file for that component and abstract it out.
+We can also do that with our API logic.
+So our app.s doesn't really care where or how we're getting all of this--
+these users.
+It only cares that it's getting it.
+And so maybe we can take that logic and move into this file called API.js.
+
+And so let's take this fetchUsers, take it out of app.js,
+and instead, put it in our API folder-- or API file.
+
+So we have this thing called fetchUsers.
+Let's export it.
+So we're exploiting this const called fetchUsers.
+And what it is, is it's an async function that will await this fetch.
+It will take the results, console log the results,
+and then do this this.setState results.
+That no longer really makes sense in what we're doing.
+this.setState really only makes sense in the context of a stateful component.
+And so what should we do instead?
+
+Maybe we should just return results.
+And so now what this function called fetchUsers is doing
+is going ahead and doing that request.
+It's getting the json back.
+And then, it's returning it.
+And so now, in our app.js, we can actually--
+we can get rid of that.
+We can do import fetchUsers from this file called API.js.
+
+And now, where are we going to use this fetchUsers function?
+Well, in componentDidMount.
+So now, it's no longer this.fetchUsers.
+Now, what we all want to do is fetchUsers.
+
+And this returns results.
+We could either do .then use these results and set the state with it.
+
+Or we can, again, use that async/await keyword.
+So again, if we want to use async/await, we have to define another method here.
+So we'll go ahead and do async fetchUsers is
+a function that awaits fetchUsers.
+
+Probably not ideal to use the same variable name here.
+So let's just call this getUsers and then this.setState, those results.
+
+So if we wanted this to work, we should have done this.
+
+So again, this line and these two lines are functionally the same.
+But if we do want to stick with that async/await,
+we can just create this new function, an async function called getUsers-- oops,
+should actually be getUsers is an async function here.
+We can define a class property, called getUsers, which is an async function,
+which awaits fetchUsers-- which we defined in a separate file within
+our API.js--
+grabs those results, and then just sets the state
+so that the contacts are those results.
+And then in componentDidMount, we could just invoke that getUsers.
+
+So we're back, basically, to the point that we were a minute ago.
+We still have that same error, because the API, the shape of the data from API
+is not in the shape of the data that we originally wrote our app for,
+which has been a problem thus far.
+But the data fetching is still working.
+And additionally, our app.js function, or app.js file, looks a lot better.
+So here, nothing within the app should really
+care about where we're getting about data--
+nothing in this class file, I should say.
+All it cares about is that we're getting the data.
+And so by abstracting out this fetchUsers into API.js,
+we have, now, a nice abstraction, where if we
+wanted to change the API that we're getting it from,
+this class should not really care about it.
+Really, the only thing that cares-- tat should care about is that API file.
+And we've gone ahead and moved all of the logic there.
+And so now, let's try to get that--
+the shape of the data to match the shape that we're looking for.
+
+And so what is the shape that we're looking for?
+So if we look back into contacts.js from a few weeks ago,
+remember that a person has a name and a phone number.
+And that's it.
+There's no such thing as a first name and a last name.
+There's no date of birth, no nationality.
+We only care about the fact that they have a name and some phone number.
+And so let's go ahead and get the data from the API to look like the data
+from--
+that our application is expecting.
+
+So first, let's go into our API file.
+
+So we have this here.
+What exactly does a user look like?
+Well, it's an object with a cell, short for cell phone; date of birth;
+email; all of these keys.
+And what are the only two that we care about?
+We care about name, which, here, is an object.
+And we care about phone, which already exists.
+And so let's write a basic transformation function,
+so a function that takes data and transforms
+it to look like new data, that takes an old contact,
+or a contact that's returned from this API, and makes it look like a contact
+that we're expecting.
+And so let's create this function called processUser--
+or Contact, which takes a contact and returns a new object.
+And what does this object look like?
+Well, it should have a name, and it should have a phone--
+both strings.
+And what did a name and phone look like in the object from the API?
+Well, phone is just what we expect it to look like already.
+And so we can say the phone is just the contact.phone.
+But the name looks a lot different.
+So in our application thus far, a name was just
+a continuous string, where it was their first name, a space,
+and their last name.
+But in this API, a name is actually an object with a key called first,
+a key called last, and a key called title.
+So how are you going to get this to look like what we want it to?
+Well, we can use those template literals.
+So if you remember, we can do backticks, which
+allows us to create a string literal and within it,
+evaluate JavaScript expressions.
+And so maybe we want to have something called like a firstName, a space,
+and then some value called lastName, and call that a full name.
+Unfortunately, firstName and lastName don't exist.
+But we can actually get them.
+We can do that contact.name.first.
+
+And that will get us their first name.
+And the same thing is true with their last name.
+And so if we wanted to transform that name object into what we're looking
+for, we can just do contact.name.first.
+
+And then here, we can do contact.name.last.
+
+And now we have what should, in theory, be a name.
+We have their first name, separated with a space, and then the last name.
+And since we're wrapping it in backticks,
+these JavaScript expressions that are surrounded by this dollar and curly
+brace are just evaluated and then cast into a string.
+And then, what do we do for phone?
+Well, we just grab the contact out of phone,
+because that was already matching exactly what we were looking for.
+And so now, we created this function called
+processContact that takes a contact and turns it into what we're looking for.
+But how do we apply that to this fetchUsers?
+Right now, we have the results.
+And how might we, say, go through that results array,
+and for every single value in that array, transform it?
+Well, we've talked about a function that does a very similar thing.
+It goes through an array.
+And for every single value, it passes that value into a function
+and creates a new array, where every single value is
+the output of that function.
+So rather than just returning the results, what we can do
+is we can map over those results.
+And what do we want to do for each of those results?
+We want to take that contact and then pass it into processContact.
+
+Or in other words, we just want to process the contact.
+
+What does that mean?
+Well, we can do a .map.
+So for every single value in this results array,
+we're going to invoke this function on that value.
+And what does this function do?
+Well, it's expecting a contact.
+And then, it just outputs the contact that we're expecting.
+And so does that fix our problem?
+
+Yes, it does.
+So now, we see a bunch of things.
+We see first name, space, last name, and we see their phone numbers.
+
+So do you see why doing this transformation right now
+is much better than doing it within the application itself?
+Since we already wrote the application, we
+don't know exactly where we use name every single time.
+It might be in the row, and it might be also done 10 other times in the app.
+And if we wanted to say, move, what used to be name as a string
+into name as an object with a first and last key,
+we're going to have to go back and change that
+every single time in our code.
+But by doing this here, we just have to do it once.
+And now, it creates this abstraction barrier.
+So now, our application doesn't really care how random user.me
+wants it to express the contact.
+And maybe they're going to change that down the line, and all we need to do
+is update this transformation such that we take the contact from however
+they wanted to express it and just transformed it to look
+like exactly what we're expecting.
+And this is much more efficient, because we just do it once.
+We do it as soon as we get all of the users
+rather than having to do it every single time the application is re-rendered,
+every single time that we use this.name.
+
+So let's go ahead and take a break there.
+And then after this break, we'll forge ahead
+to finish implementing our Contacts app.
+Hello, and welcome back.
+So before the break, we were writing our Contacts app.
+And we got up to this point, where we have a bunch of contacts
+that we're fetching from an API off running in the cloud somewhere,
+and we're displaying those as users in our application here.
+And so this Contacts list is actually a bunch
+of people who don't live in our app.
+They're actually hosted on some cloud which,
+we're getting all of these users using the API, the public API running
+in the internet.
+But we have one aspect of our application
+that's a little bit insecure.
+We have this page that says you're currently logged out.
+And when click the Press to Log In button, we're immediately logged in.
+This isn't the most secure application ever if the way that you log in
+is just to click.
+And so let's actually go ahead and implement a login
+screen using a real API.
+So if you look on the website at the code that is linked for this lecture,
+you'll see that there's this thing called an-- this authServer.
+
+And in this authServer is a very, very simple server that I wrote.
+And if you look at the README, it's a mock authentication server.
+You can post-- ignore post for now-- to any end point, and it will act as a log
+in.
+There's only a single user name, a single user.
+Their username is username, and their password is password.
+And there's no way to add new users.
+But we can go ahead and use this server as an API.
+And so if you look at the installation instructions,
+the way to run it is by doing npm install.
+
+And then after the installation is done, we can go ahead and run npm start.
+And now, we have an error, because something is running somewhere.
+
+Here.
+
+So if we go ahead and run npm start, it goes ahead, starts the server.
+And now, it's running.
+It's listening at http localhost 8000.
+And if you go ahead and visit it, we can see that it's running--
+
+currently returning not found.
+And we'll see why in a second.
+Let's go ahead and write--
+add some authentication to our application.
+So what is authentication?
+Well, it's a process to determine if a user is who they actually say they are.
+Because unlike in the real world when I'm talking to somebody
+and I can immediately see who they are, the internet
+doesn't really work the same way.
+If you're an API and you're just getting your request out of nowhere,
+how can you really confirm that the request came from who they said it was?
+The way that we usually do this is by using a name and a password.
+Presumably, only the person with the name knows the password that they sent.
+
+But how do we actually send requests with a name and a password?
+So the way that we configure requests in this Random User Generator
+is by adding it to the URL.
+And so if we wanted, say, 5,000 results, we just visited this URL here,
+called https://theirapi?results5000.
+But for authentication, that seems a little bit weird.
+Would we really want to do something like https:// some URL?username=jordan
+password equals my password.
+That doesn't sound very smart, right?
+Imagine somebody was using my computer after me.
+They want to visit that URL.
+And all of a sudden, my browser auto-completed the whole thing
+that said, oh, user equals Jordan.
+Password equals my password.
+Now all of a sudden, I'm compromised, and everybody knows my password.
+So this probably isn't the greatest way to transmit secure information.
+What might be a better way to do it?
+Well, it turns out there are these things HTTP methods.
+And one that we commonly use is GET.
+This is the default for browsers.
+This is the default for fetch as well.
+So if I just go to randomuser.me/documentation and load
+the page, that sends a GET request to this.
+And I can confirm that by looking at my network traffic.
+
+If I refresh the page, I see a bunch of things happen.
+And if I inspect this request, I can see that the request method is GET.
+And what is the URL that I'm sending it to?
+Well, it's this request URL that I have typed in my address bar.
+So if I just go to this URL and hit Enter,
+browsers will use a default request method of GET.
+And the Same thing is true with fetch.
+If I just go ahead and type fetch this URL,
+it goes ahead and sends a GET request.
+And how do we add parameters to the GET request?
+Well, we do that by appending a question mark,
+unchaining key value pairs by doing key equals value.
+And we separate them by this ampersand.
+And so if you remember earlier when we were talking about this API,
+we see a question mark here, which means here comes some additional parameters.
+And you see key value pairs separated by equal.
+And so the key here is results.
+And how many do we want?
+Well, we want 5,000.
+And down here, we could also have a separate parameter,
+called gender or female.
+And what if we wanted both?
+I waved my hand at it a little bit earlier.
+But what I did was I said, results=5000%--
+another key value pair.
+And if I wanted to chain a bunch more, I could do
+results=5000&gender=female&nationality, or nat, =us.
+And so just to demonstrate real quick, I can do nat=us and results--
+is it called results?
+This is called results=10.
+
+And also, I only want gender=femals as well.
+And if I go ahead and send that request, I get back what looks like 10 results.
+And every single person is--
+should be female.
+
+So one, two, three, four, five, six, seven, eight, nine, and 10.
+And so I can pass additional parameters by just doing
+key equals value after a question mark and sending the ands.
+And how do I know which key value pairs exist?
+Well, since I'm a consumer of the API, I'm
+at the will of whoever wrote the documentation.
+And so to know exactly what key value pairs are available,
+I just have to read the documentation for that particular API.
+But that, again, doesn't solve our problem.
+If I wanted to authenticate through some server,
+I don't want to be sending user=Jordan and password= password.
+So what might we do instead?
+Well, it turns out there are other HTTP methods.
+And one is called post.
+What is posting?
+Well, it's like submitting data or like a form or something to an endpoint.
+And the origin of this word post is actually
+from posting things to a billboard.
+And so if you wanted to add something, so add some new data to a billboard,
+you just post it up to the billboard.
+And so that's how this HTTP method, or this verb, came around.
+And so by posting to an end point, we can actually submit data.
+And where do the parameters go, if not in the URL?
+Well, turns out there's actually a request body
+in this thing called a post.
+And so GET requests don't have a body.
+And so the only way to add parameters is through the URL.
+But in a post, you can actually put it into the request
+itself so that it's not visible in the URL, which is good.
+If I wanted to now send a request to an authentication end point,
+I don't have to put my parameters in the URL.
+I can now put them inside their requests body where people who then go
+visit the page after me don't see it auto-correcting in my browser.
+
+How do I do that?
+Well, I'm probably going to use this thing called JavaScript Object
+Notation, or JSON.
+And so by what I do is I post some JSON and I
+add this header called content-type application JSON.
+And I'll wave my hand a bit at headers.
+But basically, what this is saying is, hey,
+API, the stuff that's coming in this request
+is JSON, or JavaScript Object Notation.
+And so my body has to then be a JSON on string.
+And so now, let's actually go ahead and start using this.
+
+So let's take a look at our server.
+Well, first, let's run it.
+So it's currently running at localhost:8000.
+And if you remember, how do I actually use this authentication server?
+Well, I can post to any end point, and it will act as a log in.
+And so now, we know what post means.
+Posting is opposite of GET.
+So rather than just visiting localhost:8000 in my browser,
+which is what I did, that does what?
+It sends a GET request.
+And so that's why it's saying not found.
+Because it doesn't know what to do with that GET request.
+It only knows what to do with posts.
+And so now we can actually post to this and try to log in.
+And so how the heck are we going to send a post?
+
+Well, it's the same way that we sent our get requests.
+So let's head over back to this console.
+
+And let's send a post request to our API.
+So let's do fetch http://localhost:8000.
+And let's just do that and see what happens.
+Well, we get not found.
+We try to get it.
+We see this thing called 404.
+We don't know what that means yet, but not found.
+Why is that not found?
+Well, it's because we know that we want to post to that end point.
+
+Actually, I have a feeling this demo's going to fail.
+
+All right, we're going to forge ahead anyway.
+And this is probably going to fail.
+But let's go ahead and send a fetch request to that same API.
+And let's add some additional configuration.
+And so if we want to send a post request, what
+we need to do is pass some additional configuration that says,
+what method do we want to use?
+Well, we're going to use a method called post.
+And we'll go ahead and send it.
+
+And we can go ahead and look in our network.
+We can see that we sent this request.
+What was the URL?
+Well, it's localhost:8000.
+And what is the method?
+It's post, as opposed to the one that we had sent a few seconds earlier,
+which is a GET.
+And if you look at the status code, it's saying 404--
+not found and 400-- bad request.
+We don't really know what that means, but let's forge ahead and go ahead
+and try to implement this login screen.
+So what does the login screen look like right now?
+Well, it just says you're currently logged out.
+And we press this button.
+And all of a sudden, we're logged in.
+Again, not very secure.
+And so let's go ahead and use our authentication server
+to make sure the user is who they say they are before letting them in.
+
+So where is this logic?
+Where does this logic live?
+Well, if we want to find it, we can open up app.js, scroll down.
+We'll see that we have an app navigator.
+And what is the app navigator?
+Well, it's a switch navigator, if you remember back
+to last lecture, that is the navigator where it's either
+showing one screen or the other.
+And when you switch in between, they're actually unmounted.
+And so there are two screens on this switch navigator.
+There's the login screen and the main screen.
+And so we want to actually be working in the login screen.
+And so let's go ahead and find where that login screen is implemented.
+So if I just search for the login screen, I see it's used there,
+and actually import it in from this URL, ./screen/loginscreen.
+And so now I know that if I want to affect that page,
+I need to go edit that file.
+And so let's cd into screens and look at that login screen.
+And here, we have a page.
+We see export default. This class is called login screen.
+It extends react.component.
+It has a class property, which is a function called login.
+And what does it do?
+Well, it just navigates to the main screen-- again, not very secure.
+And then, we see that it's rendering some things.
+It's rendering a text, element that says you are currently logged out,
+which is exactly what we saw.
+And we saw this button that says Press to Log In.
+And on press, it just invokes this function called Log In.
+And if you've never seen this before, there's a convention that says,
+for methods that are only used within a particular class,
+use an underscore before that method.
+The community is a little bit torn on whether to do that or not.
+It looks like Eric and Brent like using the underscore log in.
+But again, about half the community also does not--
+prefers not to use that login, the underscore, because in method--
+in other languages, it might mean this is a private method.
+But since private methods don't exist in JavaScript,
+we don't want to confuse people to think that it's a private method.
+So the community is a little bit torn.
+Brent and Eric like to use it.
+I will not use it.
+But I will leave it as is just in their honor, I guess.
+Let's actually make this more secure.
+So we don't want to just, by default, log anybody in.
+And so first, we actually want to go ahead and add a couple of text inputs
+that controls the username and password that we're going to send.
+And so let's get rid of this text that says you're currently logged out
+and instead, put some text inputs in.
+So we want one text input that is going to be used for the user name,
+and we want one for the password.
+
+What are we going to do when somebody starts typing their username?
+Well, we should probably update the value.
+And what is that value?
+Let's have it be this.state.username
+And how do we change that?
+Well, on changed text, we're going to call this.handleusernameupdate,
+which doesn't exist yet.
+So first, let's declare this state where it
+starts with a username of empty string and a password of empty string.
+
+And then, let's also declare onChangeText--
+
+or handleUsernameUpdate, which takes a username
+and will update the state when it changes.
+So let's do this.setState that username.
+And if you don't remember what this shorthand is, it's basically this.
+But rather than using the key and the value as the same string,
+we can actually use the ES6 shorthand, like that.
+And let's create the same thing for password.
+
+And go ahead and make sure that this text input is showing what it should.
+And so the value here should be that password,
+and the onChange text should be the way that we handle that password.
+
+Cool.
+So now, we have this login screen.
+And so you see there's a user-- it's expecting a username and password.
+And we can type in the username here.
+We can type in the password here.
+And if we press to log in, we're automatically logged in.
+If we type no username and no password, we're also
+logged in, which seems kind of weird.
+Why is that happening?
+Well, if you remember what happens when you press that button,
+we call this login function.
+And that login function disregards anything that we've typed
+and just navigates us to that main people.
+So let's actually use those things.
+And so let's remember how we use that API for our login server.
+So let's just cut and paste that here.
+
+So we're going to have to fetch from this API.
+And if you remember from that README, it's expecting a post to any endpoint,
+so I can put slash whatever.
+It doesn't matter.
+We're going to use the method post, and we
+need to include, somehow, the username and password that we want.
+
+How are we going to do that?
+Well, if you remember back to the slides,
+if we want to post some JSON on, which we do,
+we're going to have to have content-type application JSON on the header.
+And we must include a body that is a JSON string.
+
+So let's do that.
+
+So we have method post.
+We also want to include some headers.
+The only one we care about is this thing called content-type,
+and it should be application/JSON.
+
+And again, that's just telling the server, hey, here comes some JSONs.
+And where's the JSON going to be?
+Well, it's going to be in the body.
+I only know these configuration keys because I read the documentation
+on fetch.
+And so in order to put something in the request body, we have some--
+an object here.
+What do want in object?
+We want the username, and we want the password.
+
+What are the values for the username?
+Well, the username is gonna be this.state.username.
+And the password is going to be this.state.password.
+
+But this isn't JSON string.
+This is just a JavaScript object.
+And so if we want to make this a JSON string,
+there is this handy function called JSON.stringify,
+which takes a JavaScript object and turns it into a JSON string.
+
+So let's go ahead and send that fetch.
+And then, I'm just gonna use a promise here, because it's faster for me
+to type.
+
+All right, so I'm gonna take the result from that and console log it.
+So if I press to log in, it's going to log me in,
+but presumably, it's going to console log something.
+And it's way down there.
+So let me just clear all these logs and start over.
+So I'm going to press to log in, and I see this response.
+And what is in the response?
+A bunch of things.
+And we see this thing called OK False and Status 400, Status Text Undefined
+Type default. Did it work?
+It's kind of hard to tell.
+All we're getting back is this thing, a number.
+And what the heck does that mean?
+Well, it turns out that's not an arbitrary number.
+That number is actually part of a standard.
+
+It's an HTTP request code.
+So every single network response actually has a code associated with it.
+And these codes, they mean something.
+It tells you exactly whether or not this response or this request
+was successful.
+And so if everything went great, we get a 200.
+So 200 just means OK.
+It worked.
+Good job.
+But not everything's a 200.
+We see here that this particular one that we sent back got a status of 400.
+What is a 400?
+Well, that means a bad request.
+Or in other words, the request that you sent
+is missing some things that we wanted.
+Or maybe it wasn't the shape that we wanted it to be.
+And it turns out there are other-- there are other numbers that this could be.
+You could also get a 403 Forbidden, which
+means you're not allowed to access this endpoint,
+or you did not have the correct permissions
+or the correct authentication in order to access this endpoint.
+There's also a 404 Not Found, which is this endpoint does not actually exist.
+So if you are browsing the internet, odds are you've hit a 404 page before.
+GitHub has a pretty nice one.
+So if you go to github.com/ some gibberish string,
+you get back this Not Found page.
+
+And oftentimes, it's styled so that it's saying,
+maybe not everybody knows what a 404 is.
+And so we'll tell them, this is not the web page that you're looking for.
+This page doesn't actually exist.
+And so a lot of websites will choose to have some friendlier 404 pages,
+unlike our localhost:8000, which also just returns that Not Found.
+And if we actually inspect the network and visit localhost8000,
+we can see that we got a status code of 404 Not Found.
+What other HTTP response codes are there?
+Well, one that you might see is 500 Internal Server,
+Error which means the error was actually not on your part.
+There was an error on the server side code.
+And I'm just letting you know that this is not respect-- this didn't work.
+I errored out, but I'm not going to keep you waiting.
+Of course, there's a bunch of other ones.
+There's like 401, 402, 418.
+I'm a teapot.
+This was actually a joke created by the people who made the HTTP response codes
+list.
+It was an April fools joke.
+This response code is only returned if you send
+a request to make coffee to a teapot.
+The teapot should return 418, I'm not a coffee maker.
+I'm a teapot.
+And if you want to look at all of the response codes,
+you can go look at the documentation at this link.
+And so now, we know what this 400 actually meant.
+When we sent some stuff to the login, we got back 400,
+because this was not what we wanted.
+There was no username or password that we included in that fetch.
+And so if we refresh and actually type the username and a password,
+press Log In, the status changed.
+It's no longer a 400.
+It's actually a 403.
+And what does a 403 mean?
+Well, 403 is forbidden.
+Or in other words, those were not the correct credentials.
+So let's actually, since we have a little bit of extra time before diving
+into the React Native code, let's look at what that server-side code actually
+looks like.
+
+So if you're actually interested in on-- in what
+this authServer code looks like, it's actually also written in JavaScript.
+If you remember back from an earlier lecture,
+we talked about this thing called node.js,
+which allows JavaScript to write-- to run on a server,
+even though it's a language that was originally
+intended to run only in the browsers.
+And so if we want to look at this, we can see what is actually backend code.
+
+And so I'll wave my hand at a lot of this express stuff,
+app.usebodyparts [? to ?] .JSON, which is kind of self-explanatory.
+It just means if there's JSON in the body, go ahead and parse it.
+But we see this thing called app.post.
+If you remember post, that means for any requests
+coming in at this particular endpoint-- and what endpoint do we care about?
+Star, which means every single endpoint.
+So if you post to any endpoint, we're going
+to run this function that takes a request and a response.
+And what does it do?
+Well, it extracts the username and password, so familiar syntax
+of which we discussed earlier, which means look at this rec.body.
+And so if you remember, our fetch request had this key called body.
+And so now, since we've embedded stuff into the body,
+now the backend server is actually looking at the body that we requested.
+So again, the front end and back end code are communicating with each other
+by using these familiar constructs.
+So rec.body's an object.
+It's the JavaScript object that we run on the front end.
+And it had two keys, if you remember them.
+It had a username and password.
+If you remember this shorthand, it means create
+a couple of variables, called username and password,
+and assign them to the username and password
+respectively, keys from rec.body.
+And so we're taking those username and password.
+If neither one exists, return a result status code of 400
+and send a string along with it, called missing username or password.
+
+Otherwise, if there is no users in our username-- say, oh, 403,
+that this user doesn't exist.
+And if the username's password doesn't match the password,
+Return 403, oh, this is an incorrect password.
+And if you're curious how we're storing these username/password combos,
+we're just using an object.
+So we have declared, at the top, [? constant ?] users,
+where the user called username.
+Their password is password.
+And so in this particular way of implementation,
+we have a users, where the username are the keys,
+and the passwords are the values.
+And so the only user we have in our system is a user with the username
+called username, and he's--
+with a password of password.
+And so we're just going to continuously check against that.
+
+And so again, super simple--
+if they post to any endpoint, grab their username password.
+If they don't include a username or password, that's a bad request.
+That's a request that's not-- that doesn't
+have the things that we're looking for.
+And so go ahead and tell them, oh, this is a status code for 400.
+Send this string.
+And it's up to whoever wrote the backend to know all of the status codes
+and use the appropriate one.
+That's not guaranteed.
+But generally, people are using the correct ones.
+Then, we go ahead and see if that user exists
+by checking in that user's object.
+Again, in practice, this might be revealing too much information.
+If you imagine somebody can make a request that says, oh,
+does user A exist?
+Oh, no, I got 403.
+It doesn't exist.
+Does a user called B exist?
+How about C, D, E, F?
+And they can go ahead and brute force every single possible string
+and figure out all of our users.
+So if this were your actual implementation,
+attacker could actually probe the user and find all of your usernames.
+But in practice, a server may have protections,
+like block an IP if they send too many requests, and stuff like that.
+But then, if that user does exist, but the key in that user's object,
+which we are storing the password, is not
+equal password, which is what they submitted,
+then say, oh, this was the incorrect password, again,
+with that 403 Forbidden code.
+Otherwise, they are who they say they were.
+Let's go ahead log them in.
+Send 200.
+And if you remember what 200 means, it's just OK, it worked.
+And then down here, you can see catch 404.
+So if it's not a post to anything, return a 404.
+Or create an error that's called Not Found.
+Set the status to 404.
+And then go ahead, and down here, send that status.
+And I'll wave my hand at the rest.
+But basically, this web server takes a username and password
+if you post an endpoint, checks to see if it works.
+If it's good, it returns 200.
+Otherwise, it returns the appropriate status code.
+So there is a peek at some backend code to see exactly how our server works.
+And so as expected, if you just visit localhost:8000 at a browser,
+if you remember, if we just visit some URL to browser,
+what type of request is it sending?
+It's sending a GET request.
+And so, it is returning that 404 Not Found.
+And if we post with a username and a body,
+we get a 403, 3 because it was an incorrect password.
+And finally, if we post with no username and no password,
+we're going to get that 400.
+So let's actually implement that page.
+So currently, our login is just sending a fetch request where the body is this
+.state.username and the password is this .state.password and then ignoring
+whatever comes back.
+And we're just navigating to main.
+So let's actually write something that makes sense.
+So rather than making this a synchronous login, let's actually make it async.
+And now, let's do the result of the response from this call--
+is what happens after you wait for the fetch to come back.
+
+So now, we have this.
+So we have-- we're fetching to this URL.
+We're sending a post.
+We're telling the server, hey, by the way, some JSON is coming.
+Here it is.
+It's a object with a username, where the username is this.state.username
+and password is this.state.password.
+here you go.
+And now, we can go ahead and say if response.status=400--
+
+because if you see, we have your response.status if it's 400
+or if it's 401 or if it's 402 or if it's 403.
+And I need to count every single possible bad status code in order
+to know that, indeed, this is a good status.
+This seems really annoying.
+You can also use some greater than or equal to 400 and whatever.
+But it turns out there's actually something implemented for you.
+If you look at this object, you see this thing called OK False.
+And if you look at the documentation for the response object,
+it actually does that for you.
+It does this-- if it's 400 or 401 or 402 or 403 or anything up to 500,
+it makes that check for you.
+And it basically exposes it to you as this key called OK.
+And so rather than checking 401, 402, all of these,
+you can just check response.ok.
+
+Then, they're good.
+Or in other words, if the response is equal to 200,
+because we actually know in the backend for this particular example,
+it'll only return 200.
+But we can go ahead and use this more general one.
+Then, we're going to want to log them in.
+
+And we can go ahead and return, because that was successful.
+
+Otherwise, there is a problem.
+They did not do what they wanted to do.
+Or their password was not correct, or they were not actually a user.
+So we're going to have to look at the text that came back.
+Because if you remember from the backend,
+we're actually getting some text back.
+It's saying, hey, this is a bad password,
+or hey, this user does not exist.
+And so just like we did this thing called response.json
+which takes that-- which extracts the JSON from the quest,
+there's also this thing called response.text.
+And so since we know that we're not receiving back an object,
+we're only receiving back text, we can await this.
+
+And again, that returns a promise.
+And so now, if the response was not OK, we know that there is an error.
+I mean, what was the error?
+Well, we can just see what the backend is returning in that text.
+And so by doing response.text, that returns a promise with the text.
+And we can await that to get our error message.
+Then, what should we do?
+Well, maybe let's do this.setState, and some error message is that.
+
+So now, we have a pretty good thing going.
+This login is now an asynchronous function, or a async function.
+What is the first thing you do?
+Well, we send this request to localhost:8000.
+We know that we're supposed to be posting some JSON,
+because that's what the documentation said.
+And we're waiting for it to come back.
+When it comes back, we set the response to be this response variable.
+If it was OK, if we got a 200 back, then we're all good.
+We can go ahead and log them in.
+And the way we log them in, in this case,
+is just navigating to the main screen.
+Otherwise, something went wrong.
+And let's figure out what went wrong.
+So let's extract from the response the text that came back.
+And so if you look at the documentation for the response object,
+you see that text is a method on there.
+And it returns a promise.
+And so we can await the response of that and extract the error message
+from that response.
+Then, what do we do?
+Well, maybe we should tell the user that something went wrong.
+And so let's go ahead and put that in the state.
+So now we have an error called error message.
+And what are we going to do with that?
+Well, let's show it to the user.
+
+Or maybe let's show it to them in some red text.
+
+So now, hopefully, we've just written some code
+that will send a request to log in with whatever username and password
+the user has typed in.
+If it's good, we'll log them in.
+And if it's not, we're going to put an error message into the state.
+The error message corresponds with whatever response we get back.
+And then, go ahead and show it to the user in render.
+So let's see if that works.
+Oop, can't find [INAUDIBLE] text, because I didn't import it.
+
+And now, if we press to log in, oh, missing username or password.
+It's not red.
+
+style.error-- oh, now, it should be red.
+And there we go.
+It's missing a username or password, which
+is good, because we didn't type in a username or password.
+Let's see if this works if we type in a username.
+Well, we're still missing a username or password, which is true.
+We're missing the password.
+And now, that user doesn't exist.
+Because what does exist?
+Well, a user called username, and it's not a capital username.
+It's a lowercase username.
+Now, if we press to log in, oh, we're getting
+incorrect password, which is good.
+Now, it's actually showing some input to the user.
+But it might be annoying for users who have all lowercase usernames
+to have to manually go back and do a lowercase U.
+And it might also be bad for passwords to be shown.
+But let's just verify that this works.
+If we press to log in, lo and behold, we're
+logged in, because we submitted the correct password.
+So yay, our auth is working, but it might not
+be the greatest user experience.
+Because we know that our only user is all lowercase.
+But by default, the keyboard is always capitalized.
+And so if the user wants to type in their username,
+they're always going to have to make sure to uncapitalize that first.
+There should be a way to do that, though, right?
+You'd think that with a text input, the people who
+wrote React Native should know like, oh, maybe
+not everybody wants to capitalize all of the words.
+So how are we going to see if that does exist?
+Well, let's actually look at the API documentation
+and look at the API for the React Native TextInput.
+
+So if we open up the documentation for TextInput, we can see all of the props
+that we can pass to this this component.
+Or in other words, we can see the API for this component.
+And maybe one of them will allow us to not
+automatically capitalize everything.
+So if I Command-F for capitalize, oh, looks like there's
+this thing called autoCapitalize.
+And this tells the text input to automatically capitalize
+certain characters.
+And we can either pass in none, sentences, words, or characters,
+and the default is sentences.
+So the first letter of each sentence is, by default, capitalized,
+but we don't want that.
+So let's actually use this prop called autoCapitalize
+and pass in none to get what we're looking for.
+So here, we have a text input, and we can say autoCapitalize equals none.
+
+So now, look, it's not automatically capitalizing.
+And so a user now can just type in their username
+without having to worry about this auto-capitalization.
+We still have a bit of a problem.
+
+We don't want the password to just be shown in plain text.
+And so maybe there is a way to do that as well.
+So again, let's look at the API.
+A lot of stuff here, so let me just do a Command-F. Maybe there's
+something to do with a password.
+So we see secureTextEntry.
+If true, the text input obscures the text
+entered so that sensitive text, like password, stay secure.
+The default value is false.
+Does not work with multiline=[true].
+We're not using multiline=[true], and so we might be able to use this
+secureTextEntry to hide the password.
+Let's see if there's anything else, because there are three hits--
+
+keyboardType.
+It turns out Android can use this thing called visible-password,
+but that's not exactly what we want.
+And so we can actually use this secureTextEntry prop.
+So let's actually pass it in, so secureEntry=true.
+
+And it turns out there is shorthand for this as well.
+If you ever have a Boolean prop, and you're passing and true,
+you can just leave that all out.
+And this defaults to secureEntry=true.
+Let's try that.
+
+And all of a sudden, we have username, and we have password.
+
+Oop, not working.
+secureEntry-- secureTextEntry is what we're looking for.
+
+So now, if we start typing in a password,
+oh, it does what we're looking for.
+And same with username.
+All of a sudden, we have authentication.
+Great.
+So now our Contact app is pretty much done.
+We have an API that goes ahead and fetches all of these contacts.
+We have authentication that allows us to only log in if we're the user
+that we say we are.
+And if we are not, then it will tell us exactly that we're not.
+And that's all the--
+all of the features that we're looking for.
+Unfortunately, our-- we have some stuff hardcoded in our login screen
+that doesn't need to be.
+Do you remember how, in our application, when we had a fetch to some URL,
+the login screen doesn't really care what URL we're looking for?
+It only really cares that we're trying to log in.
+So maybe we should do what we did in the application class
+and abstract this out.
+So again all of this logics doesn't need to be in this particular screen.
+So maybe we should abstract it out into that api.js
+file that we'd created earlier.
+So let's go ahead and do that.
+
+So just like we're exporting a const called fetchUser, let's export
+a const called login.
+And it's going to be an async function that takes two arguments.
+It's gonna take username and a password.
+
+And what's it going to do?
+Well, it's going to do all of this.
+
+So I just cut and paste everything from the other file.
+And we have-- basically where we were when we
+were writing that fetchUsers function.
+We have a bunch of logic, and some of the logic
+was a little bit specific to the class, namely
+this.setState and this.props.navigation.navigation
+Those two things don't really make sense in the context of this particular file.
+And so let's go ahead and handle those slightly differently.
+But this part is mostly correct.
+So we have username and password.
+What we're going to do is we're going to send a fetch request to localhost:8000,
+whose method is post.
+Their headers are set correctly.
+Now, rather than using this.state.username,
+we only need username and password.
+And if you remember their shortcut or shorthand--
+if we have keys and values that match in an object, we can use the shorthand.
+And so now, we have the first five lines.
+We have the response should be awaiting this fetch request.
+That sends a post to you that URL.
+Headers are telling the server that JSON is incoming.
+And the body is just the stringified JSON form of this object
+that we create with a key of username, with the value username there,
+and a key called password, whose value is the password that we pass in here.
+So what are we going to do with this function?
+Well, if it's not OK rather than--
+or if it's OK, rather than doing this, let's actually just return true.
+It worked.
+Yay.
+If not, let's actually throw an error.
+So rather than setting the state here, let's actually throw or create
+an error.
+
+So if it wasn't OK, we know that we're going to extract the text
+and get that error message.
+And let's actually throw an error here.
+So say, uh-oh, this didn't work as expected.
+I'm going to create an error.
+
+So I don't know if we've talked about the syntax before, but by saying throw,
+that means we're going to create an error here.
+And what error are we going to create?
+Well, it's a new error.
+And we're going to pass it in as the message, the error message
+that we extracted from this text.
+And so now, login, if it worked, it's just going to return true.
+Otherwise, it's going to throw an error.
+And so let's actually handle that.
+So let's go back into the login screen.
+We're going to need to import this login function from the API file
+that we created.
+And now, what are we going to do?
+Well in this login function here, we're going
+to try to log in using the password and username from state.
+
+And what are you going to do with it?
+Well first, let's do a wait.
+
+So remember, if it works, it's going to return true.
+And what happens if it doesn't work?
+It's going to actually throw an error.
+If you think back to lecture, how do we handle errors in async functions?
+We do this try and catch.
+
+So now, we're attempting to do this.
+So try to do this line.
+So try to log in with this.state.username,
+this.state.password.
+If it works, whoohoo.
+
+But what happens if it doesn't work?
+It's going to throw an error.
+But if it's throwing an error, we don't want
+to like crash our entire app with that red screen.
+We actually want to just catch that error and do something with it.
+Because if you remember, that error message
+we want to eventually show back to the user.
+And so we're going to do that here.
+We're going to catch that error, and we're going to handle it.
+What are we going to do with it?
+Well, we're going to take that message.
+
+So I happen to know, because I read the documentation on error,
+that the error message is stored as a key called .message,
+so I can grab that.
+And then, what do we want to do?
+Well, we want to set the state so that the error that we show to the user
+is that error message.
+
+So we now have handled the case where it doesn't work.
+What do we do if it works?
+Well, we want it to do this.props.navigation.navigate
+to the other screen, whose name I deleted.
+But if I remember correctly, it was main.
+So let's go with that and hope.
+So if this worked and didn't throw an error,
+we can go ahead and navigate to main or log in.
+If it didn't work, we're going to catch whatever error this throws,
+grab the message out of the error, and set the state.
+So let's go ahead and save and run this.
+Press to log in.
+Missing username or password.
+It went ahead and worked.
+So if you remember, username and password, right now, are empty strings.
+And so when we send this over, it says, oh, username and password
+are both false, so it's a bad request.
+It's going to return that 400, which is going to trigger an error in that login
+that we wrote in API.
+That error is going to get caught here, when we say catch error.
+It's going to extract the error message out and then set the state.
+And then, where does that eventually show?
+Well, it shows in this text block here.
+And so it's a slightly different logical path as we had before
+but it does the same thing.
+And now, it's super nice, because in this login screen,
+does anything here rely on our API being at that localhost address?
+Not really, right?
+The login screen doesn't care where we're sending our login requests to.
+It only cares that we're sending a request to log in.
+And so we've gone ahead and abstracted all
+of that out and exposed, via an API from our file called API that has a login
+function, that login function.
+And so it can go ahead and invoke this login function
+with this username and password.
+And that login function will return if it's true,
+and it will throw an error if it didn't work.
+And so we've gone ahead and abstracted out all of that--
+the internals of how we're communicating with our external API and just
+expose this login function to this login screen.
+And so the login screen doesn't really care about how we talk to the API.
+It really only cares about this function called login.
+And so this is a much cleaner way of keeping only what the component cares
+about within the component.
+Any questions on that?
+
+Great.
+For people online if they have any questions,
+feel free to send them in Slack.
+Otherwise, I will see you next week for a guest lecture
+with the founder of Expo.
+And so we've been using Expo all class for demos and for running our projects.
+And we're lucky enough that next week, we
+have the person who founded Expo coming and giving a guest lecture
+on all of the goodies in the Expo SDK.
+So we can play around with all of those Expo components next week with Charlie.
+Thank you.
